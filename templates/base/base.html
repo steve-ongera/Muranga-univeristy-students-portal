@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>EnezaElimu | Kenya</title>
+  <title>Muranga university students portal</title>
   <meta content="" name="description">
   <meta content="" name="keywords">
 
@@ -47,10 +47,16 @@
   <body>
     {% include "base/navbar.html" %}
 
-    {% if request.user.is_staff %}
-      {% include "base/sidebar.html" %}
+    {% if request.user.user_type == 'admin' %}
+        {% include "base/sidebars/admin_sidebar.html" %}
+    {% elif request.user.user_type == 'staff' %}
+        {% include "base/sidebars/staff_sidebar.html" %}
+    {% elif request.user.user_type == 'finance' %}
+        {% include "base/sidebars/finance_sidebar.html" %}
+    {% elif request.user.user_type == 'lecturer' %}
+        {% include "base/sidebars/lecturer_sidebar.html" %}
     {% else %}
-      {% include "base/student_sidebar.html" %}
+        {% include "base/sidebars/student_sidebar.html" %}
     {% endif %}
 
 
