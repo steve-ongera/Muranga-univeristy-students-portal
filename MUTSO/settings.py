@@ -128,3 +128,30 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+LOGIN_URL = '/'  # Change this to match your actual login page URL
+LOGOUT_REDIRECT_URL = 'login'
+
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'innovationhubsoftwaresltd@gmail.com'
+EMAIL_HOST_PASSWORD = 'wtzg mvcn ztoe qige'
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# School details for PDF reports
+SCHOOL_NAME = "Kenya High"
+SCHOOL_LOGO_PATH = STATIC_URL + 'assets/img/logo.png' # Adjust path based on where your logo is
+PRINCIPAL_NAME = "Mwangi Macharia"
+

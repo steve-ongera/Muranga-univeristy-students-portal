@@ -1,10 +1,22 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login , logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from .models import *
-
+from django.core.mail import EmailMultiAlternatives, send_mail
+from django.core.cache import cache
+from django.utils import timezone
+from django.utils.encoding import force_bytes, force_str
+from django.utils.html import strip_tags
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.sites.shortcuts import get_current_site
+from django.template.loader import render_to_string
+from django.contrib.auth import get_user_model
+Account = get_user_model()
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 def login_view(request):
     """
@@ -75,13 +87,84 @@ def login_view(request):
     # If GET request, just show the login form
     return render(request, 'auth/login.html')
 
+def custom_logout(request):
+    logout(request)
+    messages.error(request, "Logged out successfully!")
+    return redirect('login')
 
-from django.contrib.auth import get_user_model
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from .models import Student, Lecturer
 
-User = get_user_model()
+#forgot password view 
+def forgot_password(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        if Account.objects.filter(email=email).exists():
+            user = Account.objects.get(email=email)
+
+            # Generate reset password token and send email
+            current_site = get_current_site(request)
+            mail_subject = 'Reset Your Password'
+            context = {
+                'user': user,
+                'domain': current_site.domain,
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                'token': default_token_generator.make_token(user),
+                'protocol': 'https' if request.is_secure() else 'http'
+            }
+            
+            # Render both HTML and plain text versions of the email
+            html_message = render_to_string('auth/reset_password_email.html', context)
+            plain_message = strip_tags(html_message)
+            
+            to_email = email
+            
+            # Use EmailMultiAlternatives for sending both HTML and plain text
+            email = EmailMultiAlternatives(
+                mail_subject,
+                plain_message,
+                'noreply@yourdomain.com',
+                [to_email]
+            )
+            email.attach_alternative(html_message, "text/html")
+            email.send()
+
+            messages.success(request, 'Password reset email has been sent to your email address.')
+            return redirect('login')
+        else:
+            messages.error(request, 'Account does not exist!')
+            return redirect('forgot_password')
+    return render(request, 'auth/forgot_password.html')
+
+
+
+def reset_password(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))  # Replace force_text with force_str
+        user = Account.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, Account.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        if request.method == 'POST':
+            password = request.POST.get('password')
+            confirm_password = request.POST.get('confirm_password')
+
+            if password == confirm_password:
+                user.set_password(password)
+                user.save()
+                messages.success(request, 'Password reset successful. You can now login with your new password.')
+                return redirect('login')
+            else:
+                messages.error(request, 'Passwords do not match.')
+                return redirect('reset_password', uidb64=uidb64, token=token)
+        return render(request, 'auth/reset_password.html')
+    else:
+        messages.error(request, 'Invalid reset link. Please try again.')
+        return redirect('login')
+    
+
+
+
+
 
 def registration_view(request):
     """
