@@ -13,4 +13,6 @@ urlpatterns = [
     path('mainadmin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('staff/dashboard/', views.staff_dashboard, name='staff_dashboard'),
     path('finance/dashboard/', views.finance_dashboard, name='finance_dashboard'),
+    path('api/gender-distribution/', views.gender_distribution_api, name='gender_distribution_api'),
+    
 ]

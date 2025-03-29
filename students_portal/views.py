@@ -17,6 +17,11 @@ from django.contrib.auth import get_user_model
 Account = get_user_model()
 from django.contrib.auth import get_user_model
 User = get_user_model()
+from django.db.models import Count, Q
+from datetime import datetime
+import json
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
 
 def login_view(request):
     """
@@ -362,16 +367,143 @@ def lecturer_dashboard(request):
     except Lecturer.DoesNotExist:
         messages.error(request, "Lecturer profile not found. Please contact administration.")
         return redirect('login')
-    
 
+def prepare_gender_data_by_academic_year(academic_year_id):
+    """Helper function to prepare gender distribution data for a specific academic year"""
+    try:
+        academic_year = AcademicYear.objects.get(id=academic_year_id)
+        
+        # Define gender mapping
+        GENDER_MAPPING = {
+            'M': 'Male',
+            'F': 'Female',
+            'O': 'Other'
+        }
+        
+        # Filter students admitted during this academic year
+        gender_counts = Student.objects.filter(
+            date_of_admission__gte=academic_year.start_date,
+            date_of_admission__lte=academic_year.end_date
+        ).values('gender').annotate(count=Count('id'))
+        
+        # Process results
+        if not gender_counts.exists():
+            gender_data = [
+                {'value': 0, 'name': 'Male'},
+                {'value': 0, 'name': 'Female'},
+                {'value': 0, 'name': 'Other'}
+            ]
+        else:
+            gender_data = []
+            for g in gender_counts:
+                gender_name = GENDER_MAPPING.get(g['gender'], 'Other')
+                gender_data.append({
+                    'value': g['count'],
+                    'name': gender_name
+                })
+        
+        # Ensure all gender categories are present
+        existing_genders = {g['name'] for g in gender_data}
+        for gender in ['Male', 'Female', 'Other']:
+            if gender not in existing_genders:
+                gender_data.append({'value': 0, 'name': gender})
+        
+        return gender_data
+        
+    except AcademicYear.DoesNotExist:
+        return [
+            {'value': 0, 'name': 'Male'},
+            {'value': 0, 'name': 'Female'},
+            {'value': 0, 'name': 'Other'}
+        ]
+
+
+@require_GET
+def gender_distribution_api(request):
+    academic_year_id = request.GET.get('academic_year')
+    try:
+        academic_year_id = int(academic_year_id)
+        gender_data = prepare_gender_data_by_academic_year(academic_year_id)
+        return JsonResponse(gender_data, safe=False)
+    except (ValueError, AcademicYear.DoesNotExist):
+        return JsonResponse({'error': 'Invalid academic year'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 @login_required
 def admin_dashboard(request):
+    # Student statistics
+    total_students = Student.objects.count()
+    active_students = Student.objects.filter(status='active').count()
+    
+    # Lecturer statistics
+    total_lecturers = Lecturer.objects.count()
+    active_lecturers = Lecturer.objects.filter(status='active').count()
+    
+    # Programme statistics
+    total_programmes = Programme.objects.count()
+    
+    # Latest students and lecturers
+    latest_students = Student.objects.order_by('-created_at')[:8]
+    latest_lecturers = Lecturer.objects.order_by('-created_at')[:8]
+    
+    # Get academic years from AcademicYear model
+    academic_years = AcademicYear.objects.order_by('-start_date')
+    academic_year_choices = [(year.id, f"{year.name} ({year.start_date.year})") for year in academic_years]
+    
+    # Get current academic year
+    current_academic_year = AcademicYear.objects.filter(is_current=True).first()
+    if not current_academic_year:
+        current_academic_year = academic_years.first()
+    
+    # Prepare gender data for current academic year
+    gender_data = prepare_gender_data_by_academic_year(current_academic_year.id) if current_academic_year else []
+    
+    # Prepare data for charts
+    admission_year_labels = []
+    admission_year_data = []
+    
+    # Student population trend (last 5 years)
+    current_year = datetime.now().year
+    year_range = range(current_year - 4, current_year + 1)
+    population_trend_labels = list(year_range)
+    population_trend_data = []
+    
+    for year in year_range:
+        count = Student.objects.filter(
+            date_of_admission__year__lte=year
+        ).count()
+        population_trend_data.append(count)
+    
     context = {
         'page_title': 'Admin Dashboard',
         'active_tab': 'dashboard',
-        'user': request.user
+        'user': request.user,
+        
+        # Statistics
+        'total_students': total_students,
+        'active_students': active_students,
+        'total_lecturers': total_lecturers,
+        'active_lecturers': active_lecturers,
+        'total_programmes': total_programmes,
+        
+        # Latest records
+        'latest_students': latest_students,
+        'latest_lecturers': latest_lecturers,
+        
+        # Chart data
+        'admission_year_labels': json.dumps(admission_year_labels),
+        'admission_year_data': json.dumps(admission_year_data),
+        'population_trend_labels': json.dumps(population_trend_labels),
+        'population_trend_data': json.dumps(population_trend_data),
+        'gender_data': json.dumps(gender_data),
+        
+        # Academic year filter
+        'academic_year_choices': academic_year_choices,
+        'current_academic_year': current_academic_year.id if current_academic_year else None,
+        'current_academic_year_display': current_academic_year.name if current_academic_year else "N/A",
     }
+    
     return render(request, 'dashboards/admin_dashboard.html', context)
 
 
