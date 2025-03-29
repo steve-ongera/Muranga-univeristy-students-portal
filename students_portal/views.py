@@ -8,12 +8,13 @@ from .models import *
 
 def login_view(request):
     """
-    Handle login for both students and lecturers.
-    Username should be either registration_number (for students) or staff_id (for lecturers).
+    Handle login for all user types (students, lecturers, and admin/staff).
+    Redirects to appropriate dashboard based on user_type.
     """
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
+        user_type = request.POST.get('user_type', None)  # Optional for admin login
         
         # Try to authenticate with Django's auth system
         user = authenticate(request, username=username, password=password)
@@ -21,35 +22,55 @@ def login_view(request):
         if user is not None:
             login(request, user)
             
-            # Determine if the user is a student or lecturer
+            # Check user_type from User model first
+            if user.user_type == 'admin':
+                return redirect('admin_dashboard')
+            elif user.user_type == 'staff':
+                return redirect('staff_dashboard')
+            elif user.user_type == 'finance':
+                return redirect('finance_dashboard')
+            
+            # For student/lecturer, verify against their respective models
             try:
                 student = Student.objects.get(registration_number=username)
-                # Set session variable to indicate this is a student
+                # Update session with current student info
                 request.session['user_type'] = 'student'
                 request.session['student_id'] = student.id
                 return redirect('student_dashboard')
             except Student.DoesNotExist:
                 try:
                     lecturer = Lecturer.objects.get(staff_id=username)
-                    # Set session variable to indicate this is a lecturer
+                    # Update session with current lecturer info
                     request.session['user_type'] = 'lecturer'
                     request.session['lecturer_id'] = lecturer.id
                     return redirect('lecturer_dashboard')
                 except Lecturer.DoesNotExist:
-                    # User exists but not associated with student or lecturer - unusual case
-                    messages.error(request, "User account exists but is not linked to a student or lecturer profile.")
+                    # Admin/staff users won't have student/lecturer records
+                    if user.user_type in ['admin', 'staff', 'finance']:
+                        return redirect(f'{user.user_type}_dashboard')
+                    messages.error(request, "Account not linked to any profile.")
                     return redirect('login')
         else:
-            # Authentication failed - now try to find if username exists as reg_number or staff_id
+            # Authentication failed - provide appropriate error message
+            error_message = "Invalid credentials."
+            
+            # Check if username exists in any system
+            user_exists = User.objects.filter(username=username).exists()
             is_student = Student.objects.filter(registration_number=username).exists()
             is_lecturer = Lecturer.objects.filter(staff_id=username).exists()
             
-            if is_student or is_lecturer:
-                messages.error(request, "Invalid password. Please try again.")
+            if user_exists:
+                error_message = "Invalid password."
+            elif is_student or is_lecturer:
+                error_message = "No user account found for this ID. Please register first."
             else:
-                messages.error(request, "Invalid username. No student or lecturer found with this ID.")
+                error_message = "Invalid username. No matching account found."
             
-            return render(request, 'auth/login.html', {'username': username})
+            messages.error(request, error_message)
+            return render(request, 'auth/login.html', {
+                'username': username,
+                'user_type': user_type
+            })
     
     # If GET request, just show the login form
     return render(request, 'auth/login.html')
@@ -258,3 +279,33 @@ def lecturer_dashboard(request):
     except Lecturer.DoesNotExist:
         messages.error(request, "Lecturer profile not found. Please contact administration.")
         return redirect('login')
+    
+
+
+@login_required
+def admin_dashboard(request):
+    context = {
+        'page_title': 'Admin Dashboard',
+        'active_tab': 'dashboard',
+        'user': request.user
+    }
+    return render(request, 'dashboards/admin_dashboard.html', context)
+
+
+@login_required
+def staff_dashboard(request):
+    context = {
+        'page_title': 'Staff Dashboard',
+        'active_tab': 'dashboard',
+        'user': request.user
+    }
+    return render(request, 'dashboards/staff_dashboard.html', context)
+
+@login_required
+def finance_dashboard(request):
+    context = {
+        'page_title': 'Finance Dashboard',
+        'active_tab': 'dashboard',
+        'user': request.user
+    }
+    return render(request, 'dashboards/finance_dashboard.html', context)
