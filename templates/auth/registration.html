@@ -1,121 +1,168 @@
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0"><i class="bi bi-person-plus-fill me-2"></i>Create Account</h4>
-                </div>
+
+
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>Muranga university of Technology | Register</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <!-- Favicons -->
+  <link href="{% static 'assets/img/logo.png' %}" rel="icon">
+  <link href="{% static 'assets/img/logo.png' %}" rel="apple-touch-icon">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/boxicons/css/boxicons.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/quill/quill.snow.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/quill/quill.bubble.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/remixicon/remixicon.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/simple-datatables/style.css' %}" rel="stylesheet">
+
+  <!-- Template Main CSS File -->
+  <link href="{% static 'assets/css/style.css' %}" rel="stylesheet">
+</head>
+
+<body>
+
+  <main>
+    <div class="container">
+
+      <section class="section register min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
+        <div class="container">
+          <div class="row justify-content-center">
+            <div class="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
+
+              <div class="d-flex justify-content-center py-4">
+                <a href="{% url 'register'%}" class="logo d-flex align-items-center w-auto">
+                  <img src="{% static 'assets/img/logo.png' %}" alt=""  style="max-width: 80px; max-height: 80px;">
+                  <span class="d-none d-lg-block">MUT Portal</span>
+                </a>
+              </div><!-- End Logo -->
+
+              <div class="card mb-3">
+
                 <div class="card-body">
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
-                                <i class="bi bi-exclamation-circle-fill me-2"></i>
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
+
+                  <div class="message-container" id="system-messages">
+                    {% for message in messages %}
+                    <div class="alert-message alert-{{ message.tags }}">
+                        {{ message }}
+                        <span class="close-message">&times;</span>
+                    </div>
+                    {% endfor %}
+                  </div>
+
+                  {% if form.non_field_errors %}
+                  <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+
+                  <div class="pt-4 pb-2">
+                    <h5 class="card-title text-center pb-0 fs-4">Create Your Account</h5>
+                    <p class="text-center small">Enter your details to register</p>
+                  </div>
+
+                  <form method="POST" class="row g-3 needs-validation" novalidate>
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="user_type" class="form-label"><i class="bi bi-person-badge-fill me-1"></i>I am a:</label>
+                        <select class="form-select" id="user_type" name="user_type" required>
+                            <option value="" disabled selected>Select user type</option>
+                            <option value="student" {% if user_type == 'student' %}selected{% endif %}>Student</option>
+                            <option value="lecturer" {% if user_type == 'lecturer' %}selected{% endif %}>Lecturer</option>
+                        </select>
+                    </div>
                     
-                    <form method="post" class="needs-validation" novalidate>
-                        {% csrf_token %}
-                        
-                        <div class="mb-3">
-                            <label for="user_type" class="form-label"><i class="bi bi-person-badge-fill me-1"></i>I am a:</label>
-                            <select class="form-select" id="user_type" name="user_type" required>
-                                <option value="" disabled selected>Select user type</option>
-                                <option value="student" {% if user_type == 'student' %}selected{% endif %}>Student</option>
-                                <option value="lecturer" {% if user_type == 'lecturer' %}selected{% endif %}>Lecturer</option>
-                            </select>
+                    <div class="mb-3">
+                        <label for="username" class="form-label">
+                            <i class="bi bi-person-vcard-fill me-1"></i>
+                            <span id="id-label">Registration Number</span>
+                        </label>
+                        <input type="text" class="form-control" id="username" name="username" 
+                               value="{{ username|default:'' }}" required
+                               placeholder="Enter your registration number">
+                        <div class="form-text">Enter your official registration number or staff ID</div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="first_name" class="form-label"><i class="bi bi-person-fill me-1"></i>First Name</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" 
+                                   value="{{ first_name|default:'' }}" required>
                         </div>
-                        
-                        <div class="mb-3">
-                            <label for="username" class="form-label">
-                                <i class="bi bi-person-vcard-fill me-1"></i>
-                                <span id="id-label">Registration Number</span>
-                            </label>
-                            <input type="text" class="form-control" id="username" name="username" 
-                                   value="{{ username|default:'' }}" required
-                                   placeholder="Enter your registration number">
-                            <div class="form-text">Enter your official registration number or staff ID</div>
+                        <div class="col-md-6 mb-3">
+                            <label for="last_name" class="form-label"><i class="bi bi-person-fill me-1"></i>Last Name</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" 
+                                   value="{{ last_name|default:'' }}" required>
                         </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="first_name" class="form-label"><i class="bi bi-person-fill me-1"></i>First Name</label>
-                                <input type="text" class="form-control" id="first_name" name="first_name" 
-                                       value="{{ first_name|default:'' }}" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="last_name" class="form-label"><i class="bi bi-person-fill me-1"></i>Last Name</label>
-                                <input type="text" class="form-control" id="last_name" name="last_name" 
-                                       value="{{ last_name|default:'' }}" required>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="password" class="form-label"><i class="bi bi-lock-fill me-1"></i>Password</label>
-                            <div class="input-group">
-                                <input type="password" class="form-control" id="password" name="password" required>
-                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                                    <i class="bi bi-eye-fill"></i>
-                                </button>
-                            </div>
-                            <div class="form-text">Minimum 8 characters with at least one number and special character</div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="confirm_password" class="form-label"><i class="bi bi-lock-fill me-1"></i>Confirm Password</label>
-                            <div class="input-group">
-                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
-                                <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
-                                    <i class="bi bi-eye-fill"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
-                            <label class="form-check-label" for="terms">I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a></label>
-                        </div>
-                        
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary py-2">
-                                <i class="bi bi-person-plus-fill me-2"></i>Create Account
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label"><i class="bi bi-lock-fill me-1"></i>Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="password" name="password" required>
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="bi bi-eye-fill"></i>
                             </button>
                         </div>
-                    </form>
-                </div>
-                <div class="card-footer text-center bg-light">
-                    <p class="mb-0">Already have an account? <a href="{% url 'login' %}" class="text-decoration-none">Login here</a></p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+                        <div class="form-text">Minimum 8 characters with at least one number and special character</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label"><i class="bi bi-lock-fill me-1"></i>Confirm Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                            <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+                                <i class="bi bi-eye-fill"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    
+                    
 
-<!-- Terms Modal -->
-<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="termsModalLabel">Terms and Conditions</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>By creating an account, you agree that:</p>
-                <ul>
-                    <li>The information you provide matches your official records</li>
-                    <li>You will keep your credentials secure</li>
-                    <li>You are responsible for all activities under your account</li>
-                </ul>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">I Understand</button>
-            </div>
-        </div>
-    </div>
-</div>
+                    <div class="col-12">
+                      <button class="btn btn-primary w-100" type="submit">Register</button>
+                    </div>
+                    <div class="col-12">
+                      <p class="small mb-0">Already have an account? <a href="{% url 'login'%}">Login</a></p>
+                    </div>
+                  </form>
 
+                </div>
+              </div>
+
+              <div class="credits">
+                Designed by <a href="https://innovationhubltd.com/">InnovationHub Softwares</a>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+  </main><!-- End #main -->
+
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  
 <script>
     // Toggle password visibility
     document.getElementById('togglePassword').addEventListener('click', function() {
@@ -147,3 +194,13 @@
         }
     });
 </script>
+
+  <!-- Vendor JS Files -->
+  <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'assets/js/main.js' %}"></script>
+  
+
+</body>
+
+</html>
+
