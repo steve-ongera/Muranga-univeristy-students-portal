@@ -1,54 +1,149 @@
-
 <div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
+        <div class="col-md-8">
+            <div class="card shadow">
                 <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Create Account</h4>
+                    <h4 class="mb-0"><i class="bi bi-person-plus-fill me-2"></i>Create Account</h4>
                 </div>
                 <div class="card-body">
                     {% if messages %}
                         {% for message in messages %}
                             <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                                <i class="bi bi-exclamation-circle-fill me-2"></i>
                                 {{ message }}
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         {% endfor %}
                     {% endif %}
                     
-                    <form method="post">
+                    <form method="post" class="needs-validation" novalidate>
                         {% csrf_token %}
+                        
                         <div class="mb-3">
-                            <label for="user_type" class="form-label">I am a:</label>
+                            <label for="user_type" class="form-label"><i class="bi bi-person-badge-fill me-1"></i>I am a:</label>
                             <select class="form-select" id="user_type" name="user_type" required>
                                 <option value="" disabled selected>Select user type</option>
                                 <option value="student" {% if user_type == 'student' %}selected{% endif %}>Student</option>
                                 <option value="lecturer" {% if user_type == 'lecturer' %}selected{% endif %}>Lecturer</option>
                             </select>
                         </div>
+                        
                         <div class="mb-3">
-                            <label for="username" class="form-label">Registration Number / Staff ID</label>
-                            <input type="text" class="form-control" id="username" name="username" value="{{ username|default:'' }}" required>
-                            <div class="form-text">Enter your registration number (for students) or staff ID (for lecturers)</div>
+                            <label for="username" class="form-label">
+                                <i class="bi bi-person-vcard-fill me-1"></i>
+                                <span id="id-label">Registration Number</span>
+                            </label>
+                            <input type="text" class="form-control" id="username" name="username" 
+                                   value="{{ username|default:'' }}" required
+                                   placeholder="Enter your registration number">
+                            <div class="form-text">Enter your official registration number or staff ID</div>
                         </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="first_name" class="form-label"><i class="bi bi-person-fill me-1"></i>First Name</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" 
+                                       value="{{ first_name|default:'' }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="last_name" class="form-label"><i class="bi bi-person-fill me-1"></i>Last Name</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name" 
+                                       value="{{ last_name|default:'' }}" required>
+                            </div>
+                        </div>
+                        
                         <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
-                            <div class="form-text">Choose a strong password</div>
+                            <label for="password" class="form-label"><i class="bi bi-lock-fill me-1"></i>Password</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="password" name="password" required>
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="bi bi-eye-fill"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">Minimum 8 characters with at least one number and special character</div>
                         </div>
+                        
                         <div class="mb-3">
-                            <label for="confirm_password" class="form-label">Confirm Password</label>
-                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                            <label for="confirm_password" class="form-label"><i class="bi bi-lock-fill me-1"></i>Confirm Password</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                                <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+                                    <i class="bi bi-eye-fill"></i>
+                                </button>
+                            </div>
                         </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
+                            <label class="form-check-label" for="terms">I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a></label>
+                        </div>
+                        
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Register</button>
+                            <button type="submit" class="btn btn-primary py-2">
+                                <i class="bi bi-person-plus-fill me-2"></i>Create Account
+                            </button>
                         </div>
                     </form>
                 </div>
-                <div class="card-footer text-center">
-                    <p class="mb-0">Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+                <div class="card-footer text-center bg-light">
+                    <p class="mb-0">Already have an account? <a href="{% url 'login' %}" class="text-decoration-none">Login here</a></p>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Terms Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="termsModalLabel">Terms and Conditions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>By creating an account, you agree that:</p>
+                <ul>
+                    <li>The information you provide matches your official records</li>
+                    <li>You will keep your credentials secure</li>
+                    <li>You are responsible for all activities under your account</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">I Understand</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Toggle password visibility
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const password = document.getElementById('password');
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+        this.innerHTML = type === 'password' ? '<i class="bi bi-eye-fill"></i>' : '<i class="bi bi-eye-slash-fill"></i>';
+    });
+
+    // Toggle confirm password visibility
+    document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
+        const confirmPassword = document.getElementById('confirm_password');
+        const type = confirmPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+        confirmPassword.setAttribute('type', type);
+        this.innerHTML = type === 'password' ? '<i class="bi bi-eye-fill"></i>' : '<i class="bi bi-eye-slash-fill"></i>';
+    });
+
+    // Change label text based on user type selection
+    document.getElementById('user_type').addEventListener('change', function() {
+        const idLabel = document.getElementById('id-label');
+        const usernameField = document.getElementById('username');
+        
+        if(this.value === 'student') {
+            idLabel.textContent = 'Registration Number';
+            usernameField.placeholder = 'Enter your registration number';
+        } else if(this.value === 'lecturer') {
+            idLabel.textContent = 'Staff ID';
+            usernameField.placeholder = 'Enter your staff ID';
+        }
+    });
+</script>

@@ -57,30 +57,53 @@ def login_view(request):
 
 def registration_view(request):
     """
-    Handle user registration for both students and lecturers.
+    Handle user registration for both students and lecturers with name verification.
     Username should be either registration_number (for students) or staff_id (for lecturers).
+    Requires first_name and last_name to match the records.
     """
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
         user_type = request.POST.get('user_type')  # 'student' or 'lecturer'
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
         
         # Check if passwords match
         if password != confirm_password:
             messages.error(request, "Passwords do not match.")
-            return render(request, 'auth/registration.html', {'username': username, 'user_type': user_type})
+            return render(request, 'auth/registration.html', {
+                'username': username,
+                'user_type': user_type,
+                'first_name': first_name,
+                'last_name': last_name
+            })
         
-        # Validate username exists in appropriate model
+        # Validate username exists in appropriate model and names match
         if user_type == 'student':
             try:
                 student = Student.objects.get(registration_number=username)
-                full_name = student.get_full_name()
+                
+                # Verify names match
+                if (student.first_name.lower() != first_name.lower() or 
+                    student.last_name.lower() != last_name.lower()):
+                    messages.error(request, "Registration number does not match the provided names.")
+                    return render(request, 'auth/registration.html', {
+                        'username': username,
+                        'user_type': user_type,
+                        'first_name': first_name,
+                        'last_name': last_name
+                    })
                 
                 # Check if user already exists 
                 if User.objects.filter(username=username).exists():
                     messages.error(request, "A user with this registration number already exists.")
-                    return render(request, 'auth/registration.html', {'username': username, 'user_type': user_type})
+                    return render(request, 'auth/registration.html', {
+                        'username': username,
+                        'user_type': user_type,
+                        'first_name': first_name,
+                        'last_name': last_name
+                    })
                 
                 # Create new user
                 user = User.objects.create_user(username=username, password=password)
@@ -89,22 +112,42 @@ def registration_view(request):
                 user.email = student.email or ''
                 user.save()
                 
-                messages.success(request, f"Student account created successfully for {full_name}.")
+                messages.success(request, f"Student account created successfully for {student.get_full_name()}.")
                 return redirect('login')
                 
             except Student.DoesNotExist:
                 messages.error(request, "No student found with this registration number.")
-                return render(request, 'auth/registration.html', {'username': username, 'user_type': user_type})
+                return render(request, 'auth/registration.html', {
+                    'username': username,
+                    'user_type': user_type,
+                    'first_name': first_name,
+                    'last_name': last_name
+                })
                 
         elif user_type == 'lecturer':
             try:
                 lecturer = Lecturer.objects.get(staff_id=username)
-                full_name = lecturer.get_full_name()
+                
+                # Verify names match
+                if (lecturer.first_name.lower() != first_name.lower() or 
+                    lecturer.last_name.lower() != last_name.lower()):
+                    messages.error(request, "Staff ID does not match the provided names.")
+                    return render(request, 'auth/registration.html', {
+                        'username': username,
+                        'user_type': user_type,
+                        'first_name': first_name,
+                        'last_name': last_name
+                    })
                 
                 # Check if user already exists
                 if User.objects.filter(username=username).exists():
                     messages.error(request, "A user with this staff ID already exists.")
-                    return render(request, 'auth/registration.html', {'username': username, 'user_type': user_type})
+                    return render(request, 'auth/registration.html', {
+                        'username': username,
+                        'user_type': user_type,
+                        'first_name': first_name,
+                        'last_name': last_name
+                    })
                 
                 # Create new user
                 user = User.objects.create_user(username=username, password=password)
@@ -113,16 +156,25 @@ def registration_view(request):
                 user.email = lecturer.email or ''
                 user.save()
                 
-                messages.success(request, f"Lecturer account created successfully for {full_name}.")
+                messages.success(request, f"Lecturer account created successfully for {lecturer.get_full_name()}.")
                 return redirect('login')
                 
             except Lecturer.DoesNotExist:
                 messages.error(request, "No lecturer found with this staff ID.")
-                return render(request, 'auth/registration.html', {'username': username, 'user_type': user_type})
+                return render(request, 'auth/registration.html', {
+                    'username': username,
+                    'user_type': user_type,
+                    'first_name': first_name,
+                    'last_name': last_name
+                })
         
         else:
             messages.error(request, "Invalid user type selected.")
-            return render(request, 'auth/registration.html', {'username': username})
+            return render(request, 'auth/registration.html', {
+                'username': username,
+                'first_name': first_name,
+                'last_name': last_name
+            })
     
     # If GET request, just show the registration form
     return render(request, 'auth/registration.html')

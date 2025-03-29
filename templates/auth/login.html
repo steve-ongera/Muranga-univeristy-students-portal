@@ -1,41 +1,111 @@
-
 <div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
+        <div class="col-md-8">
+            <div class="card shadow">
                 <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Login</h4>
+                    <h4 class="mb-0"><i class="bi bi-box-arrow-in-right me-2"></i>Login to Your Account</h4>
                 </div>
                 <div class="card-body">
                     {% if messages %}
                         {% for message in messages %}
                             <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                                <i class="bi bi-exclamation-circle-fill me-2"></i>
                                 {{ message }}
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         {% endfor %}
                     {% endif %}
                     
-                    <form method="post">
+                    <form method="post" class="needs-validation" novalidate>
                         {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Registration Number / Staff ID</label>
-                            <input type="text" class="form-control" id="username" name="username" value="{{ username|default:'' }}" required>
-                            <div class="form-text">Enter your registration number (for students) or staff ID (for lecturers)</div>
+                        
+                        <div class="mb-4 text-center">
+                            <div class="btn-group" role="group">
+                                <input type="radio" class="btn-check" name="user_type" id="student" value="student" checked>
+                                <label class="btn btn-outline-primary" for="student">
+                                    <i class="bi bi-mortarboard-fill me-1"></i> Student
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="user_type" id="lecturer" value="lecturer">
+                                <label class="btn btn-outline-primary" for="lecturer">
+                                    <i class="bi bi-person-badge-fill me-1"></i> Lecturer
+                                </label>
+                            </div>
                         </div>
+                        
                         <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
+                            <label for="username" class="form-label">
+                                <i class="bi bi-person-vcard-fill me-1"></i>
+                                <span id="id-label">Registration Number</span>
+                            </label>
+                            <input type="text" class="form-control" id="username" name="username" 
+                                   value="{{ username|default:'' }}" required
+                                   placeholder="Enter your registration number">
+                            <div class="invalid-feedback">Please provide your credentials</div>
                         </div>
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Login</button>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">
+                                <i class="bi bi-lock-fill me-1"></i>
+                                Password
+                            </label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="password" name="password" required>
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="bi bi-eye-fill"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                            <label class="form-check-label" for="remember">Remember me</label>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mb-3">
+                            <button type="submit" class="btn btn-primary py-2">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                            </button>
+                        </div>
+                        
+                        <div class="text-center">
+                            <a href="#" class="text-decoration-none">Forgot password?</a>
                         </div>
                     </form>
                 </div>
-                <div class="card-footer text-center">
-                    <p class="mb-0">Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+                <div class="card-footer text-center bg-light">
+                    <p class="mb-0">Don't have an account? <a href="{% url 'register' %}" class="text-decoration-none">Register here</a></p>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    // Toggle password visibility
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const password = document.getElementById('password');
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+        this.innerHTML = type === 'password' ? '<i class="bi bi-eye-fill"></i>' : '<i class="bi bi-eye-slash-fill"></i>';
+    });
+
+    // Change label text based on user type selection
+    const studentRadio = document.getElementById('student');
+    const lecturerRadio = document.getElementById('lecturer');
+    const idLabel = document.getElementById('id-label');
+    
+    studentRadio.addEventListener('change', function() {
+        if(this.checked) {
+            idLabel.textContent = 'Registration Number';
+            document.getElementById('username').placeholder = 'Enter your registration number';
+        }
+    });
+    
+    lecturerRadio.addEventListener('change', function() {
+        if(this.checked) {
+            idLabel.textContent = 'Staff ID';
+            document.getElementById('username').placeholder = 'Enter your staff ID';
+        }
+    });
+</script>
