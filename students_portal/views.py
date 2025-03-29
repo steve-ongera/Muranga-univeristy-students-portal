@@ -49,17 +49,22 @@ def login_view(request):
             else:
                 messages.error(request, "Invalid username. No student or lecturer found with this ID.")
             
-            return render(request, 'login.html', {'username': username})
+            return render(request, 'auth/login.html', {'username': username})
     
     # If GET request, just show the login form
     return render(request, 'auth/login.html')
 
 
+from django.contrib.auth import get_user_model
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Student, Lecturer
+
+User = get_user_model()
+
 def registration_view(request):
     """
-    Handle user registration for both students and lecturers with name verification.
-    Username should be either registration_number (for students) or staff_id (for lecturers).
-    Requires first_name and last_name to match the records.
+    Handle user registration with user type and verification status
     """
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -105,12 +110,16 @@ def registration_view(request):
                         'last_name': last_name
                     })
                 
-                # Create new user
-                user = User.objects.create_user(username=username, password=password)
-                user.first_name = student.first_name
-                user.last_name = student.last_name
-                user.email = student.email or ''
-                user.save()
+                # Create new user with student type
+                user = User.objects.create_user(
+                    username=username,
+                    password=password,
+                    user_type='student',
+                    is_verified=True,  # Verified since we matched official records
+                    first_name=student.first_name,
+                    last_name=student.last_name,
+                    email=student.email or ''
+                )
                 
                 messages.success(request, f"Student account created successfully for {student.get_full_name()}.")
                 return redirect('login')
@@ -149,12 +158,16 @@ def registration_view(request):
                         'last_name': last_name
                     })
                 
-                # Create new user
-                user = User.objects.create_user(username=username, password=password)
-                user.first_name = lecturer.first_name
-                user.last_name = lecturer.last_name
-                user.email = lecturer.email or ''
-                user.save()
+                # Create new user with lecturer type
+                user = User.objects.create_user(
+                    username=username,
+                    password=password,
+                    user_type='lecturer',
+                    is_verified=True,  # Verified since we matched official records
+                    first_name=lecturer.first_name,
+                    last_name=lecturer.last_name,
+                    email=lecturer.email or ''
+                )
                 
                 messages.success(request, f"Lecturer account created successfully for {lecturer.get_full_name()}.")
                 return redirect('login')
