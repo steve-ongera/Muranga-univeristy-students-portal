@@ -432,6 +432,23 @@ def gender_distribution_api(request):
 
 @login_required
 def admin_dashboard(request):
+    # Get all academic years ordered chronologically
+    academic_years = AcademicYear.objects.order_by('start_date')
+    
+    # Prepare data for the bar chart
+    academic_year_labels = []
+    academic_year_data = []
+    
+    for academic_year in academic_years:
+        # Count students admitted during this academic year period
+        count = Student.objects.filter(
+            date_of_admission__gte=academic_year.start_date,
+            date_of_admission__lte=academic_year.end_date
+        ).count()
+        
+        academic_year_labels.append(academic_year.name)  # e.g. "2021/2022"
+        academic_year_data.append(count)
+
     # Student statistics
     total_students = Student.objects.count()
     active_students = Student.objects.filter(status='active').count()
@@ -492,6 +509,8 @@ def admin_dashboard(request):
         'latest_lecturers': latest_lecturers,
         
         # Chart data
+        'academic_year_labels': json.dumps(academic_year_labels),
+        'academic_year_data': json.dumps(academic_year_data),
         'admission_year_labels': json.dumps(admission_year_labels),
         'admission_year_data': json.dumps(admission_year_data),
         'population_trend_labels': json.dumps(population_trend_labels),

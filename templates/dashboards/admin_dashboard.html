@@ -216,72 +216,118 @@
 
           </div><!-- End summary  Card -->
 
-          <!-- population graph -->
           <div class="col-12">
             <div class="card">
-
-              <div class="filter">
-                <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                  <li class="dropdown-header text-start">
-                    <h6>Filter</h6>
-                  </li>
-
-                  <li><a class="dropdown-item" href="#">Today</a></li>
-                  <li><a class="dropdown-item" href="#">This Month</a></li>
-                  <li><a class="dropdown-item" href="#">This Year</a></li>
-                </ul>
-              </div>
-
-              <div class="card-body">
-                <h5 class="card-title">Student Admission by Year<span id="currentYear"></span></h5>
-            
-                <!-- Yearly Admissions Chart -->
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h6 class="text-xl font-bold mb-4">Yearly Admissions</h6>
-                    <canvas id="admissionYearChart" ></canvas>
-                    
+                <div class="filter">
+                    <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                        <li class="dropdown-header text-start">
+                            <h6>Filter</h6>
+                        </li>
+                        <li><a class="dropdown-item filter-admission active" href="#" data-filter="all">All Academic Years</a></li>
+                        <li><a class="dropdown-item filter-admission" href="#" data-filter="recent">Recent 3 Years</a></li>
+                    </ul>
                 </div>
-
-                <!-- End Line Chart -->            
-               </div>
-            </div>
-          </div><!-- End Reports -->
-            
-
-          <!-- Student Population Trends Reports -->
-          <div class="col-12">
-            <div class="card">
-
-              <div class="filter">
-                <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                  <li class="dropdown-header text-start">
-                    <h6>Filter</h6>
-                  </li>
-
-                  <li><a class="dropdown-item" href="#">Today</a></li>
-                  <li><a class="dropdown-item" href="#">This Month</a></li>
-                  <li><a class="dropdown-item" href="#">This Year</a></li>
-                </ul>
-              </div>
-
-              <div class="card">
-                  <div class="card-body">
-                        <h5 class="card-title">Student Population Trend</span></h5>
-
-                       
-
-                        <!-- Cumulative Growth Chart -->
-                        <div class="bg-white p-6 rounded-lg shadow-md">
-                            <h6 class="text-xl font-bold mb-4">Cumulative Growth</h6>
-                            <canvas id="populationTrendChart"></canvas>
-                        </div>
-            
+        
+                <div class="card-body">
+                    <h5 class="card-title">Student Admission by Academic Year</h5>
+                    
+                    <div class="chart-container" style="position: relative; height:300px; width:100%">
+                        <canvas id="academicYearChart"></canvas>
                     </div>
                 </div>
-              </div>
             </div>
+        </div>
+        
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Get the chart data from Django template
+            const academicYearLabels = JSON.parse('{{ academic_year_labels|escapejs }}');
+            const academicYearData = JSON.parse('{{ academic_year_data|escapejs }}');
+            
+            // Initialize chart
+            const ctx = document.getElementById('academicYearChart').getContext('2d');
+            const academicYearChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: academicYearLabels,
+                    datasets: [{
+                        label: 'Number of Students',
+                        data: academicYearData,
+                        backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Students'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Academic Year'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        
+            // Set up filter click handlers
+            document.querySelectorAll('.filter-admission').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all filters
+                    document.querySelectorAll('.filter-admission').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                    // Add active class to clicked filter
+                    this.classList.add('active');
+                    
+                    const filterType = this.getAttribute('data-filter');
+                    
+                    if (filterType === 'recent') {
+                        // Show only last 3 academic years
+                        const recentLabels = academicYearLabels.slice(-3);
+                        const recentData = academicYearData.slice(-3);
+                        academicYearChart.data.labels = recentLabels;
+                        academicYearChart.data.datasets[0].data = recentData;
+                    } else {
+                        // Show all academic years
+                        academicYearChart.data.labels = academicYearLabels;
+                        academicYearChart.data.datasets[0].data = academicYearData;
+                    }
+                    
+                    academicYearChart.update();
+                });
+            });
+        });
+        </script>
+            
+
+         
+          
              
 
           <!-- Recent Sales -->
