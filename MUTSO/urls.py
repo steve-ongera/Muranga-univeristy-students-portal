@@ -5,7 +5,7 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    #path('', include('students_portal.urls')),  
+    path('', include('students_portal.urls')),  
 ]
 
 # Serve static and media files in development mode

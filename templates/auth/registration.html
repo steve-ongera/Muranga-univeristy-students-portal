@@ -1,0 +1,54 @@
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Create Account</h4>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="user_type" class="form-label">I am a:</label>
+                            <select class="form-select" id="user_type" name="user_type" required>
+                                <option value="" disabled selected>Select user type</option>
+                                <option value="student" {% if user_type == 'student' %}selected{% endif %}>Student</option>
+                                <option value="lecturer" {% if user_type == 'lecturer' %}selected{% endif %}>Lecturer</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Registration Number / Staff ID</label>
+                            <input type="text" class="form-control" id="username" name="username" value="{{ username|default:'' }}" required>
+                            <div class="form-text">Enter your registration number (for students) or staff ID (for lecturers)</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                            <div class="form-text">Choose a strong password</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirm_password" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Register</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    <p class="mb-0">Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

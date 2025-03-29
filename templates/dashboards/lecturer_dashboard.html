@@ -1,0 +1,210 @@
+<div class="container-fluid py-4">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Profile</h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if lecturer.profile_picture %}
+                        <img src="{{ lecturer.profile_picture.url }}" alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="max-width: 150px;">
+                    {% else %}
+                        <div class="bg-light rounded-circle d-inline-flex justify-content-center align-items-center mb-3" style="width: 150px; height: 150px;">
+                            <span class="display-4 text-secondary">{{ lecturer.first_name.0 }}{{ lecturer.last_name.0 }}</span>
+                        </div>
+                    {% endif %}
+                    <h4>{{ lecturer.get_full_name }}</h4>
+                    <p class="text-muted">{{ lecturer.staff_id }}</p>
+                    <p class="badge bg-info">{{ lecturer.get_academic_rank_display|default:"No Rank Specified" }}</p>
+                    <div class="d-grid gap-2">
+                        <a href="#" class="btn btn-outline-primary">Edit Profile</a>
+                    </div>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Status:</span>
+                        <span class="badge {% if lecturer.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
+                            {{ lecturer.get_status_display }}
+                        </span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Employment Type:</span>
+                        <span>{{ lecturer.get_employment_type_display }}</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Contact Information</h5>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <i class="bi bi-envelope"></i> {{ lecturer.email|default:"Not provided" }}
+                    </li>
+                    <li class="list-group-item">
+                        <i class="bi bi-telephone"></i> {{ lecturer.phone_number|default:"Not provided" }}
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Academic Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Department</h6>
+                            <p>{{ department.name }}</p>
+                            
+                            <h6>Qualification</h6>
+                            <p>{{ lecturer.qualification|default:"Not provided" }}</p>
+                            
+                            <h6>Specialization</h6>
+                            <p>{{ lecturer.specialization|default:"Not provided" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Date of Employment</h6>
+                            <p>{{ lecturer.date_of_employment|default:"Not provided" }}</p>
+                            
+                            <h6>National ID</h6>
+                            <p>{{ lecturer.national_id|default:"Not provided" }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if lecturer.biography %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Biography</h6>
+                            <p>{{ lecturer.biography }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Current Courses</h5>
+                    <a href="#" class="btn btn-sm btn-light">Manage Courses</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Course Code</th>
+                                    <th>Course Name</th>
+                                    <th>Programme</th>
+                                    <th>Year/Semester</th>
+                                    <th>Students</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="6" class="text-center">No courses assigned for this semester.</td>
+                                </tr>
+                                <!-- Course data would be populated here dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">Upcoming Classes</h5>
+                            <a href="#" class="btn btn-sm btn-light">View Schedule</a>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-center">No upcoming classes scheduled.</p>
+                            <!-- Upcoming classes would be populated here dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">Pending Tasks</h5>
+                            <a href="#" class="btn btn-sm btn-light">View All</a>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Grade end-of-semester examinations
+                                    <span class="badge bg-danger">Due soon</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Submit research proposal
+                                    <span class="badge bg-warning">In progress</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Department meeting
+                                    <span class="badge bg-info">March 31, 2:00 PM</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Quick Links</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-3 col-sm-6">
+                            <div class="d-grid">
+                                <a href="#" class="btn btn-outline-primary">
+                                    <i class="bi bi-journal-text fs-4 d-block mb-2"></i>
+                                    Course Materials
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="d-grid">
+                                <a href="#" class="btn btn-outline-primary">
+                                    <i class="bi bi-people fs-4 d-block mb-2"></i>
+                                    Students
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="d-grid">
+                                <a href="#" class="btn btn-outline-primary">
+                                    <i class="bi bi-calendar-event fs-4 d-block mb-2"></i>
+                                    Exam Schedule
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="d-grid">
+                                <a href="#" class="btn btn-outline-primary">
+                                    <i class="bi bi-file-earmark-text fs-4 d-block mb-2"></i>
+                                    Reports
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
