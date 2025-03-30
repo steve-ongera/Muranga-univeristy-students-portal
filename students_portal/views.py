@@ -1,9 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect , get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login , logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from .models import *
+from .forms import *
 from django.core.mail import EmailMultiAlternatives, send_mail
 from django.core.cache import cache
 from django.utils import timezone
@@ -543,3 +544,126 @@ def finance_dashboard(request):
         'user': request.user
     }
     return render(request, 'dashboards/finance_dashboard.html', context)
+
+
+
+
+@login_required
+
+def database_students_list(request):
+    students = Student.objects.all()
+    return render(request, 'students/database_student_list.html', {'students': students})
+
+
+@login_required
+
+def student_create(request):
+    if request.method == 'POST':
+        form = StudentForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "student record created successfully.")
+            return redirect('database_students_list')
+    else:
+        form = StudentForm()
+    return render(request, 'students/student_form.html', {'form': form})
+
+
+@login_required
+
+def student_detail(request, pk):
+    student = get_object_or_404(Student, pk=pk)
+    return render(request, 'students/student_detail.html', {'student': student})
+
+
+@login_required
+
+def student_update(request, pk):
+    student = get_object_or_404(Student, pk=pk)
+    if request.method == 'POST':
+        form = StudentForm(request.POST, instance=student)
+        if form.is_valid():
+            form.save()
+            return redirect('students_list')
+    else:
+        form = StudentForm(instance=student)
+    return render(request, 'students/student_form.html', {'form': form})
+
+
+@login_required
+
+def student_delete(request, pk):
+    student = get_object_or_404(Student, pk=pk)
+    if request.method == 'POST':
+        student.delete()
+        return redirect('student_list')
+    return render(request, 'students/student_confirm_delete.html', {'student': student})
+
+
+
+def lecturer_list(request):
+    """List all lecturers"""
+    lecturers = Lecturer.objects.all().order_by('last_name')
+    context = {
+        'lecturers': lecturers,
+        'title': 'Lecturer List'
+    }
+    return render(request, 'lecturers/lecturer_list.html', context)
+
+def lecturer_detail(request, pk):
+    """View details of a specific lecturer"""
+    lecturer = get_object_or_404(Lecturer, pk=pk)
+    context = {
+        'lecturer': lecturer,
+        'title': f'Lecturer Details - {lecturer.get_full_name()}'
+    }
+    return render(request, 'lecturers/lecturer_detail.html', context)
+
+def lecturer_create(request):
+    """Create a new lecturer"""
+    if request.method == 'POST':
+        form = LecturerForm(request.POST, request.FILES)
+        if form.is_valid():
+            lecturer = form.save()
+            return redirect('lecturer_detail', pk=lecturer.pk)
+    else:
+        form = LecturerForm()
+    
+    context = {
+        'form': form,
+        'title': 'Add New Lecturer'
+    }
+    return render(request, 'lecturers/lecturer_form.html', context)
+
+def lecturer_update(request, pk):
+    """Update an existing lecturer"""
+    lecturer = get_object_or_404(Lecturer, pk=pk)
+    
+    if request.method == 'POST':
+        form = LecturerForm(request.POST, request.FILES, instance=lecturer)
+        if form.is_valid():
+            form.save()
+            return redirect('lecturer_detail', pk=lecturer.pk)
+    else:
+        form = LecturerForm(instance=lecturer)
+    
+    context = {
+        'form': form,
+        'lecturer': lecturer,
+        'title': f'Update Lecturer - {lecturer.get_full_name()}'
+    }
+    return render(request, 'lecturers/lecturer_form.html', context)
+
+def lecturer_delete(request, pk):
+    """Delete a lecturer"""
+    lecturer = get_object_or_404(Lecturer, pk=pk)
+    
+    if request.method == 'POST':
+        lecturer.delete()
+        return redirect('lecturer_list')
+    
+    context = {
+        'lecturer': lecturer,
+        'title': f'Delete Lecturer - {lecturer.get_full_name()}'
+    }
+    return render(request, 'lecturers/lecturer_confirm_delete.html', context)

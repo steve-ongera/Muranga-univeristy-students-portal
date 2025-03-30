@@ -14,5 +14,18 @@ urlpatterns = [
     path('staff/dashboard/', views.staff_dashboard, name='staff_dashboard'),
     path('finance/dashboard/', views.finance_dashboard, name='finance_dashboard'),
     path('api/gender-distribution/', views.gender_distribution_api, name='gender_distribution_api'),
+
+    #students
+    path('database_students_list/', views.database_students_list, name='database_students_list'),
+    path('students/create/', views.student_create, name='student_create'),
+    path('students/<int:pk>/', views.student_detail, name='student_detail'),
+    path('students/<int:pk>/update/', views.student_update, name='student_update'),
+    path('students/<int:pk>/delete/', views.student_delete, name='student_delete'),
+
+    path('lecturers/', views.lecturer_list, name='lecturer_list'),
+    path('lecturers/add/', views.lecturer_create, name='lecturer_create'),
+    path('lecturers/<int:pk>/', views.lecturer_detail, name='lecturer_detail'),
+    path('lecturers/<int:pk>/edit/', views.lecturer_update, name='lecturer_update'),
+    path('lecturers/<int:pk>/delete/', views.lecturer_delete, name='lecturer_delete'),
     
 ]
