@@ -1,0 +1,96 @@
+{% extends 'base/base.html' %}
+
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'assets/css/student_dashboard.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'assets/css/student_dashboard.css' %}">
+<!-- Main Content Area -->
+<div class="main-content">
+    <!-- Dashboard Header Tabs -->
+    <div class="dashboard-tabs">
+        <div class="tab active">Dashboard</div>
+        <div class="tab">Finance</div>
+        <div class="tab">View Statement</div>
+    </div>
+
+    <!-- Welcome Card -->
+    <div class="welcome-card">
+        <div class="welcome-text">
+            <h2>Welcome back, {{ user.first_name }}</h2>
+            <p>We're delighted to have you. Need help on system walk through? Navigate to virtual assistant on the side menu</p>
+        </div>
+        <div class="welcome-image">
+            <img src="{% static 'assets/img/profile.png' %}" alt="Student Dashboard">
+        </div>
+    </div>
+
+    <!-- Dashboard Grid Layout -->
+    <div class="dashboard-grid">
+        <!-- Fee Balance Card -->
+        <div class="fee-card">
+            <div class="fee-icon">
+                <i class="fas fa-coins"></i>
+            </div>
+            <h3>Fee Balance</h3>
+            <div class="fee-balance">KES 0.00</div>
+            <button class="pay-btn">Pay Now</button>
+        </div>
+
+        <!-- Semester Progress Card -->
+        <div class="semester-card">
+            <div class="semester-icon">
+                <i class="fas fa-book-reader"></i>
+            </div>
+            <h3>SEMESETR {{ student.current_semester }} 2024/2025</h3>
+            <p>{{ programme.name }}</p>
+            <h4>Current Session Progress</h4>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 74%;"></div>
+            </div>
+            <p>74%</p>
+        </div>
+
+        <!-- Course Units Table - Full Width -->
+        <div class="units-section dashboard-full-width">
+            <div class="section-header">
+                <h3 class="section-title">Current Registered Units</h3>
+                <a href="#" class="view-all">View All</a>
+            </div>
+            <table class="units-table">
+                <table class="units-table">
+                    <thead>
+                        <tr>
+                            <th>Unit Name</th>
+                            <th>Unit Code</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for enrollment in enrolled_units %}
+                        <tr>
+                            <td>{{ enrollment.programme_unit.unit.name }}</td>
+                            <td>{{ enrollment.programme_unit.unit.code }}</td>
+                            <td class="status-pending">Pending</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+            </table>
+        </div>
+
+        <!-- Hostel Info Card -->
+        <div class="hostel-card dashboard-full-width">
+            <h3 class="hostel-title">Hostel info</h3>
+            <div class="hostel-icon">
+                <i class="fas fa-building"></i>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

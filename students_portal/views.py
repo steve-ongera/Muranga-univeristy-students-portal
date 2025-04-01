@@ -301,13 +301,11 @@ def registration_view(request):
     
     # If GET request, just show the registration form
     return render(request, 'auth/registration.html')
-
-
 @login_required
 def student_dashboard(request):
     """
     Dashboard view for students.
-    Displays student profile information and academic details.
+    Displays student profile information, academic details, and current semester unit registrations.
     """
     # Check if user is a student
     if request.session.get('user_type') != 'student':
@@ -324,17 +322,51 @@ def student_dashboard(request):
         # Fetch related programme information
         programme = student.programme
         
+        # Get current semester
+        current_semester = Semester.objects.filter(is_current=True).first()
+        
+        # If there's no current semester marked, fall back to the most recent one
+        if not current_semester:
+            current_semester = Semester.objects.order_by('-academic_year__start_date', '-start_date').first()
+        
+        # Get enrolled units for the current semester
+        if current_semester:
+            enrolled_units = StudentEnrollment.objects.filter(
+                student=student,
+                semester=current_semester
+            ).select_related('programme_unit', 'programme_unit__unit')
+            
+            # Calculate session progress (for example, based on semester dates)
+            if current_semester.end_date and current_semester.start_date:
+                today = datetime.now().date()
+                total_days = (current_semester.end_date - current_semester.start_date).days
+                days_passed = (today - current_semester.start_date).days if today > current_semester.start_date else 0
+                
+                if total_days > 0:
+                    session_progress = min(100, round((days_passed / total_days) * 100))
+                else:
+                    session_progress = 0
+            else:
+                session_progress = 0
+        else:
+            enrolled_units = []
+            session_progress = 0
+        
         context = {
             'student': student,
             'programme': programme,
+            'current_semester': current_semester,
+            'enrolled_units': enrolled_units,
+            'session_progress': session_progress,
             'page_title': 'Student Dashboard',
         }
         
-        return render(request, 'dashboards/student_dashboard.html', context)
+        return render(request, 'dashboards/student_dashborad_page.html', context)
     
     except Student.DoesNotExist:
-        messages.error(request, "Student profile not found. Please contact administration.")
+        messages.error(request, "Student data profile not found. Please contact administration.")
         return redirect('login')
+    
 
 @login_required
 def lecturer_dashboard(request):
