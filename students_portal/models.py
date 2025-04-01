@@ -456,3 +456,88 @@ class FeePayment(models.Model):
     
     def __str__(self):
         return f"{self.receipt_number} - {self.student_fee.student.registration_number} - {self.amount}"
+
+
+
+from django.db import models
+from django.utils import timezone
+
+class StudentReporting(models.Model):
+    """
+    Model to track student reporting by academic year, programme, and semester.
+    Helps administrators know how many students have reported in each period.
+    """
+    REPORTING_STATUS = (
+        ('reported', 'Reported'),
+        ('not_reported', 'Not Reported'),
+        ('deferred', 'Deferred'),
+        ('on_leave', 'On Leave'),
+    )
+
+    student = models.ForeignKey(
+        'Student',
+        on_delete=models.CASCADE,
+        related_name='reporting_records',
+        verbose_name='Student'
+    )
+    academic_year = models.ForeignKey(
+        'AcademicYear',
+        on_delete=models.CASCADE,
+        related_name='student_reportings',
+        verbose_name='Academic Year'
+    )
+    programme = models.ForeignKey(
+        'Programme',
+        on_delete=models.CASCADE,
+        related_name='reporting_records',
+        verbose_name='Programme'
+    )
+    semester = models.ForeignKey(
+        'Semester',
+        on_delete=models.CASCADE,
+        related_name='student_reportings',
+        verbose_name='Semester'
+    )
+    reporting_status = models.CharField(
+        max_length=20,
+        choices=REPORTING_STATUS,
+        default='not_reported',
+        verbose_name='Reporting Status'
+    )
+    reporting_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name='Reporting Date'
+    )
+    is_fees_cleared = models.BooleanField(
+        default=False,
+        verbose_name='Fees Cleared'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Created At'
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Updated At'
+    )
+    notes = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name='Administrative Notes'
+    )
+
+    class Meta:
+        verbose_name = 'Student Reporting'
+        verbose_name_plural = 'Student Reporting Records'
+        unique_together = ('student', 'academic_year', 'semester')
+        ordering = ['-academic_year__start_date', '-semester__number']
+
+    def __str__(self):
+        return f"{self.student.registration_number} - {self.academic_year} - Sem {self.semester.number} - {self.get_reporting_status_display()}"
+
+    def save(self, *args, **kwargs):
+        """Update reporting date when status changes to 'reported'"""
+        if self.reporting_status == 'reported' and not self.reporting_date:
+            self.reporting_date = timezone.now().date()
+        super().save(*args, **kwargs)

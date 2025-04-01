@@ -161,6 +161,16 @@ class FeePaymentAdmin(admin.ModelAdmin):
     search_fields = ('receipt_number', 'student_fee__student__registration_number')
     list_filter = ('payment_date', 'payment_method')
 
+
+
+
+@admin.register(StudentReporting)
+class StudentReportingAdmin(admin.ModelAdmin):
+    list_display = ('student', 'academic_year', 'semester', 'reporting_status', 'reporting_date')
+    list_filter = ('academic_year', 'semester', 'programme', 'reporting_status')
+    search_fields = ('student__registration_number', 'student__first_name', 'student__last_name')
+
+    
 admin.site.register(UserNotification, UserNotificationAdmin)
 admin.site.register(FeesStructure, FeesStructureAdmin)
 admin.site.register(StudentFee, StudentFeeAdmin)

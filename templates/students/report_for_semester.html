@@ -1,0 +1,68 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3>Semester Reporting</h3>
+        </div>
+        <div class="card-body">
+            {% if already_reported %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    You have already reported for {{ current_semester.academic_year.name }} - Semester {{ current_semester.number }}
+                    on {{ reporting_record.reporting_date|date:"F d, Y" }}.
+                </div>
+                <a href="{% url 'student_dashboard' %}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            {% else %}
+                <div class="reporting-details mb-4">
+                    <h5>Reporting Details:</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <strong>Student:</strong> {{ student.get_full_name }} ({{ student.registration_number }})
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Programme:</strong> {{ student.programme.name }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Academic Year:</strong> {{ current_semester.academic_year.name }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Semester:</strong> {{ current_semester.number }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Reporting Period:</strong> 
+                            {{ current_semester.start_date|date:"F d, Y" }} to {{ current_semester.end_date|date:"F d, Y" }}
+                        </li>
+                    </ul>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-group form-check mb-4">
+                        <input type="checkbox" class="form-check-input" id="fees_cleared" name="fees_cleared">
+                        <label class="form-check-label" for="fees_cleared">
+                            I confirm that my fees are cleared for this semester
+                        </label>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        By submitting this form, you confirm that you are physically present on campus
+                        and ready to begin the semester.
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="fas fa-check"></i> Confirm Reporting
+                    </button>
+                    <a href="{% url 'student_dashboard' %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

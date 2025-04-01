@@ -54,6 +54,7 @@ def login_view(request):
                 # Update session with current student info
                 request.session['user_type'] = 'student'
                 request.session['student_id'] = student.id
+                messages.success(request, "Logged in successfully to your account.")
                 return redirect('student_dashboard')
             except Student.DoesNotExist:
                 try:
@@ -387,7 +388,7 @@ def student_dashboard(request):
         return redirect('login')
     
 
-    
+
 @login_required
 def lecturer_dashboard(request):
     """
@@ -824,3 +825,70 @@ def drop_unit(request, enrollment_id):
     messages.success(request, f"You have successfully dropped {enrollment.programme_unit.unit.name}")
     
     return redirect('unit_enrollment')
+
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from .models import StudentReporting, Semester, Student
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from .models import StudentReporting, Semester, Student
+
+@login_required
+def report_for_semester(request):
+    """
+    View for students to report for the current active semester
+    using username (admission number) for authentication
+    """
+    try:
+        # Get student directly using the username (which is admission number)
+        student = Student.objects.get(registration_number=request.user.username)
+    except Student.DoesNotExist:
+        messages.error(request, "Student record not found")
+        return redirect('student_dashboard')
+
+    # Get current active semester
+    current_semester = Semester.objects.filter(is_current=True).first()
+    
+    if not current_semester:
+        messages.error(request, "No active semester found for reporting.")
+        return redirect('student_dashboard')
+
+    # Check if already reported
+    existing_report = StudentReporting.objects.filter(
+        student=student,
+        academic_year=current_semester.academic_year,
+        semester=current_semester
+    ).first()
+
+    if request.method == 'POST':
+        # Handle form submission
+        if existing_report:
+            messages.warning(request, "You have already reported for this semester.")
+        else:
+            # Create new reporting record
+            StudentReporting.objects.create(
+                student=student,
+                academic_year=current_semester.academic_year,
+                programme=student.programme,
+                semester=current_semester,
+                reporting_status='reported',
+                reporting_date=timezone.now().date(),
+                is_fees_cleared=request.POST.get('fees_cleared') == 'on',
+                notes=request.POST.get('notes', '')
+            )
+            messages.success(request, "Successfully reported for the semester!")
+        return redirect('student_dashboard')
+
+    context = {
+        'student': student,
+        'current_semester': current_semester,
+        'already_reported': existing_report is not None,
+        'reporting_record': existing_report,
+    }
+    return render(request, 'students/report_for_semester.html', context)

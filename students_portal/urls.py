@@ -30,6 +30,6 @@ urlpatterns = [
 
     path('enrollment/', views.unit_enrollment, name='unit_enrollment'),
     path('enrollment/drop/<int:enrollment_id>/', views.drop_unit, name='drop_unit'),
-  
-    
+    path('report/', views.report_for_semester, name='report_for_semester'),
+
 ]
