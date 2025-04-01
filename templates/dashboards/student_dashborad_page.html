@@ -46,7 +46,7 @@
                 <i class="fas fa-coins"></i>
             </div>
             <h3>Fee Balance</h3>
-            <div class="fee-balance">KES 0.00</div>
+            <div class="fee-balance"> KSh {{ current_balance|floatformat:2 }}</div>
             <button class="pay-btn">Pay Now</button>
         </div>
 
@@ -55,42 +55,54 @@
             <div class="semester-icon">
                 <i class="fas fa-book-reader"></i>
             </div>
-            <h3>SEMESETR {{ student.current_semester }} {{ current_semester.academic_year.name  }}</h3>
+            <h3>SEMESTER {{ student.current_semester }} {{ current_semester.academic_year.name  }}</h3>
             <p>{{ programme.name|upper }}</p>
 
             <h4>Current Session Progress</h4>
             <div class="progress-bar">
-                <div class="progress-fill" style="width: 74%;"></div>
+                <div class="progress-fill" style="width: {{ session_progress }}%;"></div>
             </div>
-            <p>74%</p>
+            <p>{{ session_progress }}%</p>
         </div>
 
+        
         <!-- Course Units Table - Full Width -->
         <div class="units-section dashboard-full-width">
             <div class="section-header">
                 <h3 class="section-title">Current Registered Units</h3>
-                <a href="#" class="view-all">View All</a>
+                <a href="{% url 'unit_enrollment' %}" class="view-all">Manage Units</a>
             </div>
             <table class="units-table">
-                <table class="units-table">
-                    <thead>
-                        <tr>
-                            <th>Unit Name</th>
-                            <th>Unit Code</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for enrollment in enrolled_units %}
-                        <tr>
-                            <td>{{ enrollment.programme_unit.unit.name }}</td>
-                            <td>{{ enrollment.programme_unit.unit.code }}</td>
-                            <td class="status-pending">Pending</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                
+                <thead>
+                    <tr>
+                        <th>Unit Name</th>
+                        <th>Unit Code</th>
+                        <th>Lecturer</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for enrollment in enrolled_units %}
+                    <tr>
+                        <td>{{ enrollment.programme_unit.unit.name }}</td>
+                        <td>{{ enrollment.programme_unit.unit.code }}</td>
+                        <td>
+                            {% with allocation=enrollment.programme_unit.unit_allocations.first %}
+                                {% if allocation %}
+                                    {{ allocation.lecturer.get_full_name }}
+                                {% else %}
+                                    Not Assigned
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td class="status-pending">Registered</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center">No units registered for current semester</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
             </table>
         </div>
 

@@ -301,11 +301,16 @@ def registration_view(request):
     
     # If GET request, just show the registration form
     return render(request, 'auth/registration.html')
+
+from django.db.models import Sum
+from datetime import datetime
+@login_required
 @login_required
 def student_dashboard(request):
     """
     Dashboard view for students.
-    Displays student profile information, academic details, and current semester unit registrations.
+    Displays student profile information, academic details, current semester unit registrations,
+    and current semester fee balance only.
     """
     # Check if user is a student
     if request.session.get('user_type') != 'student':
@@ -316,41 +321,53 @@ def student_dashboard(request):
     student_id = request.session.get('student_id')
     
     try:
-        # Fetch the student record
-        student = Student.objects.get(id=student_id)
-        
-        # Fetch related programme information
+        # Fetch the student record with related programme
+        student = Student.objects.select_related('programme').get(id=student_id)
         programme = student.programme
         
         # Get current semester
         current_semester = Semester.objects.filter(is_current=True).first()
-        
-        # If there's no current semester marked, fall back to the most recent one
         if not current_semester:
             current_semester = Semester.objects.order_by('-academic_year__start_date', '-start_date').first()
         
-        # Get enrolled units for the current semester
+        # Get enrolled units for current semester
+        enrolled_units = []
+        session_progress = 0
         if current_semester:
             enrolled_units = StudentEnrollment.objects.filter(
                 student=student,
                 semester=current_semester
             ).select_related('programme_unit', 'programme_unit__unit')
             
-            # Calculate session progress (for example, based on semester dates)
+            # Calculate session progress
             if current_semester.end_date and current_semester.start_date:
                 today = datetime.now().date()
                 total_days = (current_semester.end_date - current_semester.start_date).days
-                days_passed = (today - current_semester.start_date).days if today > current_semester.start_date else 0
+                days_passed = max(0, (today - current_semester.start_date).days)
+                session_progress = min(100, round((days_passed / total_days) * 100)) if total_days > 0 else 0
+        
+        # ===== CURRENT SEMESTER FEE BALANCE =====
+        current_balance = 0
+        current_fee_record = None
+        
+        if current_semester:
+            # Get the fee structure for current semester/year/programme
+            current_fee_structure = FeesStructure.objects.filter(
+                programme=programme,
+                year_of_study=student.current_year,
+                semester=student.current_semester,
+                academic_year=current_semester.academic_year
+            ).first()
+            
+            # Get the student's fee record for this structure if exists
+            if current_fee_structure:
+                current_fee_record = StudentFee.objects.filter(
+                    student=student,
+                    fee_structure=current_fee_structure
+                ).first()
                 
-                if total_days > 0:
-                    session_progress = min(100, round((days_passed / total_days) * 100))
-                else:
-                    session_progress = 0
-            else:
-                session_progress = 0
-        else:
-            enrolled_units = []
-            session_progress = 0
+                if current_fee_record:
+                    current_balance = current_fee_record.balance
         
         context = {
             'student': student,
@@ -358,6 +375,8 @@ def student_dashboard(request):
             'current_semester': current_semester,
             'enrolled_units': enrolled_units,
             'session_progress': session_progress,
+            'current_balance': current_balance,
+            'current_fee_record': current_fee_record,  # Pass the entire record for more details if needed
             'page_title': 'Student Dashboard',
         }
         
@@ -368,6 +387,7 @@ def student_dashboard(request):
         return redirect('login')
     
 
+    
 @login_required
 def lecturer_dashboard(request):
     """
