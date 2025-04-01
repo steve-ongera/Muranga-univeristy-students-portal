@@ -8,6 +8,15 @@
 {% endblock %}
 
 {% block content %}
+<div class="message-container" id="system-messages">
+    {% for message in messages %}
+    <div class="alert-message alert-{{ message.tags }}">
+        {{ message }}
+        <span class="close-message">&times;</span>
+    </div>
+    {% endfor %}
+</div>
+
 <link rel="stylesheet" href="{% static 'assets/css/student_dashboard.css' %}">
 <!-- Main Content Area -->
 <div class="main-content">
@@ -46,8 +55,9 @@
             <div class="semester-icon">
                 <i class="fas fa-book-reader"></i>
             </div>
-            <h3>SEMESETR {{ student.current_semester }} 2024/2025</h3>
-            <p>{{ programme.name }}</p>
+            <h3>SEMESETR {{ student.current_semester }} {{ current_semester.academic_year.name  }}</h3>
+            <p>{{ programme.name|upper }}</p>
+
             <h4>Current Session Progress</h4>
             <div class="progress-bar">
                 <div class="progress-fill" style="width: 74%;"></div>

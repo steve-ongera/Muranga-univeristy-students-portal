@@ -27,5 +27,9 @@ urlpatterns = [
     path('lecturers/<int:pk>/', views.lecturer_detail, name='lecturer_detail'),
     path('lecturers/<int:pk>/edit/', views.lecturer_update, name='lecturer_update'),
     path('lecturers/<int:pk>/delete/', views.lecturer_delete, name='lecturer_delete'),
+
+    path('enrollment/', views.unit_enrollment, name='unit_enrollment'),
+    path('enrollment/drop/<int:enrollment_id>/', views.drop_unit, name='drop_unit'),
+  
     
 ]

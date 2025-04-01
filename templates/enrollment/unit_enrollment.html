@@ -1,0 +1,135 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4">Unit Enrollment</h2>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5>Enrollment Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Programme:</strong> {{ student.programme.name }}</p>
+                    <p><strong>Current Year:</strong> Year {{ student.current_year }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Current Semester:</strong> Semester {{ student.current_semester }}</p>
+                    <p><strong>Academic Year:</strong> {{ current_semester.academic_year.name }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5>Available Units</h5>
+            </div>
+            <div class="card-body">
+                {% if available_units %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Select</th>
+                                    <th>Unit Code</th>
+                                    <th>Unit Name</th>
+                                    <th>Credit Hours</th>
+                                    <th>Core/Elective</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for unit in available_units %}
+                                    <tr class="{% if unit.id in enrolled_units %}table-success{% endif %}">
+                                        <td>
+                                            {% if unit.id not in enrolled_units %}
+                                                <input type="checkbox" name="units" value="{{ unit.id }}" 
+                                                       id="unit_{{ unit.id }}">
+                                            {% else %}
+                                                <span class="text-success">✔ Enrolled</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ unit.unit.code }}</td>
+                                        <td>{{ unit.unit.name }}</td>
+                                        <td>{{ unit.unit.credit_hours }}</td>
+                                        <td>{% if unit.unit.is_core %}Core{% else %}Elective{% endif %}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning">
+                        No units available for enrollment in your current year and semester.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if available_units %}
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save"></i> Submit Enrollment
+                </button>
+            </div>
+        {% endif %}
+    </form>
+
+    <!-- Current Enrollments -->
+    <!-- Current Enrollments -->
+<div class="card mt-4">
+    <div class="card-header bg-success text-white">
+        <h5>Your Current Enrollments</h5>
+    </div>
+    <div class="card-body">
+        {% if current_enrollments %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Unit Code</th>
+                            <th>Unit Name</th>
+                            <th>Lecturer</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for enrollment in current_enrollments %}
+                            <tr>
+                                <td>{{ enrollment.programme_unit.unit.code }}</td>
+                                <td>{{ enrollment.programme_unit.unit.name }}</td>
+                                <td>
+                                    {% with allocation=enrollment.programme_unit.unit_allocations.filter|first %}
+                                        {% if allocation %}
+                                            {{ allocation.lecturer.get_full_name }}
+                                        {% else %}
+                                            Not assigned
+                                        {% endif %}
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'drop_unit' enrollment.id %}" 
+                                       class="btn btn-sm btn-danger"
+                                       onclick="return confirm('Are you sure you want to drop this unit?');">
+                                        Drop
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                You are not enrolled in any units for this semester.
+            </div>
+        {% endif %}
+    </div>
+</div>
+</div>
+{% endblock %}

@@ -699,3 +699,108 @@ def lecturer_delete(request, pk):
         'title': f'Delete Lecturer - {lecturer.get_full_name()}'
     }
     return render(request, 'lecturers/lecturer_confirm_delete.html', context)
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import (
+    Student, ProgrammeUnit, StudentEnrollment, 
+    Semester, AcademicYear, UnitAllocation
+)
+
+@login_required
+def unit_enrollment(request):
+    try:
+        # Get student directly using the username (which is admission number)
+        student = Student.objects.get(registration_number=request.user.username)
+    except Student.DoesNotExist:
+        messages.error(request, "Student record not found")
+        return redirect('student_dashboard')
+    
+    current_semester = Semester.objects.filter(is_current=True).first()
+    
+    if not current_semester:
+        messages.error(request, "No active semester found for enrollment")
+        return redirect('student_dashboard')
+    
+    # Get all units available for the student's programme, year and semester
+    available_units = ProgrammeUnit.objects.filter(
+        programme=student.programme,
+        year_of_study=student.current_year,
+        semester=student.current_semester
+    ).select_related('unit')
+    
+    # Get units the student is already enrolled in for this semester
+    enrolled_units = StudentEnrollment.objects.filter(
+        student=student,
+        semester=current_semester
+    ).values_list('programme_unit_id', flat=True)
+    
+    # Get current enrollments to display in the template
+    current_enrollments = StudentEnrollment.objects.filter(
+        student=student,
+        semester=current_semester
+    ).select_related('programme_unit__unit')
+    
+    if request.method == 'POST':
+        # Handle form submission
+        selected_units = request.POST.getlist('units')
+        
+        # Validate selected units
+        valid_units = available_units.filter(id__in=selected_units)
+        
+        # Check for already enrolled units
+        new_units = valid_units.exclude(id__in=enrolled_units)
+        
+        # Create enrollments
+        enrollments_created = 0
+        for unit in new_units:
+            StudentEnrollment.objects.create(
+                student=student,
+                programme_unit=unit,
+                semester=current_semester
+            )
+            enrollments_created += 1
+        
+        if enrollments_created > 0:
+            messages.success(request, f"Successfully enrolled in {enrollments_created} units")
+        else:
+            messages.warning(request, "No new units were enrolled")
+        
+        return redirect('unit_enrollment')
+    
+    context = {
+        'student': student,
+        'available_units': available_units,
+        'enrolled_units': enrolled_units,
+        'current_semester': current_semester,
+        'current_enrollments': current_enrollments,  # Add this to context
+        'max_units': 6,  # You can set a maximum number of units per semester
+    }
+    
+    return render(request, 'enrollment/unit_enrollment.html', context)
+
+
+@login_required
+def drop_unit(request, enrollment_id):
+    try:
+        # Get student directly using the username (which is admission number)
+        student = Student.objects.get(registration_number=request.user.username)
+    except Student.DoesNotExist:
+        messages.error(request, "Student record not found")
+        return redirect('student_dashboard')
+    
+    enrollment = get_object_or_404(StudentEnrollment, id=enrollment_id, student=student)
+    
+    # Check if it's allowed to drop this unit (you might want to add deadline checks)
+    current_semester = Semester.objects.filter(is_current=True).first()
+    
+    if enrollment.semester != current_semester:
+        messages.error(request, "You can only drop units from the current semester")
+        return redirect('unit_enrollment')
+    
+    enrollment.delete()
+    messages.success(request, f"You have successfully dropped {enrollment.programme_unit.unit.name}")
+    
+    return redirect('unit_enrollment')
