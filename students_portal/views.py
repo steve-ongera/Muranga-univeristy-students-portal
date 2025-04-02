@@ -892,3 +892,146 @@ def report_for_semester(request):
         'reporting_record': existing_report,
     }
     return render(request, 'students/report_for_semester.html', context)
+
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.db.models import Prefetch
+from collections import defaultdict
+
+from .models import (
+    Student, 
+    StudentEnrollment, 
+    StudentUnitGrade, 
+    AcademicYear, 
+    Semester
+)
+
+@login_required
+def student_results_view(request):
+    """
+    View for students to see their academic results by year and semester
+    """
+    # Get the student profile associated with the logged-in user
+    try:
+        student = Student.objects.get(
+            registration_number=request.user.username
+        )
+    except Student.DoesNotExist:
+        messages.error(request, "No student profile found for your account.")
+        return render(request, 'students/no_profile.html')
+    
+    # Get all academic years since student admission
+    academic_years = AcademicYear.objects.filter(
+        start_date__gte=student.date_of_admission
+    ).order_by('start_date')
+    
+    # Initialize data structure to hold results
+    results_by_year = {}
+    
+    # For each academic year, fetch the semesters and results
+    for academic_year in academic_years:
+        # Get semesters for this academic year
+        semesters = Semester.objects.filter(
+            academic_year=academic_year
+        ).order_by('number')
+        
+        # Initialize semester results
+        semester_results = {}
+        year_total_points = 0
+        year_total_credit_hours = 0
+        
+        for semester in semesters:
+            # Get enrollments for this student in this semester
+            enrollments = StudentEnrollment.objects.filter(
+                student=student,
+                semester=semester
+            ).select_related(
+                'programme_unit__unit',
+                'programme_unit__programme'
+            ).prefetch_related(
+                Prefetch(
+                    'final_grade',
+                    queryset=StudentUnitGrade.objects.select_related('grade')
+                )
+            )
+            
+            # Process and structure the results data
+            units_results = []
+            semester_total_points = 0
+            semester_total_credit_hours = 0
+            
+            for enrollment in enrollments:
+                # Try to get the grade for this enrollment
+                try:
+                    grade = enrollment.final_grade
+                    unit = enrollment.programme_unit.unit
+                    
+                    unit_result = {
+                        'unit_code': unit.code,
+                        'unit_name': unit.name,
+                        'credit_hours': unit.credit_hours,
+                        'cat_score': grade.cat_average,
+                        'exam_score': grade.exam_score,
+                        'total_score': grade.total_score,
+                        'grade': grade.grade.grade,
+                        'points': grade.grade.points,
+                        'is_pass': grade.is_pass,
+                        'remarks': grade.remarks,
+                    }
+                    
+                    units_results.append(unit_result)
+                    
+                    # Calculate semester statistics
+                    unit_points = grade.grade.points * unit.credit_hours
+                    semester_total_points += unit_points
+                    semester_total_credit_hours += unit.credit_hours
+                    
+                    # Add to yearly totals
+                    year_total_points += unit_points
+                    year_total_credit_hours += unit.credit_hours
+                    
+                except StudentUnitGrade.DoesNotExist:
+                    # If there's no grade yet
+                    unit = enrollment.programme_unit.unit
+                    unit_result = {
+                        'unit_code': unit.code,
+                        'unit_name': unit.name,
+                        'credit_hours': unit.credit_hours,
+                        'status': 'Pending',
+                    }
+                    units_results.append(unit_result)
+            
+            # Calculate semester GPA
+            semester_gpa = 0
+            if semester_total_credit_hours > 0:
+                semester_gpa = semester_total_points / semester_total_credit_hours
+            
+            # Add results to semester
+            semester_results[semester.number] = {
+                'semester_name': semester.name,
+                'units': units_results,
+                'gpa': round(semester_gpa, 2),
+                'total_credit_hours': semester_total_credit_hours,
+            }
+        
+        # Calculate yearly GPA
+        yearly_gpa = 0
+        if year_total_credit_hours > 0:
+            yearly_gpa = year_total_points / year_total_credit_hours
+        
+        # Add semester results to the academic year
+        results_by_year[academic_year.name] = {
+            'semesters': semester_results,
+            'year_name': academic_year.name,
+            'yearly_gpa': round(yearly_gpa, 2),
+            'year_total_credit_hours': year_total_credit_hours,
+        }
+    
+    context = {
+        'student': student,
+        'results_by_year': results_by_year,
+    }
+    
+    return render(request, 'students/academic_results.html', context)

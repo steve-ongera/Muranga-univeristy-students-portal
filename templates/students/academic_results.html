@@ -1,0 +1,157 @@
+{% extends "base/base.html" %}
+
+
+{% block title %}Academic Results{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Academic Results for {{ student.get_full_name }}</h2>
+    <p class="lead">Registration Number: {{ student.registration_number }}</p>
+    <p>Programme: {{ student.programme.name }}</p>
+    
+    {% if results_by_year %}
+        <div class="accordion" id="resultsAccordion">
+            {% for year_name, year_data in results_by_year.items %}
+                <div class="card mb-3">
+                    <div class="card-header" id="heading{{ forloop.counter }}">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" type="button" data-toggle="collapse" 
+                                    data-target="#collapse{{ forloop.counter }}" aria-expanded="true" 
+                                    aria-controls="collapse{{ forloop.counter }}">
+                                {{ year_name }}
+                            </button>
+                        </h5>
+                    </div>
+                    
+                    <div id="collapse{{ forloop.counter }}" class="collapse {% if forloop.first %}show{% endif %}" 
+                         aria-labelledby="heading{{ forloop.counter }}" data-parent="#resultsAccordion">
+                        <div class="card-body">
+                            <!-- Check if semester 1 results exist -->
+                            {% if year_data.semesters.1 %}
+                                <h4>Semester 1</h4>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Unit Code</th>
+                                                <th>Unit Name</th>
+                                                <th>Credit Hours</th>
+                                                <th>CAT Score</th>
+                                                <th>Exam Score</th>
+                                                <th>Total Score</th>
+                                                <th>Grade</th>
+                                                <th>Points</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for unit in year_data.semesters.1.units %}
+                                                <tr>
+                                                    <td>{{ unit.unit_code }}</td>
+                                                    <td>{{ unit.unit_name }}</td>
+                                                    <td>{{ unit.credit_hours }}</td>
+                                                    {% if unit.status == 'Pending' %}
+                                                        <td colspan="6" class="text-center">Results Pending</td>
+                                                    {% else %}
+                                                        <td>{{ unit.cat_score }}</td>
+                                                        <td>{{ unit.exam_score }}</td>
+                                                        <td>{{ unit.total_score }}</td>
+                                                        <td>{{ unit.grade }}</td>
+                                                        <td>{{ unit.points }}</td>
+                                                        <td>
+                                                            {% if unit.is_pass %}
+                                                                <span class="badge badge-success">Pass</span>
+                                                            {% else %}
+                                                                <span class="badge badge-danger">Fail</span>
+                                                            {% endif %}
+                                                        </td>
+                                                    {% endif %}
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="2"><strong>Semester GPA:</strong></td>
+                                                <td>{{ year_data.semesters.1.total_credit_hours }}</td>
+                                                <td colspan="4"></td>
+                                                <td><strong>{{ year_data.semesters.1.gpa }}</strong></td>
+                                                <td></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">No results available for Semester 1</div>
+                            {% endif %}
+
+                            <!-- Check if semester 2 results exist -->
+                            {% if year_data.semesters.2 %}
+                                <h4 class="mt-4">Semester 2</h4>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Unit Code</th>
+                                                <th>Unit Name</th>
+                                                <th>Credit Hours</th>
+                                                <th>CAT Score</th>
+                                                <th>Exam Score</th>
+                                                <th>Total Score</th>
+                                                <th>Grade</th>
+                                                <th>Points</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for unit in year_data.semesters.2.units %}
+                                                <tr>
+                                                    <td>{{ unit.unit_code }}</td>
+                                                    <td>{{ unit.unit_name }}</td>
+                                                    <td>{{ unit.credit_hours }}</td>
+                                                    {% if unit.status == 'Pending' %}
+                                                        <td colspan="6" class="text-center">Results Pending</td>
+                                                    {% else %}
+                                                        <td>{{ unit.cat_score }}</td>
+                                                        <td>{{ unit.exam_score }}</td>
+                                                        <td>{{ unit.total_score }}</td>
+                                                        <td>{{ unit.grade }}</td>
+                                                        <td>{{ unit.points }}</td>
+                                                        <td>
+                                                            {% if unit.is_pass %}
+                                                                <span class="badge badge-success">Pass</span>
+                                                            {% else %}
+                                                                <span class="badge badge-danger">Fail</span>
+                                                            {% endif %}
+                                                        </td>
+                                                    {% endif %}
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="2"><strong>Semester GPA:</strong></td>
+                                                <td>{{ year_data.semesters.2.total_credit_hours }}</td>
+                                                <td colspan="4"></td>
+                                                <td><strong>{{ year_data.semesters.2.gpa }}</strong></td>
+                                                <td></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">No results available for Semester 2</div>
+                            {% endif %}
+                            
+                            
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-warning">
+            No academic results available. If you believe this is an error, please contact the academic office.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
