@@ -866,6 +866,12 @@ def report_for_semester(request):
         semester=current_semester
     ).first()
 
+
+    # Fetch all past reportings for this student
+    past_reportings = StudentReporting.objects.filter(
+        student=student
+    ).order_by('-reporting_date')
+
     if request.method == 'POST':
         # Handle form submission
         if existing_report:
@@ -890,6 +896,7 @@ def report_for_semester(request):
         'current_semester': current_semester,
         'already_reported': existing_report is not None,
         'reporting_record': existing_report,
+        'past_reportings': past_reportings,
     }
     return render(request, 'students/report_for_semester.html', context)
 
@@ -1000,3 +1007,131 @@ def student_results_view(request):
     }
 
     return render(request, 'students/academic_results.html', context)
+
+
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib import messages
+from .models import Student, StudentEnrollment, StudentUnitGrade, GradeSystem, AcademicYear, Semester
+import json
+
+def search_student(request):
+    """Search for a student by registration number and return enrolled units"""
+    registration_number = request.GET.get('registration_number')
+
+    try:
+        student = get_object_or_404(Student, registration_number=registration_number)
+        current_semester = Semester.objects.filter(is_current=True).first()
+
+        if not current_semester:
+            return JsonResponse({'error': 'No active semester found'}, status=400)
+
+        enrollments = StudentEnrollment.objects.filter(
+            student=student,
+            semester=current_semester
+        ).select_related('programme_unit__unit', 'semester__academic_year')
+
+        units = [
+            {
+                'enrollment_id': enrollment.id,
+                'unit_code': enrollment.programme_unit.unit.code,
+                'unit_name': enrollment.programme_unit.unit.name
+            }
+            for enrollment in enrollments
+        ]
+
+        return JsonResponse({
+            'student_name': student.get_full_name(),
+            'registration_number': student.registration_number,
+            'academic_year': current_semester.academic_year.name,
+            'semester': current_semester.name,
+            'units': units
+        }, status=200)
+
+    except Student.DoesNotExist:
+        return JsonResponse({'error': 'Student not found'}, status=404)
+
+
+def enter_student_grades(request):
+    """Render the form for entering student grades and allow searching by student registration number"""
+    
+    students = Student.objects.all()  # Get all students for dropdown search
+
+    context = {
+        'students': students
+    }
+    return render(request, 'students/enter_grades.html', context)
+
+
+
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+import json
+
+@require_POST
+def save_student_grades(request):
+    try:
+        # Ensure request is AJAX/JSON
+        if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'error': 'Invalid request'}, status=400)
+            
+        data = json.loads(request.body)
+        student_reg = data.get('registration_number')
+        grades = data.get('grades', [])
+
+        if not student_reg:
+            return JsonResponse({'error': 'Registration number required'}, status=400)
+
+        student = get_object_or_404(Student, registration_number=student_reg)
+        
+        results = []
+        for grade_data in grades:
+            try:
+                enrollment = StudentEnrollment.objects.get(
+                    id=grade_data['enrollment_id'],
+                    student=student
+                )
+                
+                cat_score = float(grade_data.get('cat_score', 0))
+                exam_score = float(grade_data.get('exam_score', 0))
+                total_score = cat_score + exam_score
+
+                grade = GradeSystem.objects.filter(
+                    min_score__lte=total_score,
+                    max_score__gte=total_score
+                ).first()
+                
+                obj, created = StudentUnitGrade.objects.update_or_create(
+                    enrollment=enrollment,
+                    defaults={
+                        'cat_average': cat_score,
+                        'exam_score': exam_score,
+                        'total_score': total_score,
+                        'grade': grade,
+                        'is_pass': total_score >= 50
+                    }
+                )
+                
+                results.append({
+                    'enrollment_id': enrollment.id,
+                    'status': 'success',
+                    'grade': grade.grade if grade else None
+                })
+                
+            except Exception as e:
+                results.append({
+                    'enrollment_id': grade_data.get('enrollment_id'),
+                    'status': 'error',
+                    'message': str(e)
+                })
+
+        return JsonResponse({
+            'message': 'Grades processed',
+            'results': results
+        }, status=200)
+
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=400)

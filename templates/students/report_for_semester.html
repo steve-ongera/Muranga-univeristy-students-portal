@@ -63,6 +63,39 @@
                 </form>
             {% endif %}
         </div>
+
+        
     </div>
+
+    <hr>
+
+    <!-- Table for past reportings -->
+    <h4 class="mt-4">Past Semester Reportings</h4>
+    {% if past_reportings %}
+        <div class="table-responsive">
+            <table class="table table-bordered border-primary">
+                <thead>
+                    <tr>
+                        <th>Academic Year</th>
+                        <th>Semester</th>
+                        <th>Reporting Date</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in past_reportings %}
+                        <tr>
+                            <td>{{ report.academic_year.name }}</td>
+                            <td>{{ report.semester.name }}</td>
+                            <td>{{ report.reporting_date|date:"F d, Y" }}</td>
+                            <td>{{ report.notes|default:"N/A" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-warning">No past reporting records found.</div>
+    {% endif %}
 </div>
 {% endblock %}

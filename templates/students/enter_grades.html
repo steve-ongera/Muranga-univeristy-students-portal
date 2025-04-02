@@ -1,0 +1,208 @@
+{% extends "base/base.html" %}
+
+{% block title %}Enter Student Grades{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Enter Student Grades</h2>
+    
+    <!-- Add CSRF token for AJAX requests -->
+    {% csrf_token %}
+    
+    <!-- Student Search -->
+    <div class="mb-3">
+        <label for="registration_number" class="form-label">Search Student:</label>
+        <div class="input-group">
+            <input type="text" id="registration_number" class="form-control" placeholder="Enter Registration Number">
+            <button class="btn btn-primary" onclick="searchStudent()">Search</button>
+        </div>
+    </div>
+
+    <!-- Student Details -->
+    <div id="student-info" class="mt-4 d-none card">
+        <div class="card-body">
+            <h4 class="card-title" id="student-name"></h4>
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <p><strong>Reg Number:</strong> <span id="student-reg" class="text-muted"></span></p>
+                </div>
+                <div class="col-md-4">
+                    <p><strong>Academic Year:</strong> <span id="academic-year" class="text-muted"></span></p>
+                </div>
+                <div class="col-md-4">
+                    <p><strong>Semester:</strong> <span id="semester" class="text-muted"></span></p>
+                </div>
+            </div>
+
+            <h5 class="mt-3">Enrolled Units</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Unit Code</th>
+                            <th>Unit Name</th>
+                            <th>CAT Score (Max 30)</th>
+                            <th>Exam Score (Max 70)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="units-table-body"></tbody>
+                </table>
+            </div>
+            <input type="hidden" id="hidden-registration-number">
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3">
+                <button type="button" class="btn btn-success" onclick="saveGrades()">
+                    <i class="bi bi-save"></i> Save Grades
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" class="text-center mt-4 d-none">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Get CSRF token
+    function getCSRFToken() {
+        const csrfCookie = document.cookie.split(';')
+            .find(cookie => cookie.trim().startsWith('csrftoken='));
+        return csrfCookie ? csrfCookie.split('=')[1] : null;
+    }
+
+    async function searchStudent() {
+        const regNumber = document.getElementById("registration_number").value.trim();
+        if (!regNumber) {
+            alert("Please enter a registration number.");
+            return;
+        }
+
+        const spinner = document.getElementById("loading-spinner");
+        spinner.classList.remove("d-none");
+
+        try {
+            const response = await fetch(`/search-student/?registration_number=${regNumber}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            // Update student info
+            document.getElementById("student-info").classList.remove("d-none");
+            document.getElementById("student-name").textContent = data.student_name;
+            document.getElementById("student-reg").textContent = data.registration_number;
+            document.getElementById("academic-year").textContent = data.academic_year;
+            document.getElementById("semester").textContent = data.semester;
+            document.getElementById("hidden-registration-number").value = data.registration_number;
+
+            // Populate units table
+            const tbody = document.getElementById("units-table-body");
+            tbody.innerHTML = data.units.map(unit => `
+                <tr>
+                    <td>${unit.unit_code}</td>
+                    <td>${unit.unit_name}</td>
+                    <td>
+                        <input type="number" class="form-control cat-score" 
+                               data-enrollment="${unit.enrollment_id}" 
+                               min="0" max="30" step="0.5" required>
+                    </td>
+                    <td>
+                        <input type="number" class="form-control exam-score" 
+                               data-enrollment="${unit.enrollment_id}" 
+                               min="0" max="70" step="0.5" required>
+                    </td>
+                </tr>
+            `).join('');
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert("Failed to fetch student data: " + error.message);
+        } finally {
+            spinner.classList.add("d-none");
+        }
+    }
+
+    async function saveGrades() {
+        const regNumber = document.getElementById("hidden-registration-number").value;
+        if (!regNumber) {
+            alert("Please search for a student first.");
+            return;
+        }
+        
+        // Validate inputs
+        const invalidInputs = Array.from(document.querySelectorAll('input[type="number"]'))
+            .filter(input => {
+                const value = parseFloat(input.value);
+                const max = parseFloat(input.max);
+                return isNaN(value) || value < 0 || value > max;
+            });
+        
+        if (invalidInputs.length > 0) {
+            alert("Please enter valid scores (0 to max value for each field)");
+            invalidInputs[0].focus();
+            return;
+        }
+
+        // Prepare grades data
+        const grades = Array.from(document.querySelectorAll('tr')).map(row => {
+            const catInput = row.querySelector('.cat-score');
+            const examInput = row.querySelector('.exam-score');
+            
+            if (!catInput || !examInput) return null;
+            
+            return {
+                enrollment_id: catInput.dataset.enrollment,
+                cat_score: parseFloat(catInput.value) || 0,
+                exam_score: parseFloat(examInput.value) || 0
+            };
+        }).filter(grade => grade !== null);
+
+        const spinner = document.getElementById("loading-spinner");
+        spinner.classList.remove("d-none");
+
+        try {
+            const response = await fetch("/save_student_grades/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCSRFToken(),
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                body: JSON.stringify({
+                    registration_number: regNumber,
+                    grades: grades
+                })
+            });
+
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                throw new Error("Server returned unexpected response");
+            }
+
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || "Failed to save grades");
+            }
+
+            alert(data.message || "Grades saved successfully!");
+            
+        } catch (error) {
+            console.error('Error:', error);
+            alert("Error saving grades: " + error.message);
+        } finally {
+            spinner.classList.add("d-none");
+        }
+    }
+</script>
+{% endblock %}

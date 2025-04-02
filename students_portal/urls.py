@@ -33,5 +33,10 @@ urlpatterns = [
     path('report/', views.report_for_semester, name='report_for_semester'),
     path('results/', views.student_results_view, name='academic_results'),
 
+    #admin to enter marks urls
+    path('enter-grades/', views.enter_student_grades, name='enter-grades'),
+    path('search-student/', views.search_student, name='search-student'),
+    path('save_student_grades/', views.save_student_grades, name='save-student-grades'),
+
 
 ]
