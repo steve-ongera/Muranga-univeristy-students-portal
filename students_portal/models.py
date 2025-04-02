@@ -336,6 +336,8 @@ class StudentScore(models.Model):
         return f"{self.enrollment.student.registration_number} - {self.assessment.name} - {self.score}"
 
 
+from django.db import models
+
 class GradeSystem(models.Model):
     """Model for grade system (A, B, C, D, E, F)"""
     grade = models.CharField(max_length=2)
@@ -353,13 +355,37 @@ class StudentUnitGrade(models.Model):
     enrollment = models.OneToOneField(StudentEnrollment, on_delete=models.CASCADE, related_name='final_grade')
     cat_average = models.DecimalField(max_digits=5, decimal_places=2)
     exam_score = models.DecimalField(max_digits=5, decimal_places=2)
-    total_score = models.DecimalField(max_digits=5, decimal_places=2)
-    grade = models.ForeignKey(GradeSystem, on_delete=models.PROTECT, related_name='student_grades')
-    is_pass = models.BooleanField()
+    total_score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    grade = models.ForeignKey(GradeSystem, on_delete=models.PROTECT, related_name='student_grades', null=True, blank=True)
+    is_pass = models.BooleanField(default=False)
     remarks = models.TextField(blank=True, null=True)
     
     def __str__(self):
-        return f"{self.enrollment.student.registration_number} - {self.enrollment.programme_unit.unit.code} - {self.grade.grade}"
+        return f"{self.enrollment.student.registration_number} - {self.enrollment.programme_unit.unit.code} - {self.grade.grade if self.grade else 'Pending'}"
+
+    def calculate_total_score(self):
+        """Automatically calculate total score (CAT + Exam Score)"""
+        return self.cat_average + self.exam_score
+
+    def assign_grade_and_pass_status(self):
+        """Assign grade and pass status based on total score"""
+        total_score = self.calculate_total_score()
+        self.total_score = total_score
+
+        # Get the grade from the GradeSystem based on the total score
+        grade = GradeSystem.objects.filter(min_score__lte=total_score, max_score__gte=total_score).first()
+
+        if grade:
+            self.grade = grade
+            self.is_pass = total_score >= 50  # You can set the pass mark as per the university's rule (e.g., >= 50%)
+        else:
+            self.grade = None
+            self.is_pass = False
+
+    def save(self, *args, **kwargs):
+        """Override save method to automatically calculate and assign grade and pass status"""
+        self.assign_grade_and_pass_status()
+        super().save(*args, **kwargs)
 
 
 class AttendanceRecord(models.Model):

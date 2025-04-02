@@ -35,9 +35,8 @@
                                                 <tr>
                                                     <th>Unit Code</th>
                                                     <th>Unit Name</th>
-                                                    
-                                                    <th>CAT </th>
-                                                    <th>Exam </th>
+                                                    <th>CAT</th>
+                                                    <th>Exam</th>
                                                     <th>Total Score</th>
                                                     <th>Grade</th>
                                                     <th>Status</th>
@@ -48,20 +47,30 @@
                                                     <tr>
                                                         <td>{{ unit.unit_code }}</td>
                                                         <td>{{ unit.unit_name }}</td>
-                                                    
-                                                            <td>{{ unit.cat_score }}</td>
-                                                            <td>{{ unit.exam_score }}</td>
-                                                            <td>{{ unit.total_score }}</td>
-                                                            <td>{{ unit.grade }}</td>
-                                                            <td>
+                                                        
+                                                        <!-- Check if CAT score is 0, and show N/A in the cell -->
+                                                        <td>
+                                                            {% if unit.cat_score == 0 %}
+                                                                N/A
+                                                            {% else %}
+                                                                {{ unit.cat_score }}
+                                                            {% endif %}
+                                                        </td>
+                                                        
+                                                        <td>{{ unit.exam_score }}</td>
+                                                        <td>{{ unit.total_score }}</td>
+                                                        <td>{{ unit.grade }}</td>
+                                                        <td>
+                                                            {% if  unit.exam_score %}
                                                                 {% if unit.is_pass %}
-                                                                    <span  class="badge text-bg-success">Pass</span>
+                                                                    <span class="badge text-bg-success">Pass</span>
                                                                 {% else %}
                                                                     <span class="badge text-bg-danger">Fail</span>
                                                                 {% endif %}
-                                                            </td>
-                                                            
-                                                       
+                                                            {% else %}
+                                                                <span class="badge text-bg-secondary">N/A</span>
+                                                            {% endif %}
+                                                        </td>
                                                     </tr>
                                                 {% endfor %}
                                             </tbody>
