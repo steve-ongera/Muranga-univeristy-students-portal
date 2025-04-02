@@ -152,7 +152,7 @@
             invalidInputs[0].focus();
             return;
         }
-
+    
         // Prepare grades data
         const grades = Array.from(document.querySelectorAll('tr')).map(row => {
             const catInput = row.querySelector('.cat-score');
@@ -166,10 +166,10 @@
                 exam_score: parseFloat(examInput.value) || 0
             };
         }).filter(grade => grade !== null);
-
+    
         const spinner = document.getElementById("loading-spinner");
         spinner.classList.remove("d-none");
-
+    
         try {
             const response = await fetch("/save_student_grades/", {
                 method: "POST",
@@ -183,19 +183,24 @@
                     grades: grades
                 })
             });
-
+    
             const contentType = response.headers.get("content-type");
             if (!contentType || !contentType.includes("application/json")) {
                 throw new Error("Server returned unexpected response");
             }
-
+    
             const data = await response.json();
             
             if (!response.ok) {
                 throw new Error(data.error || "Failed to save grades");
             }
-
+    
             alert(data.message || "Grades saved successfully!");
+            
+            // Clear the form after successful save
+            document.getElementById("registration_number").value = "";
+            document.getElementById("student-info").classList.add("d-none");
+            document.getElementById("units-table-body").innerHTML = "";
             
         } catch (error) {
             console.error('Error:', error);
