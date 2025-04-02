@@ -118,9 +118,16 @@ class GradeSystemAdmin(admin.ModelAdmin):
 
 
 class StudentUnitGradeAdmin(admin.ModelAdmin):
-    list_display = ('enrollment', 'total_score', 'grade', 'is_pass')
+    list_display = ('enrollment', 'total_score', 'grade', 'is_pass', 'get_academic_year')
     search_fields = ('enrollment__student__registration_number', 'enrollment__programme_unit__unit__code')
-    list_filter = ('grade', 'is_pass')
+    list_filter = ('grade', 'is_pass', 'enrollment__semester__academic_year')
+
+    def get_academic_year(self, obj):
+        """Retrieve the academic year from enrollment"""
+        return obj.enrollment.semester.academic_year.name  # Ensures retrieval from related models
+    
+    get_academic_year.short_description = 'Academic Year'  # Sets column title in admin panel
+
 
 
 class AttendanceRecordAdmin(admin.ModelAdmin):

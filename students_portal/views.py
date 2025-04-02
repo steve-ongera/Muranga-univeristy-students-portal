@@ -956,6 +956,7 @@ def student_results_view(request):
                     queryset=StudentUnitGrade.objects.select_related('grade')
                 )
             )
+        
             
             # Process and structure the results data
             units_results = []
