@@ -1,0 +1,123 @@
+<!-- templates/academics/official_transcript.html -->
+{% extends "base/base.html" %}
+
+{% block title %}{{ transcript.student_info.name }} - Official Transcript{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <div class="text-center">
+                <h2>UNIVERSITY OFFICIAL TRANSCRIPT</h2>
+                <h4>{{ transcript.student_info.programme }}</h4>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h3>{{ transcript.student_info.name }}</h3>
+                    <p><strong>Registration Number:</strong> {{ transcript.student_info.reg_number }}</p>
+                    <p><strong>Date of Admission:</strong> {{ transcript.student_info.admission_date|date:"F j, Y" }}</p>
+                </div>
+                <div class="col-md-6 text-md-right">
+                    <div class="border p-3 bg-light">
+                        <h5>Academic Summary</h5>
+                        <p><strong>Cumulative GPA:</strong> {{ transcript.cumulative_summary.gpa|floatformat:2 }}</p>
+                        <p><strong>Total Credits Earned:</strong> {{ transcript.cumulative_summary.total_credits }}</p>
+                    </div>
+                </div>
+            </div>
+
+            {% for year_id, year_data in transcript.academic_years.items %}
+            <div class="mb-4">
+                <h4 class="border-bottom pb-2">{{ year_data.name }}</h4>
+                
+                {% for semester_num, semester_data in year_data.semesters.items %}
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5>Semester {{ semester_num }}</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <span class="badge badge-info">GPA: {{ semester_data.summary.gpa|floatformat:2 }}</span>
+                            </div>
+                            <div class="col-md-4">
+                                <span class="badge badge-success">Credits: {{ semester_data.summary.earned_credits }}</span>
+                            </div>
+                            <div class="col-md-4">
+                                <span class="badge badge-primary">Year {{ semester_data.units.0.year_of_study|default:1 }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-bordered mb-0">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Unit Title</th>
+                                        <th>Credit Hours</th>
+                                        <th>CAT (30%)</th>
+                                        <th>Exam (70%)</th>
+                                        <th>Total (100%)</th>
+                                        <th>Grade</th>
+                                        <th>Points</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for unit in semester_data.units %}
+                                    <tr>
+                                        <td>{{ unit.code }}</td>
+                                        <td>{{ unit.name }}</td>
+                                        <td>{{ unit.credit_hours }}</td>
+                                        <td>{{ unit.cat_average|floatformat:1|default:"-" }}</td>
+                                        <td>{{ unit.exam_score|floatformat:1|default:"-" }}</td>
+                                        <td>{{ unit.total_score|floatformat:1|default:"-" }}</td>
+                                        <td>{{ unit.grade|default:"-" }}</td>
+                                        <td>
+                                            {% if unit.grade %}
+                                                {% with grade=unit.grade %}
+                                                    {% if grade == 'A' %}4.0
+                                                    {% elif grade == 'B' %}3.0
+                                                    {% elif grade == 'C' %}2.0
+                                                    {% elif grade == 'D' %}1.0
+                                                    {% elif grade == 'E' %}0.5
+                                                    {% elif grade == 'F' %}0.0
+                                                    {% else %}-{% endif %}
+                                                {% endwith %}
+                                            {% else %}-{% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="card-footer text-muted">
+            <div class="row">
+                <div class="col-md-6">
+                    <p>This is an official document. Any alteration renders it invalid.</p>
+                </div>
+                <div class="col-md-6 text-md-right">
+                    <button class="btn btn-dark" onclick="window.print()">Print Transcript</button>
+                    {% if student.id %}
+                        <a href="{% url 'api_student_progress' student_id=student.id %}" class="btn btn-outline-dark">
+                            View Progress Report
+                        </a>
+                    {% else %}
+                        <button class="btn btn-outline-dark disabled">Student data unavailable</button>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <p>Generated on {% now "F j, Y H:i" %}</p>
+                <p class="font-weight-bold">REGISTRAR'S SIGNATURE: _________________________</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

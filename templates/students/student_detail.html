@@ -69,9 +69,9 @@
                    <a href="{% url 'student_update' student.pk %}" class="btn btn-primary me-2">
                        <i class="bi bi-pencil"></i> Edit
                    </a>
-                   <a href="{% url 'student_progress' student.id %}" class="btn btn-primary me-2">
+                   <a href="{% url 'student_progress' student_id=student.id %}" class="btn btn-primary me-2">
                     <i class="bi bi-eye"></i> Academics
-                   </a>
+                </a>
                    <a href="{% url 'database_students_list' %}" class="btn btn-secondary">
                        <i class="bi bi-arrow-left"></i> Back to List
                    </a>

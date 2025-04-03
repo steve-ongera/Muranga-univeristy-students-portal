@@ -1,0 +1,127 @@
+
+{% extends "base/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h2>{{ student.get_full_name }} - Academic Progress</h2>
+            <p class="mb-0">Registration: {{ student.registration_number }} | Program: {{ student.programme.name }}</p>
+        </div>
+        
+        <div class="card-body">
+            <!-- Academic Year Tabs -->
+            <ul class="nav nav-tabs" id="academicTabs" role="tablist">
+                {% for year_id, year_data in progress_data.academic_years.items %}
+                <li class="nav-item">
+                    <a class="nav-link {% if forloop.first %}active{% endif %}" 
+                       id="year-{{ year_id }}-tab" 
+                       data-toggle="tab" 
+                       href="#year-{{ year_id }}" 
+                       role="tab">
+                        {{ year_data.name }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            
+            <!-- Tab Content -->
+            <div class="tab-content pt-3" id="academicTabsContent">
+                {% for year_id, year_data in progress_data.academic_years.items %}
+                <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
+                     id="year-{{ year_id }}" 
+                     role="tabpanel">
+                     
+                    <!-- Semester Navigation Pills -->
+                    <ul class="nav nav-pills mb-3" id="year-{{ year_id }}-semesters" role="tablist">
+                        {% for semester_num, semester_data in year_data.semesters.items %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if forloop.first %}active{% endif %}" 
+                               id="year-{{ year_id }}-semester-{{ semester_num }}-tab" 
+                               data-toggle="pill" 
+                               href="#year-{{ year_id }}-semester-{{ semester_num }}" 
+                               role="tab">
+                                Semester {{ semester_num }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    
+                    <!-- Semester Content -->
+                    <div class="tab-content">
+                        {% for semester_num, semester_data in year_data.semesters.items %}
+                        <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
+                             id="year-{{ year_id }}-semester-{{ semester_num }}" 
+                             role="tabpanel">
+                             
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Semester {{ semester_num }} Summary</h5>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <span class="badge badge-info">GPA: {{ semester_data.summary.gpa|floatformat:2 }}</span>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <span class="badge badge-success">Credits: {{ semester_data.summary.earned_credits }}</span>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <span class="badge badge-primary">Year {{ semester_data.units.0.year_of_study|default:1 }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-hover">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th>Code</th>
+                                                    <th>Unit Name</th>
+                                                    <th>Credits</th>
+                                                    <th>CAT</th>
+                                                    <th>Exam</th>
+                                                    <th>Total</th>
+                                                    <th>Grade</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for unit in semester_data.units %}
+                                                <tr>
+                                                    <td>{{ unit.code }}</td>
+                                                    <td>{{ unit.name }}</td>
+                                                    <td>{{ unit.credit_hours }}</td>
+                                                    <td>{{ unit.cat_average|floatformat:1|default:"-" }}</td>
+                                                    <td>{{ unit.exam_score|floatformat:1|default:"-" }}</td>
+                                                    <td>{{ unit.total_score|floatformat:1|default:"-" }}</td>
+                                                    <td>
+                                                        <span class="badge 
+                                                            {% if unit.grade == 'A' %}badge-success
+                                                            {% elif unit.grade == 'B' %}badge-primary
+                                                            {% elif unit.grade == 'C' %}badge-info
+                                                            {% elif unit.grade == 'D' %}badge-warning
+                                                            {% elif unit.grade == 'E' %}badge-warning
+                                                            {% elif unit.grade == 'F' %}badge-danger
+                                                            {% else %}badge-secondary{% endif %}">
+                                                            {{ unit.grade|default:"Incomplete" }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include required JavaScript -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

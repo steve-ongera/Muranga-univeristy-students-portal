@@ -1203,3 +1203,219 @@ def search_student_data(request):
     }
     
     return render(request, 'students/search_student.html', context)
+
+
+from django.db.models import Avg, Sum, Count
+from collections import defaultdict
+
+def get_student_academic_progress(student):
+    """
+    Get complete academic progress for a student using existing models
+    Returns a structured dictionary with all academic years and semesters
+    """
+    # Get all enrollments for the student ordered by semester
+    enrollments = StudentEnrollment.objects.filter(
+        student=student
+    ).select_related(
+        'semester__academic_year',
+        'programme_unit__unit',
+        'programme_unit__programme',
+        'final_grade__grade'
+    ).order_by('semester__academic_year__start_date', 'semester__number')
+    
+    # Organize data by academic year and semester
+    progress_data = {
+        'student': {
+            'name': student.get_full_name(),
+            'reg_number': student.registration_number,
+            'programme': student.programme.name,
+            'admission_date': student.date_of_admission,
+            'current_year': student.current_year,
+            'current_semester': student.current_semester
+        },
+        'academic_years': defaultdict(lambda: {
+            'name': None,
+            'start_date': None,
+            'end_date': None,
+            'semesters': defaultdict(lambda: {
+                'name': None,
+                'number': None,
+                'start_date': None,
+                'end_date': None,
+                'units': [],
+                'summary': {
+                    'total_credits': 0,
+                    'earned_credits': 0,
+                    'gpa': 0.0,
+                    'units_attempted': 0,
+                    'units_passed': 0
+                }
+            })
+        })
+    }
+    
+    # Process each enrollment to build the progress structure
+    for enrollment in enrollments:
+        academic_year = enrollment.semester.academic_year
+        semester = enrollment.semester
+        programme_unit = enrollment.programme_unit
+        unit = programme_unit.unit
+        final_grade = enrollment.final_grade
+        
+        # Set academic year info if not already set
+        if not progress_data['academic_years'][academic_year.id]['name']:
+            progress_data['academic_years'][academic_year.id]['name'] = academic_year.name
+            progress_data['academic_years'][academic_year.id]['start_date'] = academic_year.start_date
+            progress_data['academic_years'][academic_year.id]['end_date'] = academic_year.end_date
+        
+        # Set semester info if not already set
+        if not progress_data['academic_years'][academic_year.id]['semesters'][semester.number]['name']:
+            progress_data['academic_years'][academic_year.id]['semesters'][semester.number]['name'] = semester.name
+            progress_data['academic_years'][academic_year.id]['semesters'][semester.number]['number'] = semester.number
+            progress_data['academic_years'][academic_year.id]['semesters'][semester.number]['start_date'] = semester.start_date
+            progress_data['academic_years'][academic_year.id]['semesters'][semester.number]['end_date'] = semester.end_date
+        
+        # Add unit information
+        unit_data = {
+            'code': unit.code,
+            'name': unit.name,
+            'credit_hours': unit.credit_hours,
+            'is_core': unit.is_core,
+            'year_of_study': programme_unit.year_of_study,
+            'semester': programme_unit.semester,
+            'cat_average': final_grade.cat_average if final_grade else None,
+            'exam_score': final_grade.exam_score if final_grade else None,
+            'total_score': final_grade.total_score if final_grade else None,
+            'grade': final_grade.grade.grade if final_grade and final_grade.grade else None,
+            'is_pass': final_grade.is_pass if final_grade else None
+        }
+        
+        progress_data['academic_years'][academic_year.id]['semesters'][semester.number]['units'].append(unit_data)
+        
+        # Update semester summary
+        if final_grade:
+            progress_data['academic_years'][academic_year.id]['semesters'][semester.number]['summary']['total_credits'] += unit.credit_hours
+            progress_data['academic_years'][academic_year.id]['semesters'][semester.number]['summary']['units_attempted'] += 1
+            
+            if final_grade.is_pass:
+                progress_data['academic_years'][academic_year.id]['semesters'][semester.number]['summary']['earned_credits'] += unit.credit_hours
+                progress_data['academic_years'][academic_year.id]['semesters'][semester.number]['summary']['units_passed'] += 1
+    
+    # Calculate GPA for each semester
+    for year_data in progress_data['academic_years'].values():
+        for semester_data in year_data['semesters'].values():
+            total_quality_points = 0
+            total_credits = 0
+            
+            for unit in semester_data['units']:
+                if unit['grade'] and unit['is_pass']:
+                    # Get grade points from GradeSystem
+                    try:
+                        grade = GradeSystem.objects.get(grade=unit['grade'])
+                        total_quality_points += grade.points * unit['credit_hours']
+                        total_credits += unit['credit_hours']
+                    except GradeSystem.DoesNotExist:
+                        pass
+            
+            if total_credits > 0:
+                semester_data['summary']['gpa'] = round(total_quality_points / total_credits, 2)
+    
+    # Convert defaultdict to regular dict for JSON serialization
+    progress_data['academic_years'] = {
+        year_id: {
+            **year_data,
+            'semesters': dict(sorted(year_data['semesters'].items()))
+        }
+        for year_id, year_data in sorted(progress_data['academic_years'].items())
+    }
+    
+    return progress_data
+
+def get_student_transcript(student):
+    """
+    Generate a formal transcript using existing models
+    """
+    progress_data = get_student_academic_progress(student)
+    
+    # Calculate cumulative GPA and credits
+    total_quality_points = 0
+    total_credits = 0
+    cumulative_credits = 0
+    
+    for year_data in progress_data['academic_years'].values():
+        for semester_data in year_data['semesters'].values():
+            semester_credits = semester_data['summary']['earned_credits']
+            semester_gpa = semester_data['summary']['gpa']
+            
+            if semester_credits > 0:
+                total_quality_points += semester_gpa * semester_credits
+                total_credits += semester_credits
+                cumulative_credits += semester_credits
+    
+    cumulative_gpa = round(total_quality_points / total_credits, 2) if total_credits > 0 else 0.0
+    
+    transcript = {
+        'student_info': progress_data['student'],
+        'academic_years': progress_data['academic_years'],
+        'cumulative_summary': {
+            'gpa': cumulative_gpa,
+            'total_credits': cumulative_credits
+        }
+    }
+    
+    return transcript
+
+
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+
+def student_progress_report(request, student_id):
+    """View to display student progress report"""
+    student = get_object_or_404(Student, pk=student_id)
+    
+    # Check permissions here (e.g., only student or admin can view)
+    
+    progress_data = get_student_academic_progress(student)
+    
+    context = {
+        'student': student,
+        'progress_data': progress_data
+    }
+    
+    return render(request, 'academics/student_progress.html', context)
+
+def student_official_transcript(request, student_id):
+    """View to generate official transcript"""
+    student = get_object_or_404(Student, pk=student_id)
+    
+    # Check permissions here
+    
+    transcript = get_student_transcript(student)
+    
+    context = {
+        'student': student,
+        'transcript': transcript
+    }
+    
+    return render(request, 'academics/official_transcript.html', context)
+
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+
+def api_student_progress(request, student_id):
+    """View for student progress with academic year tabs and semester breakdown"""
+    student = get_object_or_404(Student, pk=student_id)
+    
+    # Check permissions here if needed
+    
+    progress_data = get_student_academic_progress(student)
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # If AJAX request, return JSON
+        return JsonResponse(progress_data)
+    
+    # For regular browser requests, return HTML
+    return render(request, 'academics/student_progress_tabs.html', {
+        'student': student,
+        'progress_data': progress_data
+    })

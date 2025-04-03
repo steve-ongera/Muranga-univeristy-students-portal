@@ -42,5 +42,12 @@ urlpatterns = [
     path('search-student/', views.search_student, name='search-student'),
     path('save_student_grades/', views.save_student_grades, name='save-student-grades'),
 
+    #acdemics
+    path('student/<int:student_id>/progress/', views.student_progress_report, name='student_progress'),
+    path('student/<int:student_id>/transcript/', views.student_official_transcript, name='student_transcript'),
+    path('api/student/<int:student_id>/progress/', views.api_student_progress, name='api_student_progress'),
+
+    
+
 
 ]

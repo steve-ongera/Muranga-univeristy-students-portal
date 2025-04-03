@@ -1,0 +1,112 @@
+<!-- templates/academics/student_progress.html -->
+{% extends "base/base.html" %}
+
+{% block title %}{{ student.get_full_name }} - Academic Progress{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h2>Academic Progress Report</h2>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h3>{{ student.get_full_name }}</h3>
+                    <p><strong>Registration Number:</strong> {{ student.registration_number }}</p>
+                    <p><strong>Programme:</strong> {{ student.programme.name }}</p>
+                </div>
+                <div class="col-md-6 text-md-right">
+                    <p><strong>Admission Date:</strong> {{ student.date_of_admission|date:"F j, Y" }}</p>
+                    <p><strong>Current Year/Semester:</strong> Year {{ student.current_year }} Semester {{ student.current_semester }}</p>
+                </div>
+            </div>
+
+            {% for year_id, year_data in progress_data.academic_years.items %}
+            <div class="mb-4">
+                <h4 class="border-bottom pb-2">{{ year_data.name }}</h4>
+                
+                {% for semester_num, semester_data in year_data.semesters.items %}
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5>Semester {{ semester_num }}</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <span class="badge badge-info">GPA: {{ semester_data.summary.gpa|floatformat:2 }}</span>
+                            </div>
+                            <div class="col-md-4">
+                                <span class="badge badge-success">Credits Earned: {{ semester_data.summary.earned_credits }}</span>
+                            </div>
+                            <div class="col-md-4">
+                                <span class="badge badge-primary">Units Passed: {{ semester_data.summary.units_passed }}/{{ semester_data.summary.units_attempted }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Unit Name</th>
+                                        <th>Credits</th>
+                                        <th>CAT</th>
+                                        <th>Exam</th>
+                                        <th>Total</th>
+                                        <th>Grade</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for unit in semester_data.units %}
+                                    <tr>
+                                        <td>{{ unit.code }}</td>
+                                        <td>{{ unit.name }}</td>
+                                        <td>{{ unit.credit_hours }}</td>
+                                        <td>{{ unit.cat_average|floatformat:1|default:"-" }}</td>
+                                        <td>{{ unit.exam_score|floatformat:1|default:"-" }}</td>
+                                        <td>{{ unit.total_score|floatformat:1|default:"-" }}</td>
+                                        <td>
+                                            <span class="badge 
+                                                {% if unit.grade == 'A' %}badge-success
+                                                {% elif unit.grade == 'B' %}badge-primary
+                                                {% elif unit.grade == 'C' %}badge-info
+                                                {% elif unit.grade == 'D' %}badge-warning
+                                                {% elif unit.grade == 'E' %}badge-warning
+                                                {% elif unit.grade == 'F' %}badge-danger
+                                                {% else %}badge-secondary{% endif %}">
+                                                {{ unit.grade|default:"Incomplete" }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if unit.is_pass %}
+                                                <span class="text-success">Pass</span>
+                                            {% else %}
+                                                <span class="text-danger">Fail</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="card-footer text-muted">
+            <div class="row">
+                <div class="col-md-6">
+                    <p>Generated on {% now "F j, Y H:i" %}</p>
+                </div>
+                <div class="col-md-6 text-md-right">
+                    <button class="btn btn-primary" onclick="window.print()">Print Report</button>
+                    <a href="{% url 'student_transcript' student.id %}" class="btn btn-secondary">View Full Transcript</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
