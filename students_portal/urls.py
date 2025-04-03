@@ -47,6 +47,9 @@ urlpatterns = [
     path('student/<int:student_id>/transcript/', views.student_official_transcript, name='student_transcript'),
     path('api/student/<int:student_id>/progress/', views.api_student_progress, name='api_student_progress'),
 
+    path('programmes/', views.programme_list, name='programme_list'),
+    path('programmes/<int:programme_id>/', views.programme_detail, name='programme_detail'),
+
     
 
 

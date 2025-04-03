@@ -1,127 +1,205 @@
-
 {% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}{{ student.get_full_name }} - Academic Progress{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="card">
-        <div class="card-header bg-primary text-white">
-            <h2>{{ student.get_full_name }} - Academic Progress</h2>
-            <p class="mb-0">Registration: {{ student.registration_number }} | Program: {{ student.programme.name }}</p>
-        </div>
-        
-        <div class="card-body">
-            <!-- Academic Year Tabs -->
-            <ul class="nav nav-tabs" id="academicTabs" role="tablist">
-                {% for year_id, year_data in progress_data.academic_years.items %}
-                <li class="nav-item">
-                    <a class="nav-link {% if forloop.first %}active{% endif %}" 
-                       id="year-{{ year_id }}-tab" 
-                       data-toggle="tab" 
-                       href="#year-{{ year_id }}" 
-                       role="tab">
-                        {{ year_data.name }}
-                    </a>
-                </li>
-                {% endfor %}
-            </ul>
-            
-            <!-- Tab Content -->
-            <div class="tab-content pt-3" id="academicTabsContent">
-                {% for year_id, year_data in progress_data.academic_years.items %}
-                <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
-                     id="year-{{ year_id }}" 
-                     role="tabpanel">
-                     
-                    <!-- Semester Navigation Pills -->
-                    <ul class="nav nav-pills mb-3" id="year-{{ year_id }}-semesters" role="tablist">
-                        {% for semester_num, semester_data in year_data.semesters.items %}
-                        <li class="nav-item">
-                            <a class="nav-link {% if forloop.first %}active{% endif %}" 
-                               id="year-{{ year_id }}-semester-{{ semester_num }}-tab" 
-                               data-toggle="pill" 
-                               href="#year-{{ year_id }}-semester-{{ semester_num }}" 
-                               role="tab">
-                                Semester {{ semester_num }}
-                            </a>
+<div class="pagetitle">
+    <h1>Academic Progress</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'database_students_list' %}">Students</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'student_detail' student.id %}">{{ student.get_full_name }}</a></li>
+            <li class="breadcrumb-item active">Academic Progress</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="card-title mb-1">{{ student.get_full_name }}</h2>
+                        <p class="card-subtitle mb-0 opacity-75">
+                            <i class="bi bi-person-badge"></i> {{ student.registration_number }} | 
+                            <i class="bi bi-book"></i> {{ student.programme.name }}
+                        </p>
+                    </div>
+                    <div>
+                        <button class="btn btn-light btn-sm" onclick="window.print()">
+                            <i class="bi bi-printer"></i> Print
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Academic Year Tabs -->
+                    <ul class="nav nav-tabs nav-tabs-bordered" id="academicTabs" role="tablist">
+                        {% for year_id, year_data in progress_data.academic_years.items %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {% if forloop.first %}active{% endif %}" 
+                                   id="year-{{ year_id }}-tab" 
+                                   data-bs-toggle="tab" 
+                                   data-bs-target="#year-{{ year_id }}" 
+                                   type="button" role="tab">
+                                <i class="bi bi-calendar-range"></i> {{ year_data.name }}
+                            </button>
                         </li>
                         {% endfor %}
                     </ul>
                     
-                    <!-- Semester Content -->
-                    <div class="tab-content">
-                        {% for semester_num, semester_data in year_data.semesters.items %}
+                    <!-- Tab Content -->
+                    <div class="tab-content pt-3" id="academicTabsContent">
+                        {% for year_id, year_data in progress_data.academic_years.items %}
                         <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
-                             id="year-{{ year_id }}-semester-{{ semester_num }}" 
+                             id="year-{{ year_id }}" 
                              role="tabpanel">
                              
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5>Semester {{ semester_num }} Summary</h5>
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <span class="badge badge-info">GPA: {{ semester_data.summary.gpa|floatformat:2 }}</span>
+                            <!-- Semester Navigation Pills -->
+                            <ul class="nav nav-pills mb-4" id="year-{{ year_id }}-semesters" role="tablist">
+                                {% for semester_num, semester_data in year_data.semesters.items %}
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link {% if forloop.first %}active{% endif %}" 
+                                           id="year-{{ year_id }}-semester-{{ semester_num }}-tab" 
+                                           data-bs-toggle="pill" 
+                                           data-bs-target="#year-{{ year_id }}-semester-{{ semester_num }}" 
+                                           type="button" role="tab">
+                                        <i class="bi bi-collection"></i> Semester {{ semester_num }}
+                                    </button>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            
+                            <!-- Semester Content -->
+                            <div class="tab-content">
+                                {% for semester_num, semester_data in year_data.semesters.items %}
+                                <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
+                                     id="year-{{ year_id }}-semester-{{ semester_num }}" 
+                                     role="tabpanel">
+                                     
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-header bg-light d-flex justify-content-between align-items-center flex-wrap">
+                                            <h5 class="mb-0">
+                                                <i class="bi bi-journal-text"></i> Semester {{ semester_num }} Performance
+                                            </h5>
+                                            <div class="d-flex gap-2 mt-2 mt-md-0">
+                                                <span class="badge bg-info">
+                                                    <i class="bi bi-graph-up"></i> GPA: {{ semester_data.summary.gpa|floatformat:2 }}
+                                                </span>
+                                                <span class="badge bg-success">
+                                                    <i class="bi bi-award"></i> Credits: {{ semester_data.summary.earned_credits }}
+                                                </span>
+                                                <span class="badge bg-primary">
+                                                    <i class="bi bi-calendar3"></i> Year {{ semester_data.units.0.year_of_study|default:1 }}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div class="col-md-4">
-                                            <span class="badge badge-success">Credits: {{ semester_data.summary.earned_credits }}</span>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <span class="badge badge-primary">Year {{ semester_data.units.0.year_of_study|default:1 }}</span>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover align-middle">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th class="text-nowrap">Code</th>
+                                                            <th>Unit Name</th>
+                                                            <th class="text-center">Credits</th>
+                                                            <th class="text-center">CAT</th>
+                                                            <th class="text-center">Exam</th>
+                                                            <th class="text-center">Total</th>
+                                                            <th class="text-center">Grade</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for unit in semester_data.units %}
+                                                        <tr>
+                                                            <td class="fw-bold">{{ unit.code }}</td>
+                                                            <td>{{ unit.name }}</td>
+                                                            <td class="text-center">{{ unit.credit_hours }}</td>
+                                                            <td class="text-center">{{ unit.cat_average|floatformat:1|default:"-" }}</td>
+                                                            <td class="text-center">{{ unit.exam_score|floatformat:1|default:"-" }}</td>
+                                                            <td class="text-center fw-bold">{{ unit.total_score|floatformat:1|default:"-" }}</td>
+                                                            <td class="text-center">
+                                                                <span class="badge 
+                                                                    {% if unit.grade == 'A' %}bg-success
+                                                                    {% elif unit.grade == 'B' %}bg-primary
+                                                                    {% elif unit.grade == 'C' %}bg-info
+                                                                    {% elif unit.grade == 'D' %}bg-warning
+                                                                    {% elif unit.grade == 'E' %}bg-warning
+                                                                    {% elif unit.grade == 'F' %}bg-danger
+                                                                    {% else %}bg-secondary{% endif %}">
+                                                                    {{ unit.grade|default:"Incomplete" }}
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered table-hover">
-                                            <thead class="thead-light">
-                                                <tr>
-                                                    <th>Code</th>
-                                                    <th>Unit Name</th>
-                                                    <th>Credits</th>
-                                                    <th>CAT</th>
-                                                    <th>Exam</th>
-                                                    <th>Total</th>
-                                                    <th>Grade</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for unit in semester_data.units %}
-                                                <tr>
-                                                    <td>{{ unit.code }}</td>
-                                                    <td>{{ unit.name }}</td>
-                                                    <td>{{ unit.credit_hours }}</td>
-                                                    <td>{{ unit.cat_average|floatformat:1|default:"-" }}</td>
-                                                    <td>{{ unit.exam_score|floatformat:1|default:"-" }}</td>
-                                                    <td>{{ unit.total_score|floatformat:1|default:"-" }}</td>
-                                                    <td>
-                                                        <span class="badge 
-                                                            {% if unit.grade == 'A' %}badge-success
-                                                            {% elif unit.grade == 'B' %}badge-primary
-                                                            {% elif unit.grade == 'C' %}badge-info
-                                                            {% elif unit.grade == 'D' %}badge-warning
-                                                            {% elif unit.grade == 'E' %}badge-warning
-                                                            {% elif unit.grade == 'F' %}badge-danger
-                                                            {% else %}badge-secondary{% endif %}">
-                                                            {{ unit.grade|default:"Incomplete" }}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
+                                {% endfor %}
                             </div>
                         </div>
                         {% endfor %}
                     </div>
                 </div>
-                {% endfor %}
+                
+                <div class="card-footer bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-muted small">
+                            <i class="bi bi-clock"></i> Generated on {% now "F j, Y H:i" %}
+                        </div>
+                        <div>
+                            <a href="{% url 'student_detail' student.id %}" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-arrow-left"></i> Back to Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 
-<!-- Include required JavaScript -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+<style>
+    .nav-tabs-bordered {
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    .nav-tabs-bordered .nav-link {
+        margin-bottom: -2px;
+        border: none;
+        color: #495057;
+        font-weight: 500;
+    }
+    
+    .nav-tabs-bordered .nav-link.active {
+        border-bottom: 2px solid #0d6efd;
+        color: #0d6efd;
+        background-color: transparent;
+    }
+    
+    .nav-pills .nav-link {
+        color: #495057;
+        font-weight: 500;
+    }
+    
+    .table th {
+        white-space: nowrap;
+        font-weight: 500;
+    }
+    
+    .card-header h5 {
+        font-size: 1.1rem;
+    }
+    
+    @media print {
+        .breadcrumb, .card-header button, .card-footer {
+            display: none !important;
+        }
+    }
+</style>
 {% endblock %}

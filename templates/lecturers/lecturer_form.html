@@ -1,0 +1,225 @@
+{% extends "base/base.html" %}
+
+{% block title %}{% if form.instance.pk %}Edit{% else %}Add{% endif %} Lecturer{% endblock %}
+
+{% block content %}
+<div class="pagetitle">
+    <h1>{% if form.instance.pk %}Edit{% else %}Add New{% endif %} Lecturer</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'lecturer_list' %}">Lecturers</a></li>
+            <li class="breadcrumb-item active">{% if form.instance.pk %}Edit{% else %}New{% endif %}</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Lecturer Information</h5>
+                    
+                    <form method="POST" enctype="multipart/form-data" class="row g-3 needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Personal Information Section -->
+                        <div class="col-12">
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">
+                                    <h6 class="card-title pt-2">Personal Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name*</label>
+                                            {{ form.first_name }}
+                                            <div class="invalid-feedback">
+                                                Please provide a first name.
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="{{ form.middle_name.id_for_label }}" class="form-label">Middle Name</label>
+                                            {{ form.middle_name }}
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name*</label>
+                                            {{ form.last_name }}
+                                            <div class="invalid-feedback">
+                                                Please provide a last name.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="{{ form.staff_id.id_for_label }}" class="form-label">Staff ID*</label>
+                                            {{ form.staff_id }}
+                                            <small class="form-text text-muted">{{ form.staff_id.help_text }}</small>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="{{ form.national_id.id_for_label }}" class="form-label">National ID</label>
+                                            {{ form.national_id }}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="{{ form.profile_picture.id_for_label }}" class="form-label">Profile Picture</label>
+                                            {{ form.profile_picture }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Professional Information Section -->
+                        <div class="col-12">
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">
+                                    <h6 class="card-title pt-2">Professional Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label for="{{ form.department.id_for_label }}" class="form-label">Department*</label>
+                                            {{ form.department}}
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="{{ form.academic_rank.id_for_label }}" class="form-label">Academic Rank</label>
+                                            {{ form.academic_rank}}
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="{{ form.employment_type.id_for_label }}" class="form-label">Employment Type*</label>
+                                            {{ form.employment_type}}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label for="{{ form.date_of_employment.id_for_label }}" class="form-label">Date of Employment</label>
+                                            {{ form.date_of_employment }}
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="{{ form.qualification.id_for_label }}" class="form-label">Qualification</label>
+                                            {{ form.qualification }}
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="{{ form.specialization.id_for_label }}" class="form-label">Specialization</label>
+                                            {{ form.specialization }}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="{{ form.status.id_for_label }}" class="form-label">Status*</label>
+                                            {{ form.status}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Contact Information Section -->
+                        <div class="col-12">
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">
+                                    <h6 class="card-title pt-2">Contact Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                                            {{ form.email }}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="{{ form.phone_number.id_for_label }}" class="form-label">Phone Number</label>
+                                            {{ form.phone_number }}
+                                            <small class="form-text text-muted">{{ form.phone_number.help_text }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Additional Information Section -->
+                        <div class="col-12">
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">
+                                    <h6 class="card-title pt-2">Additional Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-12 mb-3">
+                                            <label for="{{ form.biography.id_for_label }}" class="form-label">Biography</label>
+                                            {{ form.biography }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Form Actions -->
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-save me-1"></i> Save
+                            </button>
+                            <a href="{% if form.instance.pk %}{% url 'lecturer_detail' form.instance.pk %}{% else %}{% url 'lecturer_list' %}{% endif %}" 
+                               class="btn btn-outline-secondary ms-2">
+                                <i class="bi bi-arrow-left me-1"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .card-header {
+        padding: 0.75rem 1.25rem;
+    }
+    .form-label {
+        font-weight: 500;
+    }
+    .card-title {
+        font-size: 1.1rem;
+    }
+    .invalid-feedback {
+        display: none;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: .875em;
+        color: #dc3545;
+    }
+    .was-validated .form-control:invalid ~ .invalid-feedback,
+    .was-validated .form-control:invalid ~ .invalid-tooltip {
+        display: block;
+    }
+</style>
+
+<script>
+// Example client-side validation
+(function () {
+    'use strict'
+    
+    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    var forms = document.querySelectorAll('.needs-validation')
+    
+    // Loop over them and prevent submission
+    Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                
+                form.classList.add('was-validated')
+            }, false)
+        })
+})()
+</script>
+{% endblock %}

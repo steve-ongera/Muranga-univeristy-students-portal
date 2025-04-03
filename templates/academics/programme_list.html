@@ -1,0 +1,60 @@
+{% extends "base/base.html" %}
+
+{% block title %}Academic Programmes{% endblock %}
+
+{% block content %}
+<div class="pagetitle">
+    <h1>Academic Programmes</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Programmes</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">All Programmes</h5>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Programme Name</th>
+                                    <th>Department</th>
+                                    <th>Duration</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for programme in programmes %}
+                                <tr>
+                                    <td>{{ programme.code }}</td>
+                                    <td>{{ programme.name }}</td>
+                                    <td>{{ programme.department.name }}</td>
+                                    <td>{{ programme.duration_years }} year(s)</td>
+                                    <td>
+                                        <a href="{% url 'programme_detail' programme.id %}" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-eye"></i> View Units
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No programmes found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

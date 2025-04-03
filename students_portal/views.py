@@ -629,17 +629,20 @@ def student_detail(request, pk):
 
 
 @login_required
-
 def student_update(request, pk):
     student = get_object_or_404(Student, pk=pk)
+    
     if request.method == 'POST':
         form = StudentForm(request.POST, instance=student)
         if form.is_valid():
             form.save()
-            return redirect('students_list')
+            messages.success(request, f"Student {student.first_name} {student.last_name} has been successfully updated.")
+            return redirect('database_students_list')
     else:
         form = StudentForm(instance=student)
+    
     return render(request, 'students/student_form.html', {'form': form})
+
 
 
 @login_required
@@ -1418,3 +1421,25 @@ def api_student_progress(request, student_id):
         'student': student,
         'progress_data': progress_data
     })
+
+
+
+def programme_list(request):
+    programmes = Programme.objects.all().select_related('department')
+    return render(request, 'academics/programme_list.html', {'programmes': programmes})
+
+def programme_detail(request, programme_id):
+    programme = get_object_or_404(Programme, id=programme_id)
+    programme_units = ProgrammeUnit.objects.filter(programme=programme).select_related('unit')
+    
+    # Get unique years and semesters for this programme
+    years = sorted(set(pu.year_of_study for pu in programme_units))
+    semesters = sorted(set(pu.semester for pu in programme_units))
+    
+    context = {
+        'programme': programme,
+        'programme_units': programme_units,
+        'years': years,
+        'semesters': semesters,
+    }
+    return render(request, 'academics/programme_detail.html', context)
