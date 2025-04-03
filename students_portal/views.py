@@ -1017,7 +1017,7 @@ from .models import Student, StudentEnrollment, StudentUnitGrade, GradeSystem, A
 import json
 
 def search_student(request):
-    """Search for a student by registration number and return enrolled units"""
+    """Search for a student by registration number and return enrolled units with existing grades"""
     registration_number = request.GET.get('registration_number')
 
     try:
@@ -1032,14 +1032,22 @@ def search_student(request):
             semester=current_semester
         ).select_related('programme_unit__unit', 'semester__academic_year')
 
-        units = [
-            {
+        units = []
+        for enrollment in enrollments:
+            # Check if there's an existing grade record for this enrollment
+            grade = StudentUnitGrade.objects.filter(enrollment=enrollment).first()
+            
+            unit_data = {
                 'enrollment_id': enrollment.id,
                 'unit_code': enrollment.programme_unit.unit.code,
-                'unit_name': enrollment.programme_unit.unit.name
+                'unit_name': enrollment.programme_unit.unit.name,
+                'cat_score': grade.cat_average if grade else None,
+                'exam_score': grade.exam_score if grade else None,
+                'total_score': grade.total_score if grade else None,
+                'grade': grade.grade.grade if grade and grade.grade else None,
+                'is_pass': grade.is_pass if grade else None
             }
-            for enrollment in enrollments
-        ]
+            units.append(unit_data)
 
         return JsonResponse({
             'student_name': student.get_full_name(),
@@ -1062,7 +1070,6 @@ def enter_student_grades(request):
         'students': students
     }
     return render(request, 'students/enter_grades.html', context)
-
 
 
 from django.views.decorators.http import require_POST

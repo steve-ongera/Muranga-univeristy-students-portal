@@ -43,6 +43,9 @@
                             <th>Unit Name</th>
                             <th>CAT Score (Max 30)</th>
                             <th>Exam Score (Max 70)</th>
+                            <th>Total Score</th>
+                            <th>Grade</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody id="units-table-body"></tbody>
@@ -105,24 +108,42 @@
             document.getElementById("semester").textContent = data.semester;
             document.getElementById("hidden-registration-number").value = data.registration_number;
 
-            // Populate units table
+            // Populate units table with existing grades
             const tbody = document.getElementById("units-table-body");
-            tbody.innerHTML = data.units.map(unit => `
+            tbody.innerHTML = data.units.map(unit => {
+                // Get existing grade values or default to empty
+                const catValue = unit.cat_score !== null && unit.cat_score !== undefined ? unit.cat_score : '';
+                const examValue = unit.exam_score !== null && unit.exam_score !== undefined ? unit.exam_score : '';
+                const totalValue = unit.total_score !== null && unit.total_score !== undefined ? unit.total_score : '';
+                const gradeValue = unit.grade !== null && unit.grade !== undefined ? unit.grade : '';
+                const statusValue = unit.is_pass !== null && unit.is_pass !== undefined ? 
+                                    (unit.is_pass ? '<span class="badge bg-success">Pass</span>' : 
+                                                   '<span class="badge bg-danger">Fail</span>') : '';
+                
+                return `
                 <tr>
                     <td>${unit.unit_code}</td>
                     <td>${unit.unit_name}</td>
                     <td>
                         <input type="number" class="form-control cat-score" 
                                data-enrollment="${unit.enrollment_id}" 
-                               min="0" max="30" step="0.5" required>
+                               value="${catValue}"
+                               min="0" max="30" step="0.5" required
+                               onchange="calculateTotal(this)">
                     </td>
                     <td>
                         <input type="number" class="form-control exam-score" 
                                data-enrollment="${unit.enrollment_id}" 
-                               min="0" max="70" step="0.5" required>
+                               value="${examValue}"
+                               min="0" max="70" step="0.5" required
+                               onchange="calculateTotal(this)">
                     </td>
+                    <td class="total-score">${totalValue}</td>
+                    <td class="grade">${gradeValue}</td>
+                    <td class="status">${statusValue}</td>
                 </tr>
-            `).join('');
+                `;
+            }).join('');
 
         } catch (error) {
             console.error('Error:', error);
@@ -130,6 +151,21 @@
         } finally {
             spinner.classList.add("d-none");
         }
+    }
+
+    // Calculate total score when CAT or exam score changes
+    function calculateTotal(input) {
+        const row = input.closest('tr');
+        const catScore = parseFloat(row.querySelector('.cat-score').value) || 0;
+        const examScore = parseFloat(row.querySelector('.exam-score').value) || 0;
+        const totalScore = catScore + examScore;
+        
+        // Update total score cell
+        row.querySelector('.total-score').textContent = totalScore.toFixed(1);
+        
+        // Clear grade and status as they will be updated on save
+        row.querySelector('.grade').textContent = '';
+        row.querySelector('.status').innerHTML = '';
     }
 
     async function saveGrades() {
@@ -197,10 +233,8 @@
     
             alert(data.message || "Grades saved successfully!");
             
-            // Clear the form after successful save
-            document.getElementById("registration_number").value = "";
-            document.getElementById("student-info").classList.add("d-none");
-            document.getElementById("units-table-body").innerHTML = "";
+            // Reload the student data to show updated grades and status
+            searchStudent();
             
         } catch (error) {
             console.error('Error:', error);
