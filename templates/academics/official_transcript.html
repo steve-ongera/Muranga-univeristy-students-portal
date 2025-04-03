@@ -1,123 +1,259 @@
-<!-- templates/academics/official_transcript.html -->
 {% extends "base/base.html" %}
-
+{% load static %}
 {% block title %}{{ transcript.student_info.name }} - Official Transcript{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="card">
-        <div class="card-header bg-dark text-white">
-            <div class="text-center">
-                <h2>UNIVERSITY OFFICIAL TRANSCRIPT</h2>
-                <h4>{{ transcript.student_info.programme }}</h4>
-            </div>
-        </div>
-        <div class="card-body">
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <h3>{{ transcript.student_info.name }}</h3>
-                    <p><strong>Registration Number:</strong> {{ transcript.student_info.reg_number }}</p>
-                    <p><strong>Date of Admission:</strong> {{ transcript.student_info.admission_date|date:"F j, Y" }}</p>
-                </div>
-                <div class="col-md-6 text-md-right">
-                    <div class="border p-3 bg-light">
-                        <h5>Academic Summary</h5>
-                        <p><strong>Cumulative GPA:</strong> {{ transcript.cumulative_summary.gpa|floatformat:2 }}</p>
-                        <p><strong>Total Credits Earned:</strong> {{ transcript.cumulative_summary.total_credits }}</p>
-                    </div>
-                </div>
-            </div>
+<div class="pagetitle">
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'database_students_list' %}">Students</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'student_detail' student.id %}">{{ transcript.student_info.name }}</a></li>
+            <li class="breadcrumb-item active">Official Transcript</li>
+        </ol>
+    </nav>
+</div>
 
-            {% for year_id, year_data in transcript.academic_years.items %}
-            <div class="mb-4">
-                <h4 class="border-bottom pb-2">{{ year_data.name }}</h4>
+<section class="section">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card official-transcript">
+                <!-- Transcript Header -->
+                <div class="card-header bg-university text-white py-3">
+                    <div class="text-center">
+                        <div class="university-seal mb-2 bg-white p-2 rounded-circle d-inline-flex justify-content-center align-items-center border border-light" style="width: 100px; height: 100px;">
+                            <img src="{% static 'assets/img/logo.png' %}" alt="University Seal" height="80" class="img-fluid">
+                        </div>
+                        <h1 class="h2 mb-1">OFFICIAL ACADEMIC TRANSCRIPT</h1>
+                        <h3 class="h5">{{ transcript.student_info.programme|upper }}</h3>
+                    </div>
+                </div>
                 
-                {% for semester_num, semester_data in year_data.semesters.items %}
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <h5>Semester {{ semester_num }}</h5>
+                <div class="card-body">
+                    <!-- Student Information Section -->
+                    <div class="student-info mb-4">
                         <div class="row">
-                            <div class="col-md-4">
-                                <span class="badge badge-info">GPA: {{ semester_data.summary.gpa|floatformat:2 }}</span>
+                            <div class="col-md-6">
+                                <div class="d-flex flex-column">
+                                    <h3 class="mb-2">{{ transcript.student_info.name }}</h3>
+                                    <div class="d-flex mb-1">
+                                        <span class="text-muted me-2" style="min-width: 150px;">Registration Number:</span>
+                                        <span class="fw-bold">{{ transcript.student_info.reg_number }}</span>
+                                    </div>
+                                    <div class="d-flex mb-1">
+                                        <span class="text-muted me-2" style="min-width: 150px;">Admission Date:</span>
+                                        <span class="fw-bold">{{ transcript.student_info.admission_date|date:"F j, Y" }}</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-4">
-                                <span class="badge badge-success">Credits: {{ semester_data.summary.earned_credits }}</span>
-                            </div>
-                            <div class="col-md-4">
-                                <span class="badge badge-primary">Year {{ semester_data.units.0.year_of_study|default:1 }}</span>
+                            <div class="col-md-6">
+                                <div class="academic-summary p-3 border rounded bg-light">
+                                    <h5 class="border-bottom pb-2 mb-3">ACADEMIC SUMMARY</h5>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="mb-2">
+                                                <span class="text-muted small">Cumulative GPA:</span>
+                                                <span class="fw-bold d-block">{{ transcript.cumulative_summary.gpa|floatformat:2 }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="mb-2">
+                                                <span class="text-muted small">Credits Earned:</span>
+                                                <span class="fw-bold d-block">{{ transcript.cumulative_summary.total_credits }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-bordered mb-0">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th>Code</th>
-                                        <th>Unit Title</th>
-                                        <th>Credit Hours</th>
-                                        <th>CAT (30%)</th>
-                                        <th>Exam (70%)</th>
-                                        <th>Total (100%)</th>
-                                        <th>Grade</th>
-                                        <th>Points</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for unit in semester_data.units %}
-                                    <tr>
-                                        <td>{{ unit.code }}</td>
-                                        <td>{{ unit.name }}</td>
-                                        <td>{{ unit.credit_hours }}</td>
-                                        <td>{{ unit.cat_average|floatformat:1|default:"-" }}</td>
-                                        <td>{{ unit.exam_score|floatformat:1|default:"-" }}</td>
-                                        <td>{{ unit.total_score|floatformat:1|default:"-" }}</td>
-                                        <td>{{ unit.grade|default:"-" }}</td>
-                                        <td>
-                                            {% if unit.grade %}
-                                                {% with grade=unit.grade %}
-                                                    {% if grade == 'A' %}4.0
-                                                    {% elif grade == 'B' %}3.0
-                                                    {% elif grade == 'C' %}2.0
-                                                    {% elif grade == 'D' %}1.0
-                                                    {% elif grade == 'E' %}0.5
-                                                    {% elif grade == 'F' %}0.0
+
+                    <!-- Academic Records -->
+                    {% for year_id, year_data in transcript.academic_years.items %}
+                    <div class="academic-year mb-4">
+                        <div class="year-header d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                            <h4 class="mb-0">{{ year_data.name }}</h4>
+                            <div class="text-muted small">Academic Year</div>
+                        </div>
+                        
+                        {% for semester_num, semester_data in year_data.semesters.items %}
+                        <div class="semester-card card mb-4">
+                            <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+                                <h5 class="mb-2 mb-md-0">Semester {{ semester_num }}</h5>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <span class="badge bg-info">
+                                        <i class="bi bi-graph-up me-1"></i>GPA: {{ semester_data.summary.gpa|floatformat:2 }}
+                                    </span>
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-award me-1"></i>Credits: {{ semester_data.summary.earned_credits }}
+                                    </span>
+                                    <span class="badge bg-primary">
+                                        Year {{ semester_data.units.0.year_of_study|default:1 }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0 transcript-table">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="text-nowrap">Code</th>
+                                                <th>Unit Title</th>
+                                                <th class="text-center">CH</th>
+                                                <th class="text-center">CAT</th>
+                                                <th class="text-center">Exam</th>
+                                                <th class="text-center">Total</th>
+                                                <th class="text-center">Grade</th>
+                                                <th class="text-center">Points</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for unit in semester_data.units %}
+                                            <tr>
+                                                <td class="fw-bold">{{ unit.code }}</td>
+                                                <td>{{ unit.name }}</td>
+                                                <td class="text-center">{{ unit.credit_hours }}</td>
+                                                <td class="text-center">{{ unit.cat_average|floatformat:1|default:"-" }}</td>
+                                                <td class="text-center">{{ unit.exam_score|floatformat:1|default:"-" }}</td>
+                                                <td class="text-center fw-bold">{{ unit.total_score|floatformat:1|default:"-" }}</td>
+                                                <td class="text-center">
+                                                    <span class="badge 
+                                                        {% if unit.grade == 'A' %}bg-success
+                                                        {% elif unit.grade == 'B' %}bg-primary
+                                                        {% elif unit.grade == 'C' %}bg-info
+                                                        {% elif unit.grade == 'D' %}bg-warning
+                                                        {% elif unit.grade == 'E' %}bg-warning
+                                                        {% elif unit.grade == 'F' %}bg-danger
+                                                        {% else %}bg-secondary{% endif %}">
+                                                        {{ unit.grade|default:"-" }}
+                                                    </span>
+                                                </td>
+                                                <td class="text-center">
+                                                    {% if unit.grade %}
+                                                        {% with grade=unit.grade %}
+                                                            {% if grade == 'A' %}4.0
+                                                            {% elif grade == 'B' %}3.0
+                                                            {% elif grade == 'C' %}2.0
+                                                            {% elif grade == 'D' %}1.0
+                                                            {% elif grade == 'E' %}0.5
+                                                            {% elif grade == 'F' %}0.0
+                                                            {% else %}-{% endif %}
+                                                        {% endwith %}
                                                     {% else %}-{% endif %}
-                                                {% endwith %}
-                                            {% else %}-{% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Transcript Footer -->
+                <div class="card-footer bg-light">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="mb-0 text-muted small">
+                                <i class="bi bi-exclamation-circle"></i> This is an official document. Any alteration renders it invalid.
+                            </p>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <button class="btn btn-dark btn-sm" onclick="window.print()">
+                                <i class="bi bi-printer"></i> Print Transcript
+                            </button>
+                            {% if student.id %}
+                                <a href="{% url 'api_student_progress' student_id=student.id %}" class="btn btn-outline-dark btn-sm ms-2">
+                                    <i class="bi bi-file-text"></i> Progress Report
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="official-footer border-top pt-3">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="text-muted small mb-0">
+                                    <i class="bi bi-clock"></i> Generated on {% now "F j, Y H:i" %}
+                                </p>
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <div class="signature-box d-inline-block text-center">
+                                    <p class="mb-1 fw-bold">REGISTRAR'S SIGNATURE</p>
+                                    <div class="signature-line"></div>
+                                    <p class="text-muted small mb-0">Date: _______________</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                {% endfor %}
-            </div>
-            {% endfor %}
-        </div>
-        <div class="card-footer text-muted">
-            <div class="row">
-                <div class="col-md-6">
-                    <p>This is an official document. Any alteration renders it invalid.</p>
-                </div>
-                <div class="col-md-6 text-md-right">
-                    <button class="btn btn-dark" onclick="window.print()">Print Transcript</button>
-                    {% if student.id %}
-                        <a href="{% url 'api_student_progress' student_id=student.id %}" class="btn btn-outline-dark">
-                            View Progress Report
-                        </a>
-                    {% else %}
-                        <button class="btn btn-outline-dark disabled">Student data unavailable</button>
-                    {% endif %}
-                </div>
-            </div>
-            <div class="text-center mt-3">
-                <p>Generated on {% now "F j, Y H:i" %}</p>
-                <p class="font-weight-bold">REGISTRAR'S SIGNATURE: _________________________</p>
             </div>
         </div>
     </div>
-</div>
+</section>
+
+<style>
+    .official-transcript {
+        border: 2px solid #dee2e6;
+    }
+    
+    .bg-university {
+        background-color: #002147; /* Dark blue university color */
+    }
+    
+    .university-seal {
+        margin: 0 auto;
+        width: 80px;
+    }
+    
+    .transcript-table th {
+        white-space: nowrap;
+        font-weight: 500;
+        background-color: #f8f9fa;
+    }
+    
+    .transcript-table td {
+        vertical-align: middle;
+    }
+    
+    .signature-line {
+        border-top: 1px solid #000;
+        width: 200px;
+        margin: 0 auto;
+        padding-top: 15px;
+    }
+    
+    .semester-card {
+        border: 1px solid rgba(0,0,0,.125);
+    }
+    
+    .semester-card .card-header {
+        background-color: rgba(0,33,71,.03);
+        border-bottom: 1px solid rgba(0,0,0,.125);
+    }
+    
+    .academic-summary {
+        border-left: 3px solid #002147;
+    }
+    
+    @media print {
+        .breadcrumb, .card-header .btn {
+            display: none !important;
+        }
+        .official-transcript {
+            border: none;
+        }
+        body {
+            background-color: white !important;
+            color: black !important;
+        }
+        .card {
+            box-shadow: none !important;
+        }
+    }
+</style>
 {% endblock %}
