@@ -1142,3 +1142,64 @@ def save_student_grades(request):
         return JsonResponse({
             'error': str(e)
         }, status=400)
+
+
+
+
+from django.shortcuts import render
+from django.db.models import Q
+from django.contrib.auth.decorators import login_required
+from .models import Student
+from .forms import StudentSearchForm
+
+@login_required
+def search_student_data(request):
+    """View for searching students with various filter criteria"""
+    form = StudentSearchForm(request.GET or None)
+    students = None
+    
+    if request.GET:
+        # Form was submitted, apply filters
+        students = Student.objects.all()
+        
+        # Apply filters based on form data
+        if request.GET.get('registration_number'):
+            students = students.filter(registration_number__icontains=request.GET.get('registration_number'))
+        
+        if request.GET.get('name'):
+            name_query = request.GET.get('name')
+            name_filter = Q(first_name__icontains=name_query) | \
+                          Q(last_name__icontains=name_query) | \
+                          Q(middle_name__icontains=name_query)
+            students = students.filter(name_filter)
+        
+        if request.GET.get('programme') and request.GET.get('programme') != '':
+            students = students.filter(programme_id=request.GET.get('programme'))
+        
+        if request.GET.get('current_year') and request.GET.get('current_year') != '0':
+            students = students.filter(current_year=request.GET.get('current_year'))
+        
+        if request.GET.get('status') and request.GET.get('status') != '':
+            students = students.filter(status=request.GET.get('status'))
+        
+        if request.GET.get('entry_mode') and request.GET.get('entry_mode') != '':
+            students = students.filter(entry_mode=request.GET.get('entry_mode'))
+        
+        if request.GET.get('email'):
+            students = students.filter(email__icontains=request.GET.get('email'))
+        
+        if request.GET.get('phone_number'):
+            students = students.filter(phone_number__icontains=request.GET.get('phone_number'))
+        
+        if request.GET.get('id_number'):
+            students = students.filter(id_number__icontains=request.GET.get('id_number'))
+        
+        # Order results
+        students = students.order_by('registration_number')
+    
+    context = {
+        'form': form,
+        'students': students
+    }
+    
+    return render(request, 'students/search_student.html', context)

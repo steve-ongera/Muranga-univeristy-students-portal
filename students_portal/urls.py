@@ -22,6 +22,10 @@ urlpatterns = [
     path('students/<int:pk>/update/', views.student_update, name='student_update'),
     path('students/<int:pk>/delete/', views.student_delete, name='student_delete'),
 
+    #seachings
+    path('search-student-data/', views.search_student_data, name='search_student_data'),
+    #path('student/<int:student_id>/academic-record/', views.student_academic_record, name='student_academic_record'),
+
     path('lecturers/', views.lecturer_list, name='lecturer_list'),
     path('lecturers/add/', views.lecturer_create, name='lecturer_create'),
     path('lecturers/<int:pk>/', views.lecturer_detail, name='lecturer_detail'),

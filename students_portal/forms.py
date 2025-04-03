@@ -139,3 +139,52 @@ class LecturerForm(forms.ModelForm):
                          'specialization', 'academic_rank', 'date_of_employment',
                          'email', 'phone_number', 'biography', 'profile_picture']:
             self.fields[field_name].required = False
+
+
+
+from django import forms
+from .models import Student, Programme
+
+class StudentSearchForm(forms.Form):
+    """Form for searching students with various filter options"""
+    registration_number = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Registration Number'})
+    )
+    name = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Student Name'})
+    )
+    programme = forms.ModelChoiceField(
+        queryset=Programme.objects.all(),
+        required=False,
+        empty_label="All Programmes",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    current_year = forms.ChoiceField(
+        choices=[(0, 'All Years')] + [(i, f'Year {i}') for i in range(1, 5)],
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    status = forms.ChoiceField(
+        choices=[('', 'All Status')] + Student._meta.get_field('status').choices,
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    entry_mode = forms.ChoiceField(
+        choices=[('', 'All Entry Modes')] + Student._meta.get_field('entry_mode').choices,
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    email = forms.EmailField(
+        required=False,
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email Address'})
+    )
+    phone_number = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone Number'})
+    )
+    id_number = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'ID Number'})
+    )
