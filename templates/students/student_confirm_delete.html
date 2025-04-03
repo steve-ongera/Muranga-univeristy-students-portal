@@ -19,12 +19,12 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Confirm Deletion</h5>
-                    <p>Are you sure you want to delete "<strong>{{ student.name }}</strong>"?</p>
+                    <p>Are you sure you want to delete "<strong>{{ student.first_name }}</strong>"?</p>
                     <form method="post">
                         {% csrf_token %}
                         <div class="d-flex justify-content-between">
                             <button type="submit" class="btn btn-danger">Yes, delete</button>
-                            <a href="{% url 'students_list' %}" class="btn btn-secondary">Cancel</a>
+                            <a href="{% url 'database_students_list' %}" class="btn btn-secondary">Cancel</a>
                         </div>
                     </form>
                 </div>

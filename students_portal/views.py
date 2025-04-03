@@ -602,7 +602,6 @@ def finance_dashboard(request):
 
 
 @login_required
-
 def database_students_list(request):
     students = Student.objects.all()
     return render(request, 'students/database_student_list.html', {'students': students})

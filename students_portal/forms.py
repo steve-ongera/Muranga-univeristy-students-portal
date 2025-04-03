@@ -4,12 +4,14 @@ from django.core.validators import RegexValidator
 
 class StudentForm(forms.ModelForm):
     # Additional field customization
-    phone_number = forms.CharField(
-        max_length=15,
-        required=False,
-        validators=[RegexValidator(r'^\+?1?\d{9,15}$', 'Enter a valid phone number.')]
-    )
-    email = forms.EmailField(required=False)
+    email = forms.EmailInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'student@example.com'
+    }),
+    phone_number = forms.TextInput(attrs={
+        'class': 'form-control',
+        'placeholder': '+254700000000'
+    }),
     
     class Meta:
         model = Student
@@ -40,11 +42,11 @@ class StudentForm(forms.ModelForm):
                 'type': 'date'
             }),
             'gender': forms.Select(attrs={'class': 'form-select'}),
-            'email': forms.EmailInput(attrs={
+            'email' : forms.EmailInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'student@example.com'
             }),
-            'phone_number': forms.TextInput(attrs={
+            'phone_number' : forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': '+254700000000'
             }),
