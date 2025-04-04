@@ -1448,7 +1448,8 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db import transaction
-from .models import Student, StudentUnitGrade, StudentFee
+from django.db.models import Count
+from .models import Student, StudentUnitGrade, StudentFee, Programme
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)
@@ -1456,14 +1457,16 @@ def promote_students(request):
     if request.method == 'POST':
         try:
             with transaction.atomic():
-                promoted_count = 0
-                failed_promotion = 0
+                promotion_results = {
+                    'promoted': {},
+                    'not_promoted': []
+                }
                 
                 # Get all active students
-                active_students = Student.objects.filter(status='active')
+                active_students = Student.objects.filter(status='active').select_related('programme')
                 
                 for student in active_students:
-                    # Check if student has failed more than 3 units in current academic year
+                    # Check if student has failed more than 3 units
                     failed_units = StudentUnitGrade.objects.filter(
                         enrollment__student=student,
                         is_pass=False
@@ -1475,27 +1478,59 @@ def promote_students(request):
                         balance__gt=0
                     ).exists()
                     
+                    # Determine promotion status
                     if failed_units <= 3 and not has_balance:
-                        # Promote the student
+                        # Promotion logic
+                        old_year = student.current_year
+                        old_semester = student.current_semester
+                        
                         if student.current_semester == 2:
-                            # Move to next year
                             student.current_year += 1
                             student.current_semester = 1
                         else:
-                            # Move to next semester
                             student.current_semester += 1
                         
                         student.save()
-                        promoted_count += 1
+                        
+                        # Add to promoted group
+                        programme_name = student.programme.name
+                        promotion_key = f"{programme_name} (Y{old_year}S{old_semester} → Y{student.current_year}S{student.current_semester})"
+                        
+                        if promotion_key not in promotion_results['promoted']:
+                            promotion_results['promoted'][promotion_key] = []
+                        
+                        promotion_results['promoted'][promotion_key].append({
+                            'name': f"{student.first_name} {student.last_name}",
+                            'reg_no': student.registration_number
+                        })
                     else:
-                        failed_promotion += 1
+                        # Add to not promoted with reason
+                        reasons = []
+                        if failed_units > 3:
+                            reasons.append(f"Failed {failed_units} units")
+                        if has_balance:
+                            reasons.append("Has fee balance")
+                            
+                        promotion_results['not_promoted'].append({
+                            'name': f"{student.first_name} {student.last_name}",
+                            'reg_no': student.registration_number,
+                            'programme': student.programme.name,
+                            'reason': ", ".join(reasons) if reasons else "Unknown reason"
+                        })
                 
-                messages.success(request, f"Promotion complete! {promoted_count} students promoted. {failed_promotion} students didn't meet requirements.")
-                return redirect('promote_students')
+                # Count totals
+                total_promoted = sum(len(v) for v in promotion_results['promoted'].values())
+                total_not_promoted = len(promotion_results['not_promoted'])
+                
+                messages.success(request, f"Promotion complete! {total_promoted} students promoted. {total_not_promoted} students not promoted.")
+                return render(request, 'promote_students.html', {
+                    'promotion_results': promotion_results,
+                    'total_promoted': total_promoted,
+                    'total_not_promoted': total_not_promoted
+                })
                 
         except Exception as e:
             messages.error(request, f"Error during promotion: {str(e)}")
             return redirect('promote_students')
     
-    # For GET requests, show promotion page with button
-    return render(request, 'academics/admin/promote_students.html')
+    return render(request, 'promote_students.html')
