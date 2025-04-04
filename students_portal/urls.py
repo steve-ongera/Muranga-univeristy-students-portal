@@ -50,6 +50,8 @@ urlpatterns = [
     path('programmes/', views.programme_list, name='programme_list'),
     path('programmes/<int:programme_id>/', views.programme_detail, name='programme_detail'),
 
+    path('adminpage/students_portal/promote-students/', views.promote_students, name='promote_students'),
+
     
 
 

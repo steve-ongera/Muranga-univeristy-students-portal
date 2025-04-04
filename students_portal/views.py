@@ -1443,3 +1443,59 @@ def programme_detail(request, programme_id):
         'semesters': semesters,
     }
     return render(request, 'academics/programme_detail.html', context)
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db import transaction
+from .models import Student, StudentUnitGrade, StudentFee
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def promote_students(request):
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                promoted_count = 0
+                failed_promotion = 0
+                
+                # Get all active students
+                active_students = Student.objects.filter(status='active')
+                
+                for student in active_students:
+                    # Check if student has failed more than 3 units in current academic year
+                    failed_units = StudentUnitGrade.objects.filter(
+                        enrollment__student=student,
+                        is_pass=False
+                    ).count()
+                    
+                    # Check if student has any fee balance
+                    has_balance = StudentFee.objects.filter(
+                        student=student,
+                        balance__gt=0
+                    ).exists()
+                    
+                    if failed_units <= 3 and not has_balance:
+                        # Promote the student
+                        if student.current_semester == 2:
+                            # Move to next year
+                            student.current_year += 1
+                            student.current_semester = 1
+                        else:
+                            # Move to next semester
+                            student.current_semester += 1
+                        
+                        student.save()
+                        promoted_count += 1
+                    else:
+                        failed_promotion += 1
+                
+                messages.success(request, f"Promotion complete! {promoted_count} students promoted. {failed_promotion} students didn't meet requirements.")
+                return redirect('promote_students')
+                
+        except Exception as e:
+            messages.error(request, f"Error during promotion: {str(e)}")
+            return redirect('promote_students')
+    
+    # For GET requests, show promotion page with button
+    return render(request, 'academics/admin/promote_students.html')
