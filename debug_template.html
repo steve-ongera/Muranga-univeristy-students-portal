@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Academic Transcript - Ian Kihara</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm;
+            @top-center {
+                content: element(header);
+            }
+            @bottom-center {
+                content: element(footer);
+            }
+        }
+        
+        body {
+            font-family: "Times New Roman", serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .header {
+            position: running(header);
+            width: 100%;
+            text-align: center;
+            border-bottom: 2px solid #003366;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .footer {
+            position: running(footer);
+            width: 100%;
+            text-align: center;
+            font-size: 10pt;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 5px;
+        }
+        
+        .logo {
+            height: 80px;
+            margin-bottom: 10px;
+        }
+        
+        .university-name {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #003366;
+        }
+        
+        .document-title {
+            font-size: 14pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 15px 0;
+        }
+        
+        .student-info {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .student-info td {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+        }
+        
+        .student-info .label {
+            font-weight: bold;
+            width: 30%;
+            background-color: #f5f5f5;
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .results-table th, .results-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        
+        .results-table th {
+            background-color: #003366;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .results-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .semester-header {
+            background-color: #e6e6e6;
+            font-weight: bold;
+            padding: 8px;
+            margin: 15px 0 10px 0;
+            border-left: 4px solid #003366;
+        }
+        
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+        
+        .summary-table th, .summary-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        
+        .summary-table th {
+            background-color: #f5f5f5;
+            text-align: left;
+        }
+        
+        .signature-area {
+            margin-top: 50px;
+            width: 100%;
+        }
+        
+        .signature-line {
+            border-top: 1px solid #333;
+            width: 200px;
+            margin: 40px 0 5px 0;
+        }
+        
+        .official-stamp {
+            float: right;
+            width: 150px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        
+        <img src="http://192.168.100.4:8000/media/school_logo.png" class="logo" alt="University Logo">
+        
+        <div class="university-name">Muranga University Of Technology</div>
+        <div>P.O. Box XXX, City, Country</div>
+    </div>
+    
+    <div class="footer">
+        This is an official document. Any alteration renders it invalid. Page <pdf:pagenumber> of <pdf:pagecount>
+    </div>
+    
+    <div class="document-title">Official Academic Transcript</div>
+    
+    <table class="student-info">
+        <tr>
+            <td class="label">Student Name:</td>
+            <td>Ian Kihara</td>
+        </tr>
+        <tr>
+            <td class="label">Registration Number:</td>
+            <td>S4563/2022</td>
+        </tr>
+        <tr>
+            <td class="label">Programme:</td>
+            <td>Bachelor of Software Engineering</td>
+        </tr>
+        <tr>
+            <td class="label">Date of Admission:</td>
+            <td>January 27, 2021</td>
+        </tr>
+        <tr>
+            <td class="label">Date of Issue:</td>
+            <td>April 6, 2025</td>
+        </tr>
+    </table>
+    
+    
+    <div class="year-section">
+        <div class="semester-header">2024/2025 ACADEMIC YEAR</div>
+        
+        
+        <div class="semester-section">
+            <div class="semester-header">SEMESTER 1: Semester 1</div>
+            
+            
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Unit Name</th>
+                        <th>Credit Hours</th>
+                        <th>CAT</th>
+                        <th>Exam</th>
+                        <th>Total</th>
+                        <th>Grade</th>
+                        <th>Points</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <td>SE043</td>
+                        <td>Database Administration</td>
+                        <td>3</td>
+                        <td>
+                            
+                            12.00
+                            
+                        </td>
+                        <td>
+                            
+                            39.00
+                            
+                        </td>
+                        <td>
+                            
+                            51.00
+                            
+                        </td>
+                        <td>C</td>
+                        <td>2.0</td>
+                        <td>
+                            
+                            <span style="color: green;">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE044</td>
+                        <td>E-commerce Systems</td>
+                        <td>3</td>
+                        <td>
+                            
+                            20.00
+                            
+                        </td>
+                        <td>
+                            
+                            40.00
+                            
+                        </td>
+                        <td>
+                            
+                            60.00
+                            
+                        </td>
+                        <td>B</td>
+                        <td>3.0</td>
+                        <td>
+                            
+                            <span style="color: green;">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE045</td>
+                        <td>Data Mining</td>
+                        <td>3</td>
+                        <td>
+                            
+                            10.00
+                            
+                        </td>
+                        <td>
+                            
+                            20.00
+                            
+                        </td>
+                        <td>
+                            
+                            30.00
+                            
+                        </td>
+                        <td>F</td>
+                        <td>-</td>
+                        <td>
+                            
+                            <span style="color: red;">FAIL</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE046</td>
+                        <td>Capstone Project I</td>
+                        <td>3</td>
+                        <td>
+                            
+                            15.00
+                            
+                        </td>
+                        <td>
+                            
+                            21.00
+                            
+                        </td>
+                        <td>
+                            
+                            36.00
+                            
+                        </td>
+                        <td>F</td>
+                        <td>-</td>
+                        <td>
+                            
+                            <span style="color: red;">FAIL</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE047</td>
+                        <td>Capstone Project II</td>
+                        <td>3</td>
+                        <td>
+                            
+                            17.00
+                            
+                        </td>
+                        <td>
+                            
+                            18.00
+                            
+                        </td>
+                        <td>
+                            
+                            35.00
+                            
+                        </td>
+                        <td>F</td>
+                        <td>-</td>
+                        <td>
+                            
+                            <span style="color: red;">FAIL</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE048</td>
+                        <td>Software Documentation</td>
+                        <td>3</td>
+                        <td>
+                            
+                            29.00
+                            
+                        </td>
+                        <td>
+                            
+                            30.00
+                            
+                        </td>
+                        <td>
+                            
+                            59.00
+                            
+                        </td>
+                        <td>C</td>
+                        <td>2.0</td>
+                        <td>
+                            
+                            <span style="color: green;">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+            
+        </div>
+        
+        <div class="semester-section">
+            <div class="semester-header">SEMESTER 2: Semester 2</div>
+            
+            
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Unit Name</th>
+                        <th>Credit Hours</th>
+                        <th>CAT</th>
+                        <th>Exam</th>
+                        <th>Total</th>
+                        <th>Grade</th>
+                        <th>Points</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <td>BUS103</td>
+                        <td>Financial Management</td>
+                        <td>3</td>
+                        <td>
+                            
+                            10.00
+                            
+                        </td>
+                        <td>
+                            
+                            60.00
+                            
+                        </td>
+                        <td>
+                            
+                            70.00
+                            
+                        </td>
+                        <td>A</td>
+                        <td>4.0</td>
+                        <td>
+                            
+                            <span style="color: green;">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>COM107</td>
+                        <td>Investigative Journalism</td>
+                        <td>3</td>
+                        <td>
+                            
+                            10.00
+                            
+                        </td>
+                        <td>
+                            
+                            50.00
+                            
+                        </td>
+                        <td>
+                            
+                            60.00
+                            
+                        </td>
+                        <td>B</td>
+                        <td>3.0</td>
+                        <td>
+                            
+                            <span style="color: green;">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>CSC103</td>
+                        <td>Database Management Systems</td>
+                        <td>3</td>
+                        <td>
+                            
+                            20.00
+                            
+                        </td>
+                        <td>
+                            
+                            41.00
+                            
+                        </td>
+                        <td>
+                            
+                            61.00
+                            
+                        </td>
+                        <td>B</td>
+                        <td>3.0</td>
+                        <td>
+                            
+                            <span style="color: green;">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE043</td>
+                        <td>Database Administration</td>
+                        <td>3</td>
+                        <td>
+                            
+                            19.00
+                            
+                        </td>
+                        <td>
+                            
+                            44.00
+                            
+                        </td>
+                        <td>
+                            
+                            63.00
+                            
+                        </td>
+                        <td>B</td>
+                        <td>3.0</td>
+                        <td>
+                            
+                            <span style="color: green;">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE044</td>
+                        <td>E-commerce Systems</td>
+                        <td>3</td>
+                        <td>
+                            
+                            15.00
+                            
+                        </td>
+                        <td>
+                            
+                            30.00
+                            
+                        </td>
+                        <td>
+                            
+                            45.00
+                            
+                        </td>
+                        <td>D</td>
+                        <td>1.0</td>
+                        <td>
+                            
+                            <span style="color: red;">FAIL</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE045</td>
+                        <td>Data Mining</td>
+                        <td>3</td>
+                        <td>
+                            
+                            28.00
+                            
+                        </td>
+                        <td>
+                            
+                            49.00
+                            
+                        </td>
+                        <td>
+                            
+                            77.00
+                            
+                        </td>
+                        <td>A</td>
+                        <td>4.0</td>
+                        <td>
+                            
+                            <span style="color: green;">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE046</td>
+                        <td>Capstone Project I</td>
+                        <td>3</td>
+                        <td>
+                            
+                            17.00
+                            
+                        </td>
+                        <td>
+                            
+                            37.00
+                            
+                        </td>
+                        <td>
+                            
+                            54.00
+                            
+                        </td>
+                        <td>C</td>
+                        <td>2.0</td>
+                        <td>
+                            
+                            <span style="color: green;">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE047</td>
+                        <td>Capstone Project II</td>
+                        <td>3</td>
+                        <td>
+                            
+                            20.00
+                            
+                        </td>
+                        <td>
+                            
+                            50.00
+                            
+                        </td>
+                        <td>
+                            
+                            70.00
+                            
+                        </td>
+                        <td>A</td>
+                        <td>4.0</td>
+                        <td>
+                            
+                            <span style="color: green;">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE048</td>
+                        <td>Software Documentation</td>
+                        <td>3</td>
+                        <td>
+                            
+                            28.00
+                            
+                        </td>
+                        <td>
+                            
+                            44.00
+                            
+                        </td>
+                        <td>
+                            
+                            72.00
+                            
+                        </td>
+                        <td>A</td>
+                        <td>4.0</td>
+                        <td>
+                            
+                            <span style="color: green;">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+            
+        </div>
+        
+    </div>
+    
+    <div class="year-section">
+        <div class="semester-header">2023/2024 ACADEMIC YEAR</div>
+        
+        
+        <div class="semester-section">
+            <div class="semester-header">SEMESTER 1: Semester 1</div>
+            
+            
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Unit Name</th>
+                        <th>Credit Hours</th>
+                        <th>CAT</th>
+                        <th>Exam</th>
+                        <th>Total</th>
+                        <th>Grade</th>
+                        <th>Points</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <td>SE025</td>
+                        <td>Cloud Computing</td>
+                        <td>3</td>
+                        <td>
+                            
+                            12.00
+                            
+                        </td>
+                        <td>
+                            
+                            20.00
+                            
+                        </td>
+                        <td>
+                            
+                            32.00
+                            
+                        </td>
+                        <td>F</td>
+                        <td>-</td>
+                        <td>
+                            
+                            <span style="color: red;">FAIL</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE026</td>
+                        <td>Computer Vision</td>
+                        <td>3</td>
+                        <td>
+                            
+                            18.00
+                            
+                        </td>
+                        <td>
+                            
+                            38.00
+                            
+                        </td>
+                        <td>
+                            
+                            56.00
+                            
+                        </td>
+                        <td>C</td>
+                        <td>2.0</td>
+                        <td>
+                            
+                            <span style="color: green;">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE027</td>
+                        <td>Machine Learning</td>
+                        <td>3</td>
+                        <td>
+                            
+                            20.00
+                            
+                        </td>
+                        <td>
+                            
+                            30.00
+                            
+                        </td>
+                        <td>
+                            
+                            50.00
+                            
+                        </td>
+                        <td>C</td>
+                        <td>2.0</td>
+                        <td>
+                            
+                            <span style="color: green;">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE028</td>
+                        <td>Natural Language Processing</td>
+                        <td>3</td>
+                        <td>
+                            
+                            28.00
+                            
+                        </td>
+                        <td>
+                            
+                            54.00
+                            
+                        </td>
+                        <td>
+                            
+                            82.00
+                            
+                        </td>
+                        <td>A</td>
+                        <td>4.0</td>
+                        <td>
+                            
+                            <span style="color: green;">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE029</td>
+                        <td>Parallel and Distributed Computing</td>
+                        <td>3</td>
+                        <td>
+                            
+                            10.00
+                            
+                        </td>
+                        <td>
+                            
+                            35.00
+                            
+                        </td>
+                        <td>
+                            
+                            45.00
+                            
+                        </td>
+                        <td>D</td>
+                        <td>1.0</td>
+                        <td>
+                            
+                            <span style="color: red;">FAIL</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE030</td>
+                        <td>Game Development</td>
+                        <td>3</td>
+                        <td>
+                            
+                            12.00
+                            
+                        </td>
+                        <td>
+                            
+                            30.00
+                            
+                        </td>
+                        <td>
+                            
+                            42.00
+                            
+                        </td>
+                        <td>D</td>
+                        <td>1.0</td>
+                        <td>
+                            
+                            <span style="color: red;">FAIL</span>
+                            
+                        </td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+            
+        </div>
+        
+        <div class="semester-section">
+            <div class="semester-header">SEMESTER 2: Semester 2</div>
+            
+            
+            <p>No results recorded for this semester.</p>
+            
+        </div>
+        
+    </div>
+    
+    <div class="year-section">
+        <div class="semester-header">2022/2023 ACADEMIC YEAR</div>
+        
+        
+        <div class="semester-section">
+            <div class="semester-header">SEMESTER 1: Semester 1</div>
+            
+            
+            <p>No results recorded for this semester.</p>
+            
+        </div>
+        
+        <div class="semester-section">
+            <div class="semester-header">SEMESTER 2: Semester 2</div>
+            
+            
+            <p>No results recorded for this semester.</p>
+            
+        </div>
+        
+    </div>
+    
+    <div class="year-section">
+        <div class="semester-header">2021/2022 ACADEMIC YEAR</div>
+        
+        
+        <div class="semester-section">
+            <div class="semester-header">SEMESTER 1: Semester 1</div>
+            
+            
+            <p>No results recorded for this semester.</p>
+            
+        </div>
+        
+        <div class="semester-section">
+            <div class="semester-header">SEMESTER 2: Semester 2</div>
+            
+            
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Unit Name</th>
+                        <th>Credit Hours</th>
+                        <th>CAT</th>
+                        <th>Exam</th>
+                        <th>Total</th>
+                        <th>Grade</th>
+                        <th>Points</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <td>LAW110</td>
+                        <td>International Law</td>
+                        <td>3</td>
+                        <td>
+                            
+                            13.18
+                            
+                        </td>
+                        <td>
+                            
+                            58.42
+                            
+                        </td>
+                        <td>
+                            
+                            71.60
+                            
+                        </td>
+                        <td>A</td>
+                        <td>4.0</td>
+                        <td>
+                            
+                            <span style="color: green;">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+            
+        </div>
+        
+    </div>
+    
+    
+    <table class="summary-table">
+        <tr>
+            <th>Total Credit Hours Completed:</th>
+            <td>45</td>
+        </tr>
+        <tr>
+            <th>Cumulative Grade Point Average (GPA):</th>
+            <td>3.07</td>
+        </tr>
+        <tr>
+            <th>Overall Classification:</th>
+            <td></td>
+        </tr>
+    </table>
+    
+    <div class="signature-area">
+        <div style="float: left;">
+            <div class="signature-line"></div>
+            <div>Registrar's Signature</div>
+            <div>Date: ___________________</div>
+        </div>
+        
+        
+        <img src="http://192.168.100.4:8000/media/official_stamp.png" class="official-stamp" alt="Official Stamp">
+        
+        
+        <div style="clear: both;"></div>
+    </div>
+</body>
+</html>

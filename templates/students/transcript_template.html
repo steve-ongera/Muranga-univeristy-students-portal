@@ -1,241 +1,317 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Academic Transcript - {{ student.get_full_name }}</title>
     <style>
         @page {
             size: A4;
             margin: 1.5cm;
-            @top-center {
-                content: element(header);
-            }
-            @bottom-center {
-                content: element(footer);
-            }
         }
-        
+
         body {
-            font-family: "Times New Roman", serif;
-            line-height: 1.6;
-            color: #333;
-        }
-        
-        .header {
-            position: running(header);
-            width: 100%;
-            text-align: center;
-            border-bottom: 2px solid #003366;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .footer {
-            position: running(footer);
-            width: 100%;
-            text-align: center;
+            font-family: "Garamond", "Times New Roman", serif;
+            line-height: 1.3;
+            color: #222;
             font-size: 10pt;
-            color: #666;
-            border-top: 1px solid #ddd;
-            padding-top: 5px;
+            margin: 0;
+            padding: 0;
         }
-        
+
+        .header {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .header-content {
+            border-bottom: 2pt solid #1a3e6f;
+            padding-bottom: 10px;
+            margin-bottom: 5px;
+        }
+
+        .footer {
+            width: 100%;
+            text-align: center;
+            font-size: 8pt;
+            color: #555;
+            margin-top: 20px;
+            padding-top: 6px;
+            border-top: 1pt solid #1a3e6f;
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+        }
+
         .logo {
-            height: 80px;
-            margin-bottom: 10px;
+            height: 50px;
+            width: 50px;
+            margin-bottom: 3px;
         }
-        
+
         .university-name {
-            font-size: 16pt;
-            font-weight: bold;
-            color: #003366;
-        }
-        
-        .document-title {
             font-size: 14pt;
             font-weight: bold;
+            letter-spacing: 1px;
+            color: #1a3e6f;
+            margin: 3px 0;
             text-transform: uppercase;
-            margin: 15px 0;
         }
-        
+
+        .university-address {
+            font-size: 8.5pt;
+            color: #555;
+            font-style: italic;
+        }
+
+        .document-title {
+            font-size: 12pt;
+            font-weight: bold;
+            margin: 12px 0 18px 0;
+            text-align: center;
+            color: #1a3e6f;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
         .student-info {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
+            font-size: 9pt;
         }
-        
+
         .student-info td {
-            padding: 5px 10px;
-            border: 1px solid #ddd;
+            padding: 5px 8px;
+            border: 0.5pt solid #ddd;
         }
-        
+
         .student-info .label {
             font-weight: bold;
-            width: 30%;
-            background-color: #f5f5f5;
+            width: 22%;
+            background-color: #f5f8fc;
+            color: #333;
         }
-        
+
         .results-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            font-size: 8.5pt;
+            page-break-inside: avoid;
+            table-layout: fixed;
         }
-        
+
         .results-table th, .results-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
+            border: 0.5pt solid #ccc;
+            padding: 4px 5px;
             text-align: center;
+            vertical-align: middle;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
-        
+
         .results-table th {
-            background-color: #003366;
+            background-color: #1a3e6f;
             color: white;
             font-weight: bold;
+            font-size: 8pt;
+            padding: 5px 3px;
+            letter-spacing: 0.3px;
         }
-        
-        .results-table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        
-        .semester-header {
-            background-color: #e6e6e6;
-            font-weight: bold;
-            padding: 8px;
-            margin: 15px 0 10px 0;
-            border-left: 4px solid #003366;
-        }
-        
-        .summary-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 30px;
-        }
-        
-        .summary-table th, .summary-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-        }
-        
-        .summary-table th {
-            background-color: #f5f5f5;
+
+        .results-table .course-title {
             text-align: left;
+            white-space: normal;
+            padding-left: 5px;
         }
-        
+
+        .results-table tbody tr:nth-child(even) {
+            background-color: #f9fbff;
+        }
+
+        .results-table tbody tr:hover {
+            background-color: #f0f5ff;
+        }
+
+        .semester-header {
+            background-color: #e5ebf5;
+            font-weight: bold;
+            padding: 6px 10px;
+            margin: 15px 0 8px 0;
+            border-left: 4px solid #1a3e6f;
+            color: #1a3e6f;
+            font-size: 9.5pt;
+        }
+
+        .summary-table {
+            width: 50%;
+            border-collapse: collapse;
+            margin: 20px 0 15px 0;
+            font-size: 9pt;
+        }
+
+        .summary-table th, .summary-table td {
+            border: 0.5pt solid #ddd;
+            padding: 6px 10px;
+        }
+
+        .summary-table th {
+            background-color: #f0f3f8;
+            text-align: left;
+            width: 60%;
+            color: #1a3e6f;
+            font-weight: bold;
+        }
+
         .signature-area {
-            margin-top: 50px;
+            margin-top: 40px;
             width: 100%;
+            clear: both;
         }
-        
+
         .signature-line {
-            border-top: 1px solid #333;
-            width: 200px;
-            margin: 40px 0 5px 0;
+            border-top: 0.75pt solid #555;
+            width: 180px;
+            margin: 0 0 3px 0;
         }
-        
+
+        .signature-label {
+            font-size: 8pt;
+            color: #555;
+        }
+
         .official-stamp {
             float: right;
-            width: 150px;
-            opacity: 0.7;
+            width: 120px;
+            opacity: 0.85;
+            margin-right: 20px;
         }
+
+        .year-section {
+            margin-bottom: 15px;
+            page-break-inside: avoid;
+        }
+
+        .no-results {
+            font-size: 9pt;
+            color: #777;
+            font-style: italic;
+            padding: 6px 0;
+            text-align: center;
+        }
+
+        .pass {
+            color: #1e7e1e;
+            font-weight: 500;
+        }
+
+        .fail {
+            color: #a12a2a;
+            font-weight: 500;
+        }
+
+        .pending {
+            color: #2a5a8e;
+            font-weight: 500;
+        }
+        
+        /* Column widths for results table */
+        .col-code { width: 8%; }
+        .col-title { width: 28%; }
+        .col-credits { width: 7%; }
+        .col-cat { width: 7%; }
+        .col-exam { width: 7%; }
+        .col-total { width: 7%; }
+        .col-grade { width: 7%; }
+        .col-points { width: 7%; }
+        .col-status { width: 8%; }
     </style>
 </head>
 <body>
+
+    <!-- HEADER -->
     <div class="header">
-        {% if school_logo %}
-        <img src="{{ school_logo }}" class="logo" alt="University Logo">
-        {% endif %}
-        <div class="university-name">{{ university_name }}</div>
-        <div>P.O. Box XXX, City, Country</div>
+        <div class="header-content">
+            {% if school_logo %}
+            <img src="{{ school_logo }}" class="logo" alt="University Logo">
+            {% endif %}
+            <div class="university-name">{{ university_name }}</div>
+            <div class="university-address">P.O. Box Murang'a, City, Country • Phone: +254 4761 2635</div>
+        </div>
     </div>
-    
-    <div class="footer">
-        This is an official document. Any alteration renders it invalid. Page <pdf:pagenumber> of <pdf:pagecount>
-    </div>
-    
+
+    <!-- TITLE -->
     <div class="document-title">Official Academic Transcript</div>
-    
+
+    <!-- STUDENT INFO -->
     <table class="student-info">
         <tr>
             <td class="label">Student Name:</td>
             <td>{{ student.get_full_name }}</td>
-        </tr>
-        <tr>
             <td class="label">Registration Number:</td>
             <td>{{ student.registration_number }}</td>
         </tr>
         <tr>
-            <td class="label">Programme:</td>
-            <td>{{ student.programme.name }}</td>
+            <td class="label">Program of Study:</td>
+            <td colspan="3">{{ student.programme.name }}</td>
         </tr>
         <tr>
             <td class="label">Date of Admission:</td>
             <td>{{ student.date_of_admission|date:"F j, Y" }}</td>
-        </tr>
-        <tr>
             <td class="label">Date of Issue:</td>
             <td>{{ today|date:"F j, Y" }}</td>
         </tr>
+        <tr>
+            <td class="label">Transcript Ref. No.:</td>
+            <td colspan="3">TR-{{ student.registration_number }}-{{ today|date:"Ymd" }}</td>
+        </tr>
     </table>
-    
+
+    <!-- RESULTS -->
     {% for year_name, year_data in results_by_year.items %}
     <div class="year-section">
         <div class="semester-header">{{ year_name }} ACADEMIC YEAR</div>
-        
+
         {% for semester_number, semester_data in year_data.semesters.items %}
         <div class="semester-section">
             <div class="semester-header">SEMESTER {{ semester_number }}: {{ semester_data.semester_name }}</div>
-            
+
             {% if semester_data.units %}
             <table class="results-table">
                 <thead>
                     <tr>
-                        <th>Code</th>
-                        <th>Unit Name</th>
-                        <th>Credit Hours</th>
-                        <th>CAT</th>
-                        <th>Exam</th>
-                        <th>Total</th>
-                        <th>Grade</th>
-                        <th>Points</th>
-                        <th>Status</th>
+                        <th class="col-code">Code</th>
+                        <th class="col-title">Course Title</th>
+                        <th class="col-credits">Credits</th>
+                        <th class="col-cat">CAT</th>
+                        <th class="col-exam">Exam</th>
+                        <th class="col-total">Total</th>
+                        <th class="col-grade">Grade</th>
+                        <th class="col-points">Points</th>
+                        <th class="col-status">Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for unit in semester_data.units %}
                     <tr>
                         <td>{{ unit.unit_code }}</td>
-                        <td>{{ unit.unit_name }}</td>
+                        <td class="course-title">{{ unit.unit_name }}</td>
                         <td>{{ unit.credit_hours }}</td>
-                        <td>
-                            {% if unit.cat_score == 0 or unit.cat_score == None %}
-                            -
-                            {% else %}
-                            {{ unit.cat_score }}
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if unit.exam_score == None %}
-                            -
-                            {% else %}
-                            {{ unit.exam_score }}
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if unit.total_score == None %}
-                            -
-                            {% else %}
-                            {{ unit.total_score }}
-                            {% endif %}
-                        </td>
+                        <td>{% if unit.cat_score %}{{ unit.cat_score }}{% else %}-{% endif %}</td>
+                        <td>{% if unit.exam_score %}{{ unit.exam_score }}{% else %}-{% endif %}</td>
+                        <td>{% if unit.total_score %}{{ unit.total_score }}{% else %}-{% endif %}</td>
                         <td>{{ unit.grade|default:"-" }}</td>
                         <td>{{ unit.points|default:"-" }}</td>
                         <td>
                             {% if unit.is_pass %}
-                            <span style="color: green;">PASS</span>
+                            <span class="pass">PASS</span>
                             {% elif unit.is_pass == False %}
-                            <span style="color: red;">FAIL</span>
+                            <span class="fail">FAIL</span>
                             {% else %}
-                            <span style="color: blue;">{{ unit.status|default:"PENDING" }}</span>
+                            <span class="pending">{{ unit.status|default:"PENDING" }}</span>
                             {% endif %}
                         </td>
                     </tr>
@@ -243,13 +319,14 @@
                 </tbody>
             </table>
             {% else %}
-            <p>No results recorded for this semester.</p>
+            <div class="no-results">No academic record available for this semester</div>
             {% endif %}
         </div>
         {% endfor %}
     </div>
     {% endfor %}
-    
+
+    <!-- SUMMARY -->
     <table class="summary-table">
         <tr>
             <th>Total Credit Hours Completed:</th>
@@ -260,23 +337,40 @@
             <td>{{ cumulative_gpa|floatformat:2 }}</td>
         </tr>
         <tr>
-            <th>Overall Classification:</th>
+            <th>Degree Classification:</th>
             <td>{{ overall_classification }}</td>
         </tr>
+        <tr>
+            <th>Date of Completion:</th>
+            <td>{{ completion_date|default:today|date:"F j, Y" }}</td>
+        </tr>
     </table>
-    
+
+    <!-- SIGNATURE -->
     <div class="signature-area">
-        <div style="float: left;">
-            <div class="signature-line"></div>
-            <div>Registrar's Signature</div>
-            <div>Date: ___________________</div>
+        <div style="float: left; width: 60%;">
+            <div style="margin-bottom: 20px;">
+                <div class="signature-line"></div>
+                <div class="signature-label">Registrar's Signature</div>
+            </div>
+            <div>
+                <div class="signature-line"></div>
+                <div class="signature-label">Date</div>
+            </div>
         </div>
-        
+
         {% if official_stamp %}
         <img src="{{ official_stamp }}" class="official-stamp" alt="Official Stamp">
         {% endif %}
-        
+
         <div style="clear: both;"></div>
     </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <div>This is an official document issued by {{ university_name }}</div>
+        <div>Any alteration renders this transcript invalid • Page <pdf:pagenumber> of <pdf:pagecount></div>
+    </div>
+
 </body>
 </html>

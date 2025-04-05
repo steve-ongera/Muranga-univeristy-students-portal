@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Transcript - Ian Kihara</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm;
+        }
+
+        body {
+            font-family: "Garamond", "Times New Roman", serif;
+            line-height: 1.3;
+            color: #222;
+            font-size: 10pt;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .header-content {
+            border-bottom: 2pt solid #1a3e6f;
+            padding-bottom: 10px;
+            margin-bottom: 5px;
+        }
+
+        .footer {
+            width: 100%;
+            text-align: center;
+            font-size: 8pt;
+            color: #555;
+            margin-top: 20px;
+            padding-top: 6px;
+            border-top: 1pt solid #1a3e6f;
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+        }
+
+        .logo {
+            height: 50px;
+            width: 50px;
+            margin-bottom: 3px;
+        }
+
+        .university-name {
+            font-size: 14pt;
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: #1a3e6f;
+            margin: 3px 0;
+            text-transform: uppercase;
+        }
+
+        .university-address {
+            font-size: 8.5pt;
+            color: #555;
+            font-style: italic;
+        }
+
+        .document-title {
+            font-size: 12pt;
+            font-weight: bold;
+            margin: 12px 0 18px 0;
+            text-align: center;
+            color: #1a3e6f;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .student-info {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 9pt;
+        }
+
+        .student-info td {
+            padding: 5px 8px;
+            border: 0.5pt solid #ddd;
+        }
+
+        .student-info .label {
+            font-weight: bold;
+            width: 22%;
+            background-color: #f5f8fc;
+            color: #333;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            font-size: 8.5pt;
+            page-break-inside: avoid;
+            table-layout: fixed;
+        }
+
+        .results-table th, .results-table td {
+            border: 0.5pt solid #ccc;
+            padding: 4px 5px;
+            text-align: center;
+            vertical-align: middle;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .results-table th {
+            background-color: #1a3e6f;
+            color: white;
+            font-weight: bold;
+            font-size: 8pt;
+            padding: 5px 3px;
+            letter-spacing: 0.3px;
+        }
+
+        .results-table .course-title {
+            text-align: left;
+            white-space: normal;
+            padding-left: 5px;
+        }
+
+        .results-table tbody tr:nth-child(even) {
+            background-color: #f9fbff;
+        }
+
+        .results-table tbody tr:hover {
+            background-color: #f0f5ff;
+        }
+
+        .semester-header {
+            background-color: #e5ebf5;
+            font-weight: bold;
+            padding: 6px 10px;
+            margin: 15px 0 8px 0;
+            border-left: 4px solid #1a3e6f;
+            color: #1a3e6f;
+            font-size: 9.5pt;
+        }
+
+        .summary-table {
+            width: 50%;
+            border-collapse: collapse;
+            margin: 20px 0 15px 0;
+            font-size: 9pt;
+        }
+
+        .summary-table th, .summary-table td {
+            border: 0.5pt solid #ddd;
+            padding: 6px 10px;
+        }
+
+        .summary-table th {
+            background-color: #f0f3f8;
+            text-align: left;
+            width: 60%;
+            color: #1a3e6f;
+            font-weight: bold;
+        }
+
+        .signature-area {
+            margin-top: 40px;
+            width: 100%;
+            clear: both;
+        }
+
+        .signature-line {
+            border-top: 0.75pt solid #555;
+            width: 180px;
+            margin: 0 0 3px 0;
+        }
+
+        .signature-label {
+            font-size: 8pt;
+            color: #555;
+        }
+
+        .official-stamp {
+            float: right;
+            width: 120px;
+            opacity: 0.85;
+            margin-right: 20px;
+        }
+
+        .year-section {
+            margin-bottom: 15px;
+            page-break-inside: avoid;
+        }
+
+        .no-results {
+            font-size: 9pt;
+            color: #777;
+            font-style: italic;
+            padding: 6px 0;
+            text-align: center;
+        }
+
+        .pass {
+            color: #1e7e1e;
+            font-weight: 500;
+        }
+
+        .fail {
+            color: #a12a2a;
+            font-weight: 500;
+        }
+
+        .pending {
+            color: #2a5a8e;
+            font-weight: 500;
+        }
+        
+        /* Column widths for results table */
+        .col-code { width: 8%; }
+        .col-title { width: 28%; }
+        .col-credits { width: 7%; }
+        .col-cat { width: 7%; }
+        .col-exam { width: 7%; }
+        .col-total { width: 7%; }
+        .col-grade { width: 7%; }
+        .col-points { width: 7%; }
+        .col-status { width: 8%; }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-content">
+            
+            <img src="http://192.168.100.4:8000/media/school_logo.png" class="logo" alt="University Logo">
+            
+            <div class="university-name">Muranga University Of Technology</div>
+            <div class="university-address">P.O. Box Murang'a, City, Country • Phone: +254 4761 2635</div>
+        </div>
+    </div>
+
+    <!-- TITLE -->
+    <div class="document-title">Official Academic Transcript</div>
+
+    <!-- STUDENT INFO -->
+    <table class="student-info">
+        <tr>
+            <td class="label">Student Name:</td>
+            <td>Ian Kihara</td>
+            <td class="label">Registration Number:</td>
+            <td>S4563/2022</td>
+        </tr>
+        <tr>
+            <td class="label">Program of Study:</td>
+            <td colspan="3">Bachelor of Software Engineering</td>
+        </tr>
+        <tr>
+            <td class="label">Date of Admission:</td>
+            <td>January 27, 2021</td>
+            <td class="label">Date of Issue:</td>
+            <td>April 6, 2025</td>
+        </tr>
+        <tr>
+            <td class="label">Transcript Ref. No.:</td>
+            <td colspan="3">TR-S4563/2022-20250406</td>
+        </tr>
+    </table>
+
+    <!-- RESULTS -->
+    
+    <div class="year-section">
+        <div class="semester-header">2024/2025 ACADEMIC YEAR</div>
+
+        
+        <div class="semester-section">
+            <div class="semester-header">SEMESTER 1: Semester 1</div>
+
+            
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th class="col-code">Code</th>
+                        <th class="col-title">Course Title</th>
+                        <th class="col-credits">Credits</th>
+                        <th class="col-cat">CAT</th>
+                        <th class="col-exam">Exam</th>
+                        <th class="col-total">Total</th>
+                        <th class="col-grade">Grade</th>
+                        <th class="col-points">Points</th>
+                        <th class="col-status">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <td>SE043</td>
+                        <td class="course-title">Database Administration</td>
+                        <td>3</td>
+                        <td>12.00</td>
+                        <td>39.00</td>
+                        <td>51.00</td>
+                        <td>C</td>
+                        <td>2.0</td>
+                        <td>
+                            
+                            <span class="pass">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE044</td>
+                        <td class="course-title">E-commerce Systems</td>
+                        <td>3</td>
+                        <td>20.00</td>
+                        <td>40.00</td>
+                        <td>60.00</td>
+                        <td>B</td>
+                        <td>3.0</td>
+                        <td>
+                            
+                            <span class="pass">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE045</td>
+                        <td class="course-title">Data Mining</td>
+                        <td>3</td>
+                        <td>10.00</td>
+                        <td>20.00</td>
+                        <td>30.00</td>
+                        <td>F</td>
+                        <td>-</td>
+                        <td>
+                            
+                            <span class="fail">FAIL</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE046</td>
+                        <td class="course-title">Capstone Project I</td>
+                        <td>3</td>
+                        <td>15.00</td>
+                        <td>21.00</td>
+                        <td>36.00</td>
+                        <td>F</td>
+                        <td>-</td>
+                        <td>
+                            
+                            <span class="fail">FAIL</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE047</td>
+                        <td class="course-title">Capstone Project II</td>
+                        <td>3</td>
+                        <td>17.00</td>
+                        <td>18.00</td>
+                        <td>35.00</td>
+                        <td>F</td>
+                        <td>-</td>
+                        <td>
+                            
+                            <span class="fail">FAIL</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE048</td>
+                        <td class="course-title">Software Documentation</td>
+                        <td>3</td>
+                        <td>29.00</td>
+                        <td>30.00</td>
+                        <td>59.00</td>
+                        <td>C</td>
+                        <td>2.0</td>
+                        <td>
+                            
+                            <span class="pass">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+            
+        </div>
+        
+        <div class="semester-section">
+            <div class="semester-header">SEMESTER 2: Semester 2</div>
+
+            
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th class="col-code">Code</th>
+                        <th class="col-title">Course Title</th>
+                        <th class="col-credits">Credits</th>
+                        <th class="col-cat">CAT</th>
+                        <th class="col-exam">Exam</th>
+                        <th class="col-total">Total</th>
+                        <th class="col-grade">Grade</th>
+                        <th class="col-points">Points</th>
+                        <th class="col-status">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <td>BUS103</td>
+                        <td class="course-title">Financial Management</td>
+                        <td>3</td>
+                        <td>10.00</td>
+                        <td>60.00</td>
+                        <td>70.00</td>
+                        <td>A</td>
+                        <td>4.0</td>
+                        <td>
+                            
+                            <span class="pass">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>COM107</td>
+                        <td class="course-title">Investigative Journalism</td>
+                        <td>3</td>
+                        <td>10.00</td>
+                        <td>50.00</td>
+                        <td>60.00</td>
+                        <td>B</td>
+                        <td>3.0</td>
+                        <td>
+                            
+                            <span class="pass">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>CSC103</td>
+                        <td class="course-title">Database Management Systems</td>
+                        <td>3</td>
+                        <td>20.00</td>
+                        <td>41.00</td>
+                        <td>61.00</td>
+                        <td>B</td>
+                        <td>3.0</td>
+                        <td>
+                            
+                            <span class="pass">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE043</td>
+                        <td class="course-title">Database Administration</td>
+                        <td>3</td>
+                        <td>19.00</td>
+                        <td>44.00</td>
+                        <td>63.00</td>
+                        <td>B</td>
+                        <td>3.0</td>
+                        <td>
+                            
+                            <span class="pass">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE044</td>
+                        <td class="course-title">E-commerce Systems</td>
+                        <td>3</td>
+                        <td>15.00</td>
+                        <td>30.00</td>
+                        <td>45.00</td>
+                        <td>D</td>
+                        <td>1.0</td>
+                        <td>
+                            
+                            <span class="fail">FAIL</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE045</td>
+                        <td class="course-title">Data Mining</td>
+                        <td>3</td>
+                        <td>28.00</td>
+                        <td>49.00</td>
+                        <td>77.00</td>
+                        <td>A</td>
+                        <td>4.0</td>
+                        <td>
+                            
+                            <span class="pass">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE046</td>
+                        <td class="course-title">Capstone Project I</td>
+                        <td>3</td>
+                        <td>17.00</td>
+                        <td>37.00</td>
+                        <td>54.00</td>
+                        <td>C</td>
+                        <td>2.0</td>
+                        <td>
+                            
+                            <span class="pass">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE047</td>
+                        <td class="course-title">Capstone Project II</td>
+                        <td>3</td>
+                        <td>20.00</td>
+                        <td>50.00</td>
+                        <td>70.00</td>
+                        <td>A</td>
+                        <td>4.0</td>
+                        <td>
+                            
+                            <span class="pass">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE048</td>
+                        <td class="course-title">Software Documentation</td>
+                        <td>3</td>
+                        <td>28.00</td>
+                        <td>44.00</td>
+                        <td>72.00</td>
+                        <td>A</td>
+                        <td>4.0</td>
+                        <td>
+                            
+                            <span class="pass">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+            
+        </div>
+        
+    </div>
+    
+    <div class="year-section">
+        <div class="semester-header">2023/2024 ACADEMIC YEAR</div>
+
+        
+        <div class="semester-section">
+            <div class="semester-header">SEMESTER 1: Semester 1</div>
+
+            
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th class="col-code">Code</th>
+                        <th class="col-title">Course Title</th>
+                        <th class="col-credits">Credits</th>
+                        <th class="col-cat">CAT</th>
+                        <th class="col-exam">Exam</th>
+                        <th class="col-total">Total</th>
+                        <th class="col-grade">Grade</th>
+                        <th class="col-points">Points</th>
+                        <th class="col-status">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <td>SE025</td>
+                        <td class="course-title">Cloud Computing</td>
+                        <td>3</td>
+                        <td>12.00</td>
+                        <td>20.00</td>
+                        <td>32.00</td>
+                        <td>F</td>
+                        <td>-</td>
+                        <td>
+                            
+                            <span class="fail">FAIL</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE026</td>
+                        <td class="course-title">Computer Vision</td>
+                        <td>3</td>
+                        <td>18.00</td>
+                        <td>38.00</td>
+                        <td>56.00</td>
+                        <td>C</td>
+                        <td>2.0</td>
+                        <td>
+                            
+                            <span class="pass">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE027</td>
+                        <td class="course-title">Machine Learning</td>
+                        <td>3</td>
+                        <td>20.00</td>
+                        <td>30.00</td>
+                        <td>50.00</td>
+                        <td>C</td>
+                        <td>2.0</td>
+                        <td>
+                            
+                            <span class="pass">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE028</td>
+                        <td class="course-title">Natural Language Processing</td>
+                        <td>3</td>
+                        <td>28.00</td>
+                        <td>54.00</td>
+                        <td>82.00</td>
+                        <td>A</td>
+                        <td>4.0</td>
+                        <td>
+                            
+                            <span class="pass">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE029</td>
+                        <td class="course-title">Parallel and Distributed Computing</td>
+                        <td>3</td>
+                        <td>10.00</td>
+                        <td>35.00</td>
+                        <td>45.00</td>
+                        <td>D</td>
+                        <td>1.0</td>
+                        <td>
+                            
+                            <span class="fail">FAIL</span>
+                            
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>SE030</td>
+                        <td class="course-title">Game Development</td>
+                        <td>3</td>
+                        <td>12.00</td>
+                        <td>30.00</td>
+                        <td>42.00</td>
+                        <td>D</td>
+                        <td>1.0</td>
+                        <td>
+                            
+                            <span class="fail">FAIL</span>
+                            
+                        </td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+            
+        </div>
+        
+        <div class="semester-section">
+            <div class="semester-header">SEMESTER 2: Semester 2</div>
+
+            
+            <div class="no-results">No academic record available for this semester</div>
+            
+        </div>
+        
+    </div>
+    
+    <div class="year-section">
+        <div class="semester-header">2022/2023 ACADEMIC YEAR</div>
+
+        
+        <div class="semester-section">
+            <div class="semester-header">SEMESTER 1: Semester 1</div>
+
+            
+            <div class="no-results">No academic record available for this semester</div>
+            
+        </div>
+        
+        <div class="semester-section">
+            <div class="semester-header">SEMESTER 2: Semester 2</div>
+
+            
+            <div class="no-results">No academic record available for this semester</div>
+            
+        </div>
+        
+    </div>
+    
+    <div class="year-section">
+        <div class="semester-header">2021/2022 ACADEMIC YEAR</div>
+
+        
+        <div class="semester-section">
+            <div class="semester-header">SEMESTER 1: Semester 1</div>
+
+            
+            <div class="no-results">No academic record available for this semester</div>
+            
+        </div>
+        
+        <div class="semester-section">
+            <div class="semester-header">SEMESTER 2: Semester 2</div>
+
+            
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th class="col-code">Code</th>
+                        <th class="col-title">Course Title</th>
+                        <th class="col-credits">Credits</th>
+                        <th class="col-cat">CAT</th>
+                        <th class="col-exam">Exam</th>
+                        <th class="col-total">Total</th>
+                        <th class="col-grade">Grade</th>
+                        <th class="col-points">Points</th>
+                        <th class="col-status">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <td>LAW110</td>
+                        <td class="course-title">International Law</td>
+                        <td>3</td>
+                        <td>13.18</td>
+                        <td>58.42</td>
+                        <td>71.60</td>
+                        <td>A</td>
+                        <td>4.0</td>
+                        <td>
+                            
+                            <span class="pass">PASS</span>
+                            
+                        </td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+            
+        </div>
+        
+    </div>
+    
+
+    <!-- SUMMARY -->
+    <table class="summary-table">
+        <tr>
+            <th>Total Credit Hours Completed:</th>
+            <td>45</td>
+        </tr>
+        <tr>
+            <th>Cumulative Grade Point Average (GPA):</th>
+            <td>3.07</td>
+        </tr>
+        <tr>
+            <th>Degree Classification:</th>
+            <td></td>
+        </tr>
+        <tr>
+            <th>Date of Completion:</th>
+            <td>April 6, 2025</td>
+        </tr>
+    </table>
+
+    <!-- SIGNATURE -->
+    <div class="signature-area">
+        <div style="float: left; width: 60%;">
+            <div style="margin-bottom: 20px;">
+                <div class="signature-line"></div>
+                <div class="signature-label">Registrar's Signature</div>
+            </div>
+            <div>
+                <div class="signature-line"></div>
+                <div class="signature-label">Date</div>
+            </div>
+        </div>
+
+        
+        <img src="http://192.168.100.4:8000/media/official_stamp.png" class="official-stamp" alt="Official Stamp">
+        
+
+        <div style="clear: both;"></div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <div>This is an official document issued by Muranga University Of Technology</div>
+        <div>Any alteration renders this transcript invalid • Page <pdf:pagenumber> of <pdf:pagecount></div>
+    </div>
+
+</body>
+</html>
