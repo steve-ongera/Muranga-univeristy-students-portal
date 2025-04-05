@@ -1206,7 +1206,6 @@ def search_student_data(request):
     
     return render(request, 'students/search_student.html', context)
 
-
 from django.db.models import Avg, Sum, Count
 from collections import defaultdict
 
@@ -1214,6 +1213,7 @@ def get_student_academic_progress(student):
     """
     Get complete academic progress for a student using existing models
     Returns a structured dictionary with all academic years and semesters
+    Handles enrollments that may not have final grades yet
     """
     # Get all enrollments for the student ordered by semester
     enrollments = StudentEnrollment.objects.filter(
@@ -1221,7 +1221,9 @@ def get_student_academic_progress(student):
     ).select_related(
         'semester__academic_year',
         'programme_unit__unit',
-        'programme_unit__programme',
+        'programme_unit__programme'
+    ).prefetch_related(
+        'final_grade',
         'final_grade__grade'
     ).order_by('semester__academic_year__start_date', 'semester__number')
     
@@ -1262,7 +1264,14 @@ def get_student_academic_progress(student):
         semester = enrollment.semester
         programme_unit = enrollment.programme_unit
         unit = programme_unit.unit
-        final_grade = enrollment.final_grade
+        
+        # Safely get final_grade - handle the case when it doesn't exist
+        try:
+            final_grade = enrollment.final_grade
+            has_final_grade = True
+        except:
+            final_grade = None
+            has_final_grade = False
         
         # Set academic year info if not already set
         if not progress_data['academic_years'][academic_year.id]['name']:
@@ -1277,7 +1286,7 @@ def get_student_academic_progress(student):
             progress_data['academic_years'][academic_year.id]['semesters'][semester.number]['start_date'] = semester.start_date
             progress_data['academic_years'][academic_year.id]['semesters'][semester.number]['end_date'] = semester.end_date
         
-        # Add unit information
+        # Add unit information - safely handle final_grade references
         unit_data = {
             'code': unit.code,
             'name': unit.name,
@@ -1285,17 +1294,18 @@ def get_student_academic_progress(student):
             'is_core': unit.is_core,
             'year_of_study': programme_unit.year_of_study,
             'semester': programme_unit.semester,
-            'cat_average': final_grade.cat_average if final_grade else None,
-            'exam_score': final_grade.exam_score if final_grade else None,
-            'total_score': final_grade.total_score if final_grade else None,
-            'grade': final_grade.grade.grade if final_grade and final_grade.grade else None,
-            'is_pass': final_grade.is_pass if final_grade else None
+            'cat_average': final_grade.cat_average if has_final_grade else None,
+            'exam_score': final_grade.exam_score if has_final_grade else None,
+            'total_score': final_grade.total_score if has_final_grade else None,
+            'grade': final_grade.grade.grade if has_final_grade and final_grade.grade else None,
+            'is_pass': final_grade.is_pass if has_final_grade else None,
+            'graded': has_final_grade  # Flag to indicate if unit has been graded
         }
         
         progress_data['academic_years'][academic_year.id]['semesters'][semester.number]['units'].append(unit_data)
         
-        # Update semester summary
-        if final_grade:
+        # Update semester summary - only count units with final grades
+        if has_final_grade:
             progress_data['academic_years'][academic_year.id]['semesters'][semester.number]['summary']['total_credits'] += unit.credit_hours
             progress_data['academic_years'][academic_year.id]['semesters'][semester.number]['summary']['units_attempted'] += 1
             
@@ -1310,7 +1320,7 @@ def get_student_academic_progress(student):
             total_credits = 0
             
             for unit in semester_data['units']:
-                if unit['grade'] and unit['is_pass']:
+                if unit.get('grade') and unit.get('is_pass'):
                     # Get grade points from GradeSystem
                     try:
                         grade = GradeSystem.objects.get(grade=unit['grade'])
