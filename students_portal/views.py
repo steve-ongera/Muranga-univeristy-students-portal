@@ -1449,7 +1449,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db import transaction
 from django.db.models import Count
-from .models import Student, StudentUnitGrade, StudentFee, Programme
+from .models import Student, StudentUnitGrade, StudentFee, Programme, FeesStructure, AcademicYear, Semester
+from datetime import date
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)
@@ -1460,6 +1461,14 @@ def promote_students(request):
                 promoted_students = []
                 not_promoted_students = []
                 graduated_students = []
+                
+                # Get current academic year and semester
+                current_academic_year = AcademicYear.objects.filter(is_current=True).first()
+                current_semester = Semester.objects.filter(is_current=True).first()
+                
+                if not current_academic_year or not current_semester:
+                    messages.error(request, "Current academic year or semester not set in system")
+                    return redirect('promote_students')
                 
                 active_students = Student.objects.filter(status='active').select_related('programme')
                 
@@ -1489,6 +1498,7 @@ def promote_students(request):
                     
                     if failed_units <= 3 and not has_balance:
                         if current_year == programme.duration_years and current_semester == programme.semesters_per_year:
+                            # Graduation logic
                             student.status = 'graduated'
                             student.is_active = False
                             student.save()
@@ -1498,6 +1508,7 @@ def promote_students(request):
                                 'completion': f"Year {current_year} Semester {current_semester}"
                             })
                         else:
+                            # Promotion logic
                             new_year = current_year
                             new_semester = current_semester + 1
                             
@@ -1509,12 +1520,35 @@ def promote_students(request):
                             student.current_semester = new_semester
                             student.save()
                             
+                            # Create fee record for the new semester
+                            try:
+                                fee_structure = FeesStructure.objects.get(
+                                    programme=programme,
+                                    academic_year=current_academic_year,
+                                    year_of_study=new_year,
+                                    semester=new_semester
+                                )
+                                
+                                StudentFee.objects.create(
+                                    student=student,
+                                    fee_structure=fee_structure,
+                                    amount_paid=0,
+                                    balance=fee_structure.amount,
+                                    last_payment_date=None
+                                )
+                                
+                                fee_created = True
+                            except FeesStructure.DoesNotExist:
+                                fee_created = False
+                            
                             promoted_students.append({
                                 **student_data,
                                 'new_year': new_year,
-                                'new_semester': new_semester
+                                'new_semester': new_semester,
+                                'fee_created': fee_created
                             })
                     else:
+                        # Not promoted logic
                         reasons = []
                         if failed_units > 3:
                             reasons.append(f"Failed {failed_units} units")
@@ -1533,7 +1567,8 @@ def promote_students(request):
                         promoted_by_programme[programme_name] = {
                             'students': [],
                             'from': f"Y{student['current_year']}S{student['current_semester']}",
-                            'to': f"Y{student['new_year']}S{student['new_semester']}"
+                            'to': f"Y{student['new_year']}S{student['new_semester']}",
+                            'fee_status': "Created" if student['fee_created'] else "Not created (no fee structure)"
                         }
                     promoted_by_programme[programme_name]['students'].append(student)
                 
@@ -1544,6 +1579,7 @@ def promote_students(request):
                     'total_promoted': len(promoted_students),
                     'total_graduated': len(graduated_students),
                     'total_not_promoted': len(not_promoted_students),
+                    'current_academic_year': current_academic_year.name,
                 }
                 
                 return render(request, 'students/promote_students.html', context)
