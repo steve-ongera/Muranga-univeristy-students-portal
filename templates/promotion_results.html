@@ -1,0 +1,460 @@
+{% extends "base/base.html" %}
+
+{% block content %}
+
+<div class="message-container" id="system-messages">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="pagetitle">
+    <h1>Student Promotion Results</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item">Students</li>
+            <li class="breadcrumb-item active">Promotion Results</li>
+        </ol>
+    </nav>
+</div><!-- End Page Title -->
+
+<section class="section">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="card-title">Promotion Summary</h5>
+                        <div class="d-flex">
+                            <form method="get" class="me-2">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Search students..." 
+                                           name="search" value="{{ search_query }}">
+                                    <input type="hidden" name="tab" value="{{ active_tab }}">
+                                    <button class="btn btn-primary" type="submit">
+                                        <i class="bi bi-search"></i> Search
+                                    </button>
+                                    <a href="{% url 'promotion_results' %}" class="btn btn-outline-secondary">
+                                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Summary Cards -->
+                    <div class="row mb-4">
+                        <div class="col-xl-4 col-md-6">
+                            <div class="card info-card sales-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Promoted <span>| Total</span></h5>
+                                    <div class="d-flex align-items-center">
+                                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-primary">
+                                            <i class="bi bi-arrow-up-circle"></i>
+                                        </div>
+                                        <div class="ps-3">
+                                            <h6>{{ total_promoted }}</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-4 col-md-6">
+                            <div class="card info-card revenue-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Graduated <span>| Total</span></h5>
+                                    <div class="d-flex align-items-center">
+                                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-success">
+                                            <i class="bi bi-award"></i>
+                                        </div>
+                                        <div class="ps-3">
+                                            <h6>{{ total_graduated }}</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-4 col-md-6">
+                            <div class="card info-card customers-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Not Promoted <span>| Total</span></h5>
+                                    <div class="d-flex align-items-center">
+                                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-warning">
+                                            <i class="bi bi-exclamation-triangle"></i>
+                                        </div>
+                                        <div class="ps-3">
+                                            <h6>{{ total_not_promoted }}</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabs Navigation -->
+                    <ul class="nav nav-tabs nav-tabs-bordered" id="promotionTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {% if active_tab == 'promoted' %}active{% endif %}" 
+                                    id="promoted-tab" data-bs-toggle="tab" data-bs-target="#promoted" 
+                                    type="button" role="tab" onclick="updateUrl('promoted')">
+                                <i class="bi bi-arrow-up-circle me-1"></i>
+                                Promoted ({{ total_promoted }})
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {% if active_tab == 'graduated' %}active{% endif %}" 
+                                    id="graduated-tab" data-bs-toggle="tab" data-bs-target="#graduated" 
+                                    type="button" role="tab" onclick="updateUrl('graduated')">
+                                <i class="bi bi-award me-1"></i>
+                                Graduated ({{ total_graduated }})
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {% if active_tab == 'not_promoted' %}active{% endif %}" 
+                                    id="not-promoted-tab" data-bs-toggle="tab" data-bs-target="#not-promoted" 
+                                    type="button" role="tab" onclick="updateUrl('not_promoted')">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                Not Promoted ({{ total_not_promoted }})
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- Tabs Content -->
+                    <div class="tab-content pt-3" id="promotionTabContent">
+                        <!-- Promoted Students Tab -->
+                        <div class="tab-pane fade {% if active_tab == 'promoted' %}show active{% endif %}" 
+                             id="promoted" role="tabpanel" aria-labelledby="promoted-tab">
+                            {% if promoted_data %}
+                                {% for group in promoted_data %}
+                                    <div class="programme-group mb-5">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h5 class="group-header mb-0">
+                                                <i class="bi bi-book me-2"></i>
+                                                {{ group.programme }} 
+                                                <span class="text-muted">
+                                                    ({{ group.from }} → {{ group.to }})
+                                                </span>
+                                            </h5>
+                                            <span class="badge bg-primary">{{ group.count }} Students</span>
+                                        </div>
+                                        
+                                        <div class="table-responsive">
+                                            <table class="table table-hover table-striped">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th width="5%">#</th>
+                                                        <th width="20%">Reg No.</th>
+                                                        <th width="30%">Student Name</th>
+                                                        <th width="20%">Current Level</th>
+                                                        <th width="25%">Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for student in group.students_page %}
+                                                        <tr>
+                                                            <td>{{ forloop.counter0|add:group.students_page.start_index }}</td>
+                                                            <td>
+                                                                <strong>{{ student.reg_no }}</strong>
+                                                            </td>
+                                                            <td>{{ student.name }}</td>
+                                                            <td>
+                                                                <span class="badge bg-info">
+                                                                    Y{{ student.current_year }} S{{ student.current_semester }}
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                <div class="btn-group" role="group">
+                                                                    <a href="{% url 'student_detail' student.id %}" 
+                                                                       class="btn btn-sm btn-outline-primary">
+                                                                        <i class="bi bi-eye"></i> View
+                                                                    </a>
+                                                                    <a href="#" class="btn btn-sm btn-outline-secondary">
+                                                                        <i class="bi bi-printer"></i> Print
+                                                                    </a>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    {% empty %}
+                                                        <tr>
+                                                            <td colspan="5" class="text-center text-muted py-4">
+                                                                No students found matching your search
+                                                            </td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        
+                                        <!-- Pagination -->
+                                        {% if group.students_page.paginator.num_pages > 1 %}
+                                        <nav aria-label="Page navigation">
+                                            <ul class="pagination justify-content-center">
+                                                {% if group.students_page.has_previous %}
+                                                    <li class="page-item">
+                                                        <a class="page-link" 
+                                                           href="?tab=promoted&page={{ group.students_page.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" 
+                                                           aria-label="Previous">
+                                                            <i class="bi bi-chevron-left"></i>
+                                                        </a>
+                                                    </li>
+                                                {% endif %}
+                                                
+                                                {% for num in group.students_page.paginator.page_range %}
+                                                    {% if group.students_page.number == num %}
+                                                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                                    {% else %}
+                                                        <li class="page-item">
+                                                            <a class="page-link" 
+                                                               href="?tab=promoted&page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                                                {{ num }}
+                                                            </a>
+                                                        </li>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                
+                                                {% if group.students_page.has_next %}
+                                                    <li class="page-item">
+                                                        <a class="page-link" 
+                                                           href="?tab=promoted&page={{ group.students_page.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" 
+                                                           aria-label="Next">
+                                                            <i class="bi bi-chevron-right"></i>
+                                                        </a>
+                                                    </li>
+                                                {% endif %}
+                                            </ul>
+                                        </nav>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="alert alert-info mt-3">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    No promoted students found {% if search_query %}matching your search{% endif %}.
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Graduated Students Tab -->
+                        <div class="tab-pane fade {% if active_tab == 'graduated' %}show active{% endif %}" 
+                             id="graduated" role="tabpanel" aria-labelledby="graduated-tab">
+                            {% if graduated_page %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-striped">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th width="5%">#</th>
+                                                <th width="15%">Reg No.</th>
+                                                <th width="25%">Student Name</th>
+                                                <th width="20%">Programme</th>
+                                                <th width="15%">Completion</th>
+                                                <th width="20%">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for student in graduated_page %}
+                                                <tr>
+                                                    <td>{{ forloop.counter0|add:graduated_page.start_index }}</td>
+                                                    <td><strong>{{ student.reg_no }}</strong></td>
+                                                    <td>{{ student.name }}</td>
+                                                    <td>{{ student.programme }}</td>
+                                                    <td>
+                                                        <span class="badge bg-success">
+                                                            {{ student.completion }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group" role="group">
+                                                            <a href="{% url 'student_detail' student.id %}" 
+                                                               class="btn btn-sm btn-outline-primary">
+                                                                <i class="bi bi-eye"></i> View
+                                                            </a>
+                                                            <a href="#" class="btn btn-sm btn-outline-success">
+                                                                <i class="bi bi-file-earmark-text"></i> Certificate
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% empty %}
+                                                <tr>
+                                                    <td colspan="6" class="text-center text-muted py-4">
+                                                        No students found matching your search
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <!-- Pagination -->
+                                {% if graduated_page.paginator.num_pages > 1 %}
+                                <nav aria-label="Page navigation">
+                                    <ul class="pagination justify-content-center">
+                                        {% if graduated_page.has_previous %}
+                                            <li class="page-item">
+                                                <a class="page-link" 
+                                                   href="?tab=graduated&page={{ graduated_page.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" 
+                                                   aria-label="Previous">
+                                                    <i class="bi bi-chevron-left"></i>
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                        
+                                        {% for num in graduated_page.paginator.page_range %}
+                                            {% if graduated_page.number == num %}
+                                                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                            {% else %}
+                                                <li class="page-item">
+                                                    <a class="page-link" 
+                                                       href="?tab=graduated&page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                                        {{ num }}
+                                                    </a>
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if graduated_page.has_next %}
+                                            <li class="page-item">
+                                                <a class="page-link" 
+                                                   href="?tab=graduated&page={{ graduated_page.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" 
+                                                   aria-label="Next">
+                                                    <i class="bi bi-chevron-right"></i>
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+                                {% endif %}
+                            {% else %}
+                                <div class="alert alert-info mt-3">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    No graduated students found {% if search_query %}matching your search{% endif %}.
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Not Promoted Students Tab -->
+                        <div class="tab-pane fade {% if active_tab == 'not_promoted' %}show active{% endif %}" 
+                             id="not-promoted" role="tabpanel" aria-labelledby="not-promoted-tab">
+                            {% if not_promoted_page %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-striped">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th width="5%">#</th>
+                                                <th width="15%">Reg No.</th>
+                                                <th width="20%">Student Name</th>
+                                                <th width="20%">Programme</th>
+                                                <th width="15%">Current Level</th>
+                                                <th width="15%">Reason</th>
+                                                <th width="10%">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for student in not_promoted_page %}
+                                                <tr>
+                                                    <td>{{ forloop.counter0|add:not_promoted_page.start_index }}</td>
+                                                    <td><strong>{{ student.reg_no }}</strong></td>
+                                                    <td>{{ student.name }}</td>
+                                                    <td>{{ student.programme }}</td>
+                                                    <td>
+                                                        <span class="badge bg-secondary">
+                                                            Y{{ student.current_year }} S{{ student.current_semester }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-danger">
+                                                            {{ student.reason }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <a href="{% url 'student_detail' student.id %}" 
+                                                           class="btn btn-sm btn-outline-primary">
+                                                            <i class="bi bi-eye"></i> View
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            {% empty %}
+                                                <tr>
+                                                    <td colspan="7" class="text-center text-muted py-4">
+                                                        No students found matching your search
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <!-- Pagination -->
+                                {% if not_promoted_page.paginator.num_pages > 1 %}
+                                <nav aria-label="Page navigation">
+                                    <ul class="pagination justify-content-center">
+                                        {% if not_promoted_page.has_previous %}
+                                            <li class="page-item">
+                                                <a class="page-link" 
+                                                   href="?tab=not_promoted&page={{ not_promoted_page.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" 
+                                                   aria-label="Previous">
+                                                    <i class="bi bi-chevron-left"></i>
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                        
+                                        {% for num in not_promoted_page.paginator.page_range %}
+                                            {% if not_promoted_page.number == num %}
+                                                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                            {% else %}
+                                                <li class="page-item">
+                                                    <a class="page-link" 
+                                                       href="?tab=not_promoted&page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                                        {{ num }}
+                                                    </a>
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if not_promoted_page.has_next %}
+                                            <li class="page-item">
+                                                <a class="page-link" 
+                                                   href="?tab=not_promoted&page={{ not_promoted_page.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" 
+                                                   aria-label="Next">
+                                                    <i class="bi bi-chevron-right"></i>
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+                                {% endif %}
+                            {% else %}
+                                <div class="alert alert-info mt-3">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    No non-promoted students found {% if search_query %}matching your search{% endif %}.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+function updateUrl(tab) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', tab);
+    window.history.pushState({}, '', url);
+}
+
+// Initialize tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+
+{% endblock %}
