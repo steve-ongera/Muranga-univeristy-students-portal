@@ -110,14 +110,17 @@
                             {% if promoted_by_programme %}
                                 {% for programme, data in promoted_by_programme.items %}
                                 <div class="programme-group mb-5">
-                                    <h5 class="group-header mb-3">
-                                        {{ programme }}
-                                        <span class="badge bg-primary">{{ data.students|length }}</span>
-                                    </h5>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 class="group-header mb-0">
+                                            <i class="bi bi-book me-2"></i>
+                                            {{ programme }}
+                                        </h5>
+                                        <span class="badge bg-primary">{{ data.students|length }} Students</span>
+                                    </div>
                                     
                                     <div class="table-responsive">
-                                        <table class="table table-hover">
-                                            <thead>
+                                        <table class="table table-striped table-hover datatable">
+                                            <thead class="table-light">
                                                 <tr>
                                                     <th>#</th>
                                                     <th>Registration No.</th>
@@ -130,10 +133,10 @@
                                                 {% for student in data.students %}
                                                 <tr>
                                                     <td>{{ forloop.counter }}</td>
-                                                    <td>{{ student.reg_no }}</td>
+                                                    <td><strong>{{ student.reg_no }}</strong></td>
                                                     <td>{{ student.name }}</td>
-                                                    <td>Y{{ student.current_year }} S{{ student.current_semester }}</td>
-                                                    <td>Y{{ student.new_year }} S{{ student.new_semester }}</td>
+                                                    <td><span class="badge bg-secondary">Y{{ student.current_year }} S{{ student.current_semester }}</span></td>
+                                                    <td><span class="badge bg-success">Y{{ student.new_year }} S{{ student.new_semester }}</span></td>
                                                 </tr>
                                                 {% endfor %}
                                             </tbody>
@@ -143,6 +146,7 @@
                                 {% endfor %}
                             {% else %}
                                 <div class="alert alert-info mt-3">
+                                    <i class="bi bi-info-circle me-2"></i>
                                     No students were promoted.
                                 </div>
                             {% endif %}
@@ -152,8 +156,8 @@
                         <div class="tab-pane fade" id="graduated" role="tabpanel">
                             {% if graduated_students %}
                             <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
+                                <table class="table table-striped table-hover datatable">
+                                    <thead class="table-light">
                                         <tr>
                                             <th>#</th>
                                             <th>Registration No.</th>
@@ -166,7 +170,7 @@
                                         {% for student in graduated_students %}
                                         <tr>
                                             <td>{{ forloop.counter }}</td>
-                                            <td>{{ student.reg_no }}</td>
+                                            <td><strong>{{ student.reg_no }}</strong></td>
                                             <td>{{ student.name }}</td>
                                             <td>{{ student.programme }}</td>
                                             <td><span class="badge bg-success">{{ student.completion }}</span></td>
@@ -177,6 +181,7 @@
                             </div>
                             {% else %}
                                 <div class="alert alert-info mt-3">
+                                    <i class="bi bi-info-circle me-2"></i>
                                     No students graduated.
                                 </div>
                             {% endif %}
@@ -186,8 +191,8 @@
                         <div class="tab-pane fade" id="not-promoted" role="tabpanel">
                             {% if not_promoted_students %}
                             <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
+                                <table class="table table-striped table-hover datatable">
+                                    <thead class="table-light">
                                         <tr>
                                             <th>#</th>
                                             <th>Registration No.</th>
@@ -201,10 +206,10 @@
                                         {% for student in not_promoted_students %}
                                         <tr>
                                             <td>{{ forloop.counter }}</td>
-                                            <td>{{ student.reg_no }}</td>
+                                            <td><strong>{{ student.reg_no }}</strong></td>
                                             <td>{{ student.name }}</td>
                                             <td>{{ student.programme }}</td>
-                                            <td>Y{{ student.current_year }} S{{ student.current_semester }}</td>
+                                            <td><span class="badge bg-secondary">Y{{ student.current_year }} S{{ student.current_semester }}</span></td>
                                             <td><span class="badge bg-danger">{{ student.reason }}</span></td>
                                         </tr>
                                         {% endfor %}
@@ -213,6 +218,7 @@
                             </div>
                             {% else %}
                                 <div class="alert alert-info mt-3">
+                                    <i class="bi bi-info-circle me-2"></i>
                                     All eligible students were promoted.
                                 </div>
                             {% endif %}
@@ -225,4 +231,123 @@
     </div>
 </section>
 
+{% endblock %}
+
+{% block extra_js %}
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    // Initialize DataTables with enhanced features
+    $('.datatable').DataTable({
+        "dom": '<"top"f>rt<"bottom"lip><"clear">',
+        "pageLength": 10,
+        "responsive": true,
+        "language": {
+            "search": "_INPUT_",
+            "searchPlaceholder": "Search...",
+            "lengthMenu": "Show _MENU_ entries",
+            "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+            "infoEmpty": "No entries available",
+            "infoFiltered": "(filtered from _MAX_ total entries)",
+            "paginate": {
+                "previous": "<i class='bi bi-chevron-left'></i>",
+                "next": "<i class='bi bi-chevron-right'></i>"
+            }
+        },
+        "columnDefs": [
+            { "orderable": false, "targets": [0, 4, 5] }, // Disable sorting on certain columns
+            { "searchable": false, "targets": [0, 4, 5] }  // Disable search on certain columns
+        ],
+        "initComplete": function() {
+            $('.dataTables_filter input').addClass('form-control');
+            $('.dataTables_length select').addClass('form-select');
+        }
+    });
+
+    // Confirmation before processing promotion
+    $('form').submit(function(e) {
+        if (!confirm('Are you sure you want to process student promotions? This action cannot be undone.')) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+
+<style>
+    /* Custom styling for DataTables */
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1px solid #dee2e6;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.25rem;
+        margin-left: 10px;
+    }
+    
+    .dataTables_wrapper .dataTables_length select {
+        border: 1px solid #dee2e6;
+        padding: 0.375rem 1.75rem 0.375rem 0.75rem;
+        border-radius: 0.25rem;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        padding: 0.375rem 0.75rem;
+        margin: 0 2px;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+        transition: all 0.3s ease;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+        background: #0d6efd !important;
+        color: white !important;
+        border: 1px solid #0d6efd;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        background: #e9ecef;
+        border-color: #dee2e6;
+    }
+    
+    /* Custom styling for tables */
+    .table th {
+        white-space: nowrap;
+        background-color: #f8f9fa;
+    }
+    
+    .table td {
+        vertical-align: middle;
+    }
+    
+    .badge {
+        font-size: 0.85em;
+        padding: 0.35em 0.65em;
+        font-weight: 500;
+    }
+    
+    /* Programme group styling */
+    .programme-group {
+        border-left: 4px solid #0d6efd;
+        padding-left: 15px;
+        margin-bottom: 2rem;
+    }
+    
+    .group-header {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    /* Card styling */
+    .info-card .card-icon {
+        font-size: 1.5rem;
+    }
+    
+    /* Tab styling */
+    .nav-tabs .nav-link.active {
+        font-weight: 600;
+        border-bottom: 3px solid #0d6efd;
+    }
+</style>
 {% endblock %}
