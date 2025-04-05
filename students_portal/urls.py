@@ -37,6 +37,7 @@ urlpatterns = [
     path('enrollment/drop/<int:enrollment_id>/', views.drop_unit, name='drop_unit'),
     path('report/', views.report_for_semester, name='report_for_semester'),
     path('results/', views.student_results_view, name='academic_results'),
+    path('download-transcript/', views.download_transcript, name='download_transcript'),
 
     #admin to enter marks urls
     path('enter-grades/', views.enter_student_grades, name='enter-grades'),

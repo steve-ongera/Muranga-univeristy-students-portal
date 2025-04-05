@@ -151,7 +151,7 @@ EMAIL_HOST_PASSWORD = 'wtzg mvcn ztoe qige'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # School details for PDF reports
-SCHOOL_NAME = "Kenya High"
+UNIVERSITY_NAME = "Muranga University Of Technology"
 SCHOOL_LOGO_PATH = STATIC_URL + 'assets/img/logo.png' # Adjust path based on where your logo is
 PRINCIPAL_NAME = "Mwangi Macharia"
 

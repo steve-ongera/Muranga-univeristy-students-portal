@@ -23,6 +23,7 @@ from datetime import datetime
 import json
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
+import os
 
 def login_view(request):
     """
@@ -1009,6 +1010,141 @@ def student_results_view(request):
     }
 
     return render(request, 'students/academic_results.html', context)
+
+
+from django.http import HttpResponse
+from django.conf import settings
+from .utils import render_to_pdf
+from datetime import datetime
+from django.contrib.admin.views.decorators import staff_member_required
+
+@login_required
+def download_transcript(request):
+    # Get the student profile
+    try:
+        student = Student.objects.get(registration_number=request.user.username)
+    except Student.DoesNotExist:
+        messages.error(request, "No student profile found for your account.")
+        return HttpResponse("No student profile found", status=404)
+
+    # Get academic results (reuse the same logic from student_results_view)
+    academic_years = AcademicYear.objects.filter(
+        start_date__gte=student.date_of_admission,
+        semesters__id__isnull=False
+    ).distinct().order_by('-start_date')
+
+    results_by_year = {}
+    total_credit_hours = 0
+    total_grade_points = 0
+
+    for academic_year in academic_years:
+        semesters = Semester.objects.filter(academic_year=academic_year).order_by('number')
+        semester_results = {}
+
+        for semester in semesters:
+            enrollments = StudentEnrollment.objects.filter(
+                student=student,
+                semester=semester
+            ).select_related(
+                'programme_unit__unit'
+            ).prefetch_related(
+                Prefetch(
+                    'final_grade',
+                    queryset=StudentUnitGrade.objects.select_related('grade')
+                )
+            )
+
+            units_results = []
+            semester_credit_hours = 0
+            semester_grade_points = 0
+
+            for enrollment in enrollments:
+                unit = enrollment.programme_unit.unit
+                
+                if hasattr(enrollment, 'final_grade'):
+                    grade = enrollment.final_grade
+                    unit_result = {
+                        'unit_code': unit.code,
+                        'unit_name': unit.name,
+                        'credit_hours': unit.credit_hours,
+                        'cat_score': grade.cat_average,
+                        'exam_score': grade.exam_score,
+                        'total_score': grade.total_score,
+                        'grade': grade.grade.grade,
+                        'points': grade.grade.points,
+                        'is_pass': grade.is_pass,
+                        'remarks': grade.remarks,
+                    }
+                    
+                    # Calculate totals
+                    if grade.is_pass:
+                        semester_credit_hours += unit.credit_hours
+                        semester_grade_points += (unit.credit_hours * grade.grade.points)
+                else:
+                    unit_result = {
+                        'unit_code': unit.code,
+                        'unit_name': unit.name,
+                        'credit_hours': unit.credit_hours,
+                        'status': 'Pending',
+                    }
+
+                units_results.append(unit_result)
+
+            # Add semester results
+            semester_results[semester.number] = {
+                'semester_name': semester.name,
+                'units': units_results,
+                'semester_credit_hours': semester_credit_hours,
+                'semester_grade_points': semester_grade_points,
+                'semester_gpa': semester_grade_points / semester_credit_hours if semester_credit_hours > 0 else 0
+            }
+
+            # Update cumulative totals
+            total_credit_hours += semester_credit_hours
+            total_grade_points += semester_grade_points
+
+        # Add year results
+        results_by_year[academic_year.name] = {
+            'semesters': semester_results,
+            'year_name': academic_year.name,
+        }
+
+    # Calculate cumulative GPA
+    cumulative_gpa = total_grade_points / total_credit_hours if total_credit_hours > 0 else 0
+    
+    # Determine classification (customize based on your grading system)
+    if cumulative_gpa >= 4.4:
+        overall_classification = "First Class Honours"
+    elif cumulative_gpa >= 3.5:
+        overall_classification = "Second Class Honours (Upper Division)"
+    elif cumulative_gpa >= 2.7:
+        overall_classification = "Second Class Honours (Lower Division)"
+    elif cumulative_gpa >= 2.0:
+        overall_classification = "Pass"
+    else:
+        overall_classification = "Fail"
+
+    context = {
+        'student': student,
+        'results_by_year': results_by_year,
+        'total_credit_hours': total_credit_hours,
+        'cumulative_gpa': cumulative_gpa,
+        'overall_classification': overall_classification,
+        'today': datetime.now(),
+        'university_name': settings.UNIVERSITY_NAME,
+        'school_logo': os.path.join(settings.MEDIA_URL, 'school_logo.png'),
+        'official_stamp': os.path.join(settings.MEDIA_URL, 'official_stamp.png'),
+    }
+
+    pdf = render_to_pdf('students/transcript_template.html', context)
+    
+    if pdf:
+        response = HttpResponse(pdf, content_type='application/pdf')
+        filename = f"Transcript_{student.registration_number}_{datetime.now().strftime('%Y%m%d')}.pdf"
+        content = f"attachment; filename={filename}"
+        response['Content-Disposition'] = content
+        return response
+    return HttpResponse("Error generating transcript", status=500)
 
 
 from django.shortcuts import render, get_object_or_404

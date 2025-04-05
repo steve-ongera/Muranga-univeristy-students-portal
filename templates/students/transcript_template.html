@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Academic Transcript - {{ student.get_full_name }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm;
+            @top-center {
+                content: element(header);
+            }
+            @bottom-center {
+                content: element(footer);
+            }
+        }
+        
+        body {
+            font-family: "Times New Roman", serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .header {
+            position: running(header);
+            width: 100%;
+            text-align: center;
+            border-bottom: 2px solid #003366;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .footer {
+            position: running(footer);
+            width: 100%;
+            text-align: center;
+            font-size: 10pt;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 5px;
+        }
+        
+        .logo {
+            height: 80px;
+            margin-bottom: 10px;
+        }
+        
+        .university-name {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #003366;
+        }
+        
+        .document-title {
+            font-size: 14pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 15px 0;
+        }
+        
+        .student-info {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .student-info td {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+        }
+        
+        .student-info .label {
+            font-weight: bold;
+            width: 30%;
+            background-color: #f5f5f5;
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .results-table th, .results-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        
+        .results-table th {
+            background-color: #003366;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .results-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .semester-header {
+            background-color: #e6e6e6;
+            font-weight: bold;
+            padding: 8px;
+            margin: 15px 0 10px 0;
+            border-left: 4px solid #003366;
+        }
+        
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+        
+        .summary-table th, .summary-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        
+        .summary-table th {
+            background-color: #f5f5f5;
+            text-align: left;
+        }
+        
+        .signature-area {
+            margin-top: 50px;
+            width: 100%;
+        }
+        
+        .signature-line {
+            border-top: 1px solid #333;
+            width: 200px;
+            margin: 40px 0 5px 0;
+        }
+        
+        .official-stamp {
+            float: right;
+            width: 150px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        {% if school_logo %}
+        <img src="{{ school_logo }}" class="logo" alt="University Logo">
+        {% endif %}
+        <div class="university-name">{{ university_name }}</div>
+        <div>P.O. Box XXX, City, Country</div>
+    </div>
+    
+    <div class="footer">
+        This is an official document. Any alteration renders it invalid. Page <pdf:pagenumber> of <pdf:pagecount>
+    </div>
+    
+    <div class="document-title">Official Academic Transcript</div>
+    
+    <table class="student-info">
+        <tr>
+            <td class="label">Student Name:</td>
+            <td>{{ student.get_full_name }}</td>
+        </tr>
+        <tr>
+            <td class="label">Registration Number:</td>
+            <td>{{ student.registration_number }}</td>
+        </tr>
+        <tr>
+            <td class="label">Programme:</td>
+            <td>{{ student.programme.name }}</td>
+        </tr>
+        <tr>
+            <td class="label">Date of Admission:</td>
+            <td>{{ student.date_of_admission|date:"F j, Y" }}</td>
+        </tr>
+        <tr>
+            <td class="label">Date of Issue:</td>
+            <td>{{ today|date:"F j, Y" }}</td>
+        </tr>
+    </table>
+    
+    {% for year_name, year_data in results_by_year.items %}
+    <div class="year-section">
+        <div class="semester-header">{{ year_name }} ACADEMIC YEAR</div>
+        
+        {% for semester_number, semester_data in year_data.semesters.items %}
+        <div class="semester-section">
+            <div class="semester-header">SEMESTER {{ semester_number }}: {{ semester_data.semester_name }}</div>
+            
+            {% if semester_data.units %}
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Unit Name</th>
+                        <th>Credit Hours</th>
+                        <th>CAT</th>
+                        <th>Exam</th>
+                        <th>Total</th>
+                        <th>Grade</th>
+                        <th>Points</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for unit in semester_data.units %}
+                    <tr>
+                        <td>{{ unit.unit_code }}</td>
+                        <td>{{ unit.unit_name }}</td>
+                        <td>{{ unit.credit_hours }}</td>
+                        <td>
+                            {% if unit.cat_score == 0 or unit.cat_score == None %}
+                            -
+                            {% else %}
+                            {{ unit.cat_score }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if unit.exam_score == None %}
+                            -
+                            {% else %}
+                            {{ unit.exam_score }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if unit.total_score == None %}
+                            -
+                            {% else %}
+                            {{ unit.total_score }}
+                            {% endif %}
+                        </td>
+                        <td>{{ unit.grade|default:"-" }}</td>
+                        <td>{{ unit.points|default:"-" }}</td>
+                        <td>
+                            {% if unit.is_pass %}
+                            <span style="color: green;">PASS</span>
+                            {% elif unit.is_pass == False %}
+                            <span style="color: red;">FAIL</span>
+                            {% else %}
+                            <span style="color: blue;">{{ unit.status|default:"PENDING" }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>No results recorded for this semester.</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+    
+    <table class="summary-table">
+        <tr>
+            <th>Total Credit Hours Completed:</th>
+            <td>{{ total_credit_hours }}</td>
+        </tr>
+        <tr>
+            <th>Cumulative Grade Point Average (GPA):</th>
+            <td>{{ cumulative_gpa|floatformat:2 }}</td>
+        </tr>
+        <tr>
+            <th>Overall Classification:</th>
+            <td>{{ overall_classification }}</td>
+        </tr>
+    </table>
+    
+    <div class="signature-area">
+        <div style="float: left;">
+            <div class="signature-line"></div>
+            <div>Registrar's Signature</div>
+            <div>Date: ___________________</div>
+        </div>
+        
+        {% if official_stamp %}
+        <img src="{{ official_stamp }}" class="official-stamp" alt="Official Stamp">
+        {% endif %}
+        
+        <div style="clear: both;"></div>
+    </div>
+</body>
+</html>
