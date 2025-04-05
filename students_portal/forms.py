@@ -196,86 +196,24 @@ class StudentSearchForm(forms.Form):
 
 
 from django import forms
-from .models import Student, Programme
-from django.utils import timezone
-from django.core.validators import RegexValidator
+from .models import Student
 
-class StudentProfileForm(forms.ModelForm):
+class StudentProfileUpdateForm(forms.ModelForm):
+    """
+    A focused form just for student profile updates.
+    Only includes fields that should be editable in the profile page.
+    """
     class Meta:
         model = Student
         fields = [
             'profile_picture',
-            'registration_number',
-            'first_name',
-            'middle_name',
-            'last_name',
-            'id_number',
-            'programme',
-            'current_year',
-            'current_semester',
-            'date_of_admission',
-            'date_of_birth',
-            'gender',
             'email',
             'phone_number',
-            'religion',
-            'county',
+            'date_of_birth',
             'town',
-            'postal_address',
-            'postal_code',
-            'parent_name',
-            'parent_phone',
-            'emergency_contact_name',
-            'emergency_contact_relationship',
-            'emergency_contact_phone',
-            'entry_mode',
-            'scholarship_info'
+            'county',
         ]
         widgets = {
-            'registration_number': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'e.g. ABC12345'
-            }),
-            'first_name': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'First Name'
-            }),
-            'middle_name': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Middle Name (Optional)'
-            }),
-            'last_name': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Last Name'
-            }),
-            'id_number': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'National ID/Passport'
-            }),
-            'programme': forms.Select(attrs={
-                'class': 'form-select'
-            }),
-            'current_year': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'min': 1,
-                'max': 6
-            }),
-            'current_semester': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'min': 1,
-                'max': 3
-            }),
-            'date_of_admission': forms.DateInput(attrs={
-                'class': 'form-control',
-                'type': 'date'
-            }),
-            'date_of_birth': forms.DateInput(attrs={
-                'class': 'form-control',
-                'type': 'date'
-            }),
-            'gender': forms.Select(attrs={
-                'class': 'form-select'
-            }),
             'email': forms.EmailInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'student@university.ac.ke'
@@ -284,70 +222,23 @@ class StudentProfileForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': '+2547XXXXXXXX'
             }),
-            'religion': forms.TextInput(attrs={
+            'date_of_birth': forms.DateInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Religion (Optional)'
-            }),
-            'county': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'County'
+                'type': 'date'
             }),
             'town': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Town/City'
             }),
-            'postal_address': forms.TextInput(attrs={
+            'county': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'P.O. Box'
-            }),
-            'postal_code': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Postal Code'
-            }),
-            'parent_name': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': "Parent/Guardian's Full Name"
-            }),
-            'parent_phone': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': "Parent/Guardian's Phone"
-            }),
-            'emergency_contact_name': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Emergency Contact Name'
-            }),
-            'emergency_contact_relationship': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Relationship to Student'
-            }),
-            'emergency_contact_phone': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Emergency Phone Number'
-            }),
-            'entry_mode': forms.Select(attrs={
-                'class': 'form-select'
-            }),
-            'scholarship_info': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 3,
-                'placeholder': 'Scholarship details (if any)'
+                'placeholder': 'County'
             }),
             'profile_picture': forms.FileInput(attrs={
-                'class': 'form-control',
+                'class': 'form-control d-none',  # Hidden but still functional
                 'accept': 'image/*'
             })
         }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Set current date as default for date fields if creating new student
-        if not self.instance.pk:
-            self.fields['date_of_admission'].initial = timezone.now().date()
-        
-        # Add form-control class to all fields automatically
-        for field_name, field in self.fields.items():
-            if 'class' not in field.widget.attrs:
-                field.widget.attrs['class'] = 'form-control'
 
     def clean_phone_number(self):
         phone_number = self.cleaned_data.get('phone_number')
@@ -361,6 +252,6 @@ class StudentProfileForm(forms.ModelForm):
 
     def clean_date_of_birth(self):
         dob = self.cleaned_data.get('date_of_birth')
-        if dob and dob > timezone.now().date():
+        if dob and dob > forms.fields.datetime.date.today():
             raise forms.ValidationError("Date of birth cannot be in the future")
         return dob

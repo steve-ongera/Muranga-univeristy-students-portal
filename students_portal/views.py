@@ -1591,20 +1591,19 @@ def promote_students(request):
     # GET request - show empty form
     return render(request, 'students/promote_students.html')
 
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from .models import Student
-from .forms import StudentProfileForm
-
 @login_required
 def student_profile_view(request):
+    """
+    View function to handle student profile display and updates.
+    Uses a dedicated form for profile updates only.
+    """
     try:
         # Get student directly using the username (which is admission number)
         student = Student.objects.get(registration_number=request.user.username)
         
         if request.method == 'POST':
-            form = StudentProfileForm(
+            # Use the dedicated profile update form
+            form = StudentProfileUpdateForm(
                 request.POST, 
                 request.FILES, 
                 instance=student
@@ -1613,35 +1612,49 @@ def student_profile_view(request):
             # Handle profile image removal
             if 'remove_profile_image' in request.POST:
                 if student.profile_picture:
-                    student.profile_picture.delete()
-                    student.save()  # Explicitly save after deletion
+                    # Store the path to delete after saving
+                    old_image = student.profile_picture.path if student.profile_picture else None
+                    student.profile_picture = None  # Clear the field
+                    student.save()  # Save the change
+                    
+                    # Delete the actual file if it exists
+                    if old_image and os.path.isfile(old_image):
+                        import os
+                        os.remove(old_image)
+                        
                     messages.success(request, 'Profile picture removed successfully')
                 else:
                     messages.info(request, 'No profile picture to remove')
                 return redirect('student_profile')
             
             if form.is_valid():
-                updated_student = form.save()  # Save the form and get the instance
+                # Save the form and get the instance
+                updated_student = form.save(commit=True)
                 
-                # Check if any fields were actually changed
+                # Check which fields were actually changed
                 changed_fields = []
                 for field in form.changed_data:
                     if field != 'profile_picture':  # Skip the image field in this check
                         changed_fields.append(field)
                 
                 if changed_fields:
-                    messages.success(request, f'Profile updated successfully. Changed: {", ".join(changed_fields)}')
+                    messages.success(request, f'Profile updated successfully. Changed fields: {", ".join(changed_fields)}')
+                elif 'profile_picture' in form.changed_data:
+                    messages.success(request, 'Profile picture updated successfully')
                 else:
                     messages.info(request, 'No changes were made to your profile')
                 
                 return redirect('student_profile')
+                
             else:
-                # Show specific field errors if available
+                # Show specific field errors and print them for debugging
+                print(f"Form errors: {form.errors}")
                 for field, errors in form.errors.items():
                     for error in errors:
-                        messages.error(request, f'{field.title()}: {error}')
+                        messages.error(request, f'{field.replace("_", " ").title()}: {error}')
         else:
-            form = StudentProfileForm(instance=student)
+            # Just display the form - not posting
+            form = StudentProfileUpdateForm(instance=student)
             
         context = {
             'student': student,
@@ -1651,4 +1664,9 @@ def student_profile_view(request):
         
     except Student.DoesNotExist:
         messages.error(request, "Student record not found. Please contact administration.")
+        return redirect('student_dashboard')
+    except Exception as e:
+        # Catch other errors and provide helpful debugging
+        messages.error(request, f"An error occurred: {str(e)}")
+        print(f"Error in student_profile_view: {str(e)}")
         return redirect('student_dashboard')
