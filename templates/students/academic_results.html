@@ -1,123 +1,235 @@
 {% extends "base/base.html" %}
 
-{% block title %}Academic Results{% endblock %}
+{% block title %}Academic Results - {{ student.get_full_name }}{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2>Academic Results: {{ student.get_full_name }}</h2>
-            <p class="mb-1">Registration Number: <strong>{{ student.registration_number }}</strong></p>
-            <p class="mb-0">Programme: <strong>{{ student.programme.name }}</strong></p>
+<div class="container-fluid py-4">
+    <!-- Student Header Section -->
+    <div class="row mb-4">
+        <div class="col-lg-8 col-md-12">
+            <div class="d-flex flex-column">
+                <h1 class="h2 mb-2">Academic Results</h1>
+                <h2 class="h4 text-muted mb-3">{{ student.get_full_name }}</h2>
+                <div class="d-flex flex-wrap gap-4">
+                    <div>
+                        <span class="text-muted">Registration Number:</span>
+                        <span class="fw-bold ms-2">{{ student.registration_number }}</span>
+                    </div>
+                    <div>
+                        <span class="text-muted">Programme:</span>
+                        <span class="fw-bold ms-2">{{ student.programme.name }}</span>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div>
-            <button class="btn btn-secondary me-2" id="expandAllBtn">Expand All</button>
-            <button class="btn btn-primary" id="generateTranscriptBtn">Generate Transcript</button>
+        <div class="col-lg-4 col-md-12 d-flex align-items-start justify-content-lg-end justify-content-md-start mt-lg-0 mt-3">
+            <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-outline-secondary" id="expandAllBtn">
+                    <i class="bi bi-arrows-expand me-2"></i>Expand All
+                </button>
+                <button class="btn btn-primary" id="generateTranscriptBtn">
+                    <i class="bi bi-file-earmark-text me-2"></i>Generate Transcript
+                </button>
+            </div>
         </div>
     </div>
 
     {% if results_by_year %}
-    <ul class="nav nav-tabs mb-3" id="yearTab" role="tablist">
-        {% for year_name, year_data in results_by_year.items %}
-        <li class="nav-item" role="presentation">
-            <button class="nav-link {% if forloop.first %}active{% endif %}" id="tab-{{ forloop.counter }}-tab" data-bs-toggle="tab"
-                data-bs-target="#tab-{{ forloop.counter }}" type="button" role="tab" aria-controls="tab-{{ forloop.counter }}"
-                aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
-                {{ year_name }}
-            </button>
-        </li>
-        {% endfor %}
-    </ul>
-
-    <div class="tab-content" id="yearTabContent">
-        {% for year_name, year_data in results_by_year.items %}
-        <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="tab-{{ forloop.counter }}" role="tabpanel"
-            aria-labelledby="tab-{{ forloop.counter }}-tab">
-
-            {% for semester_number, semester_data in year_data.semesters.items %}
-            <div class="card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Semester {{ semester_number }}</h5>
-                    <button class="btn btn-sm btn-outline-primary toggleSemesterBtn" data-bs-toggle="collapse"
-                        data-bs-target="#collapse-{{ forloop.parentloop.counter }}-{{ forloop.counter }}">
-                        Toggle
+    <!-- Year Navigation Tabs -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <ul class="nav nav-tabs nav-justified flex-nowrap overflow-auto" id="yearTab" role="tablist">
+                {% for year_name, year_data in results_by_year.items %}
+                <li class="nav-item flex-shrink-0" role="presentation">
+                    <button class="nav-link {% if forloop.first %}active{% endif %} py-2 px-3" 
+                            id="tab-{{ forloop.counter }}-tab" 
+                            data-bs-toggle="tab"
+                            data-bs-target="#tab-{{ forloop.counter }}" 
+                            type="button" 
+                            role="tab" 
+                            aria-controls="tab-{{ forloop.counter }}"
+                            aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
+                        {{ year_name }}
                     </button>
-                </div>
-                <div id="collapse-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" class="collapse show">
-                    <div class="card-body">
-                        {% if semester_data.units %}
-                        <div class="table-responsive">
-                            <table class="table table-bordered align-middle">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Unit Code</th>
-                                        <th>Unit Name</th>
-                                        <th>CAT</th>
-                                        <th>Exam</th>
-                                        <th>Total Score</th>
-                                        <th>Grade</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for unit in semester_data.units %}
-                                    <tr>
-                                        <td>{{ unit.unit_code }}</td>
-                                        <td>{{ unit.unit_name }}</td>
-                                        <td>
-                                            {% if unit.cat_score == 0 %}
-                                            N/A
-                                            {% else %}
-                                            {{ unit.cat_score }}
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ unit.exam_score }}</td>
-                                        <td>{{ unit.total_score }}</td>
-                                        <td>{{ unit.grade }}</td>
-                                        <td>
-                                            {% if unit.exam_score %}
-                                                {% if unit.is_pass %}
-                                                    <span class="badge bg-success">Pass</span>
-                                                {% else %}
-                                                    <span class="badge bg-danger">Fail</span>
-                                                {% endif %}
-                                            {% else %}
-                                                <span class="badge bg-secondary">N/A</span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        {% else %}
-                        <div class="alert alert-info mb-0">
-                            No results available for Semester {{ semester_number }}.
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-
+                </li>
+                {% endfor %}
+            </ul>
         </div>
-        {% endfor %}
+    </div>
+
+    <!-- Year Content Panels -->
+    <div class="row">
+        <div class="col-12">
+            <div class="tab-content" id="yearTabContent">
+                {% for year_name, year_data in results_by_year.items %}
+                <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
+                     id="tab-{{ forloop.counter }}" 
+                     role="tabpanel"
+                     aria-labelledby="tab-{{ forloop.counter }}-tab">
+
+                    <!-- Semester Cards -->
+                    <div class="accordion" id="semesterAccordion-{{ forloop.counter }}">
+                        {% for semester_number, semester_data in year_data.semesters.items %}
+                        <div class="accordion-item mb-3 border-0 shadow-sm">
+                            <div class="accordion-header">
+                                <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} d-flex justify-content-between py-3 px-4" 
+                                        type="button" 
+                                        data-bs-toggle="collapse" 
+                                        data-bs-target="#collapse-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"
+                                        aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+                                        aria-controls="collapse-{{ forloop.parentloop.counter }}-{{ forloop.counter }}">
+                                    <h3 class="h5 mb-0">Semester {{ semester_number }}</h3>
+                                </button>
+                            </div>
+                            <div id="collapse-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" 
+                                 class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" 
+                                 data-bs-parent="#semesterAccordion-{{ forloop.counter }}">
+                                <div class="accordion-body px-0 pt-3 pb-0">
+                                    {% if semester_data.units %}
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-bordered align-middle mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th class="text-nowrap">Unit Code</th>
+                                                    <th class="w-100">Unit Name</th>
+                                                    <th class="text-nowrap text-center">CAT</th>
+                                                    <th class="text-nowrap text-center">Exam</th>
+                                                    <th class="text-nowrap text-center">Total</th>
+                                                    <th class="text-nowrap text-center">Grade</th>
+                                                    <th class="text-nowrap text-center">Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for unit in semester_data.units %}
+                                                <tr>
+                                                    <td class="fw-bold">{{ unit.unit_code }}</td>
+                                                    <td>{{ unit.unit_name }}</td>
+                                                    <td class="text-center">
+                                                        {% if unit.cat_score == 0 %}
+                                                        <span class="text-muted">N/A</span>
+                                                        {% else %}
+                                                        {{ unit.cat_score }}
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="text-center">{{ unit.exam_score }}</td>
+                                                    <td class="text-center fw-bold">{{ unit.total_score }}</td>
+                                                    <td class="text-center fw-bold">{{ unit.grade }}</td>
+                                                    <td class="text-center">
+                                                        {% if unit.exam_score %}
+                                                            {% if unit.is_pass %}
+                                                                <span class="badge bg-success bg-opacity-10 text-success">Pass</span>
+                                                            {% else %}
+                                                                <span class="badge bg-danger bg-opacity-10 text-danger">Fail</span>
+                                                            {% endif %}
+                                                        {% else %}
+                                                            <span class="badge bg-secondary bg-opacity-10 text-secondary">N/A</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    {% else %}
+                                    <div class="alert alert-info mb-0">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        No results available for Semester {{ semester_number }}.
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
     {% else %}
-    <div class="alert alert-warning">
-        No academic results available. If you believe this is an error, please contact the academic office.
+    <!-- No Results Message -->
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-warning d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle me-3 fs-4"></i>
+                <div>
+                    <h4 class="alert-heading mb-2">No Academic Results Found</h4>
+                    <p class="mb-0">No academic results are currently available for this student. If you believe this is an error, please contact the academic office.</p>
+                </div>
+            </div>
+        </div>
     </div>
     {% endif %}
 </div>
 
 <script>
-    document.getElementById("expandAllBtn").addEventListener("click", function () {
-        const collapses = document.querySelectorAll('.collapse');
-        collapses.forEach(c => new bootstrap.Collapse(c, { show: true }));
-    });
+    document.addEventListener("DOMContentLoaded", function() {
+        // Expand/Collapse All functionality
+        const expandAllBtn = document.getElementById("expandAllBtn");
+        expandAllBtn.addEventListener("click", function() {
+            const isExpanded = this.getAttribute("aria-expanded") === "true";
+            const collapses = document.querySelectorAll('.accordion-collapse');
+            const icon = this.querySelector('i');
+            
+            collapses.forEach(c => {
+                const bsCollapse = new bootstrap.Collapse(c, { toggle: true });
+            });
+            
+            if (isExpanded) {
+                this.setAttribute("aria-expanded", "false");
+                icon.classList.remove("bi-arrows-collapse");
+                icon.classList.add("bi-arrows-expand");
+                this.innerHTML = '<i class="bi bi-arrows-expand me-2"></i>Expand All';
+            } else {
+                this.setAttribute("aria-expanded", "true");
+                icon.classList.remove("bi-arrows-expand");
+                icon.classList.add("bi-arrows-collapse");
+                this.innerHTML = '<i class="bi bi-arrows-collapse me-2"></i>Collapse All';
+            }
+        });
 
-    document.getElementById("generateTranscriptBtn").addEventListener("click", function () {
-        alert("Transcript generation not implemented.");
+        // Transcript Generation
+        document.getElementById("generateTranscriptBtn").addEventListener("click", function() {
+            // Show loading state
+            const originalText = this.innerHTML;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Generating...';
+            this.disabled = true;
+            
+            // Simulate API call (replace with actual implementation)
+            setTimeout(() => {
+                // Show success modal or redirect
+                const modal = new bootstrap.Modal(document.getElementById('transcriptModal'));
+                modal.show();
+                
+                // Reset button
+                this.innerHTML = originalText;
+                this.disabled = false;
+            }, 1500);
+        });
     });
 </script>
+
+<!-- Transcript Modal (hidden by default) -->
+<div class="modal fade" id="transcriptModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Transcript Generated</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Your official transcript has been generated successfully.</p>
+                <div class="d-flex gap-2 mt-4">
+                    <button type="button" class="btn btn-outline-secondary flex-grow-1" data-bs-dismiss="modal">
+                        Close
+                    </button>
+                    <button type="button" class="btn btn-primary flex-grow-1">
+                        <i class="bi bi-download me-2"></i>Download
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
