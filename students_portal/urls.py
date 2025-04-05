@@ -7,6 +7,7 @@ urlpatterns = [
     path('logout/', views.custom_logout, name='logout'),
     path('forgot-password/', views.forgot_password, name='forgot_password'),
     path('reset-password/<uidb64>/<token>/', views.reset_password, name='reset_password'),
+    path('profile/', views.student_profile_view, name='student_profile'),
     # Add paths for your dashboards
     path('student/dashboard/', views.student_dashboard, name='student_dashboard'),
     path('lecturer/dashboard/', views.lecturer_dashboard, name='lecturer_dashboard'),

@@ -1590,3 +1590,65 @@ def promote_students(request):
     
     # GET request - show empty form
     return render(request, 'students/promote_students.html')
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import Student
+from .forms import StudentProfileForm
+
+@login_required
+def student_profile_view(request):
+    try:
+        # Get student directly using the username (which is admission number)
+        student = Student.objects.get(registration_number=request.user.username)
+        
+        if request.method == 'POST':
+            form = StudentProfileForm(
+                request.POST, 
+                request.FILES, 
+                instance=student
+            )
+            
+            # Handle profile image removal
+            if 'remove_profile_image' in request.POST:
+                if student.profile_picture:
+                    student.profile_picture.delete()
+                    student.save()  # Explicitly save after deletion
+                    messages.success(request, 'Profile picture removed successfully')
+                else:
+                    messages.info(request, 'No profile picture to remove')
+                return redirect('student_profile')
+            
+            if form.is_valid():
+                updated_student = form.save()  # Save the form and get the instance
+                
+                # Check if any fields were actually changed
+                changed_fields = []
+                for field in form.changed_data:
+                    if field != 'profile_picture':  # Skip the image field in this check
+                        changed_fields.append(field)
+                
+                if changed_fields:
+                    messages.success(request, f'Profile updated successfully. Changed: {", ".join(changed_fields)}')
+                else:
+                    messages.info(request, 'No changes were made to your profile')
+                
+                return redirect('student_profile')
+            else:
+                # Show specific field errors if available
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        messages.error(request, f'{field.title()}: {error}')
+        else:
+            form = StudentProfileForm(instance=student)
+            
+        context = {
+            'student': student,
+            'form': form
+        }
+        return render(request, 'students/profile.html', context)
+        
+    except Student.DoesNotExist:
+        messages.error(request, "Student record not found. Please contact administration.")
+        return redirect('student_dashboard')

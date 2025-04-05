@@ -1,161 +1,198 @@
-
-
 {% extends "base/base.html" %}
 {% load static %}
 {% block content %}
 
-<div class="message-container" id="system-messages">
-  {% for message in messages %}
-  <div class="alert-message alert-{{ message.tags }}">
-      {{ message }}
-      <span class="close-message">&times;</span>
-  </div>
-  {% endfor %}
-</div>
+<style>
+  .profile-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 25px;
+    text-align: center;
+  }
+  .profile-img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #f0f0f0;
+    margin: 0 auto 15px;
+  }
+  .info-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 25px;
+  }
+  .info-row {
+    padding: 10px 0;
+    border-bottom: 1px solid #f5f5f5;
+  }
+  .info-row:last-child {
+    border-bottom: none;
+  }
+  .label {
+    font-weight: 600;
+    color: #555;
+  }
+  .nav-tabs .nav-link.active {
+    font-weight: 600;
+    color: #2575fc;
+    border-bottom: 2px solid #2575fc;
+  }
+  .btn-upload {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+  }
+  .btn-upload input[type="file"] {
+    position: absolute;
+    opacity: 0;
+    right: 0;
+    top: 0;
+    cursor: pointer;
+  }
+</style>
 
-<section class="section profile">
+<div class="container py-4">
   <div class="row">
-    <div class="col-xl-4">
-      <div class="card">
-        <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
-          {% if student.profile_image %}
-            <img src="{{ student.profile_image.url }}" alt="Profile Picture" class="img-fluid rounded-circle" style="max-width: 250px; max-height: 250px; object-fit: cover;">
-          {% else %}
-            <img src="{% static 'assets/img/profile.png' %}" alt="Profile Picture" class="img-fluid rounded-circle" style="max-width: 250px; max-height: 250px; object-fit: cover;">   
-          {% endif %}
-    
-          <h2 class="mt-3">{{ student.name }} {{student.admission_number}}</h2>
-          <h3>Student : {{ student.current_class}}</h3>
-        </div>
+    <!-- Left Column - Profile Card -->
+    <div class="col-md-4 mb-4">
+      <div class="profile-card">
+        {% if student.profile_picture %}
+          <img src="{{ student.profile_picture.url }}" alt="Profile" class="profile-img">
+        {% else %}
+          <img src="{% static 'assets/img/profile.png' %}" alt="Profile" class="profile-img">
+        {% endif %}
+        
+        <h3 class="mb-1">{{ student.get_full_name }}</h3>
+        <p class="text-muted mb-2">{{ student.registration_number }}</p>
+        <p class="badge bg-light text-dark">{{ student.programme.name }}</p>
+        <p>Year {{ student.current_year }}, Semester {{ student.current_semester }}</p>
       </div>
     </div>
 
-    <div class="col-xl-8">
-      <div class="card">
-        <div class="card-body pt-3">
-          <!-- Bordered Tabs -->
-          <ul class="nav nav-tabs nav-tabs-bordered">
-            <li class="nav-item">
-              <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Overview</button>
-            </li>
-            <li class="nav-item">
-              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit">Edit Profile</button>
-            </li>
-          </ul>
-          <div class="tab-content pt-2">
+    <!-- Right Column - Info Tabs -->
+    <div class="col-md-8">
+      <div class="info-card">
+        <ul class="nav nav-tabs mb-4">
+          <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#overview">Overview</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#edit">Edit</button>
+          </li>
+        </ul>
 
-            <div class="tab-pane fade show active profile-overview" id="profile-overview">
-              <h5 class="card-title">Profile Details</h5>
-
-              <div class="row">
-                <div class="col-lg-3 col-md-4 label">Address</div>
-                <div class="col-lg-9 col-md-8">{{ student.address }}</div>
-              </div>
-
-              <div class="row">
-                <div class="col-lg-3 col-md-4 label">Emergency Contact Name</div>
-                <div class="col-lg-9 col-md-8">{{ student.emergency_contact_name }}</div>
-              </div>
-
-              <div class="row">
-                <div class="col-lg-3 col-md-4 label">Emergency Contact Phone</div>
-                <div class="col-lg-9 col-md-8">{{ student.emergency_contact_phone }}</div>
-              </div>
-
-              <div class="row">
-                <div class="col-lg-3 col-md-4 label">Emergency Contact Relationship</div>
-                <div class="col-lg-9 col-md-8">{{ student.emergency_contact_relationship }}</div>
-              </div>
-
-              <div class="row">
-                <div class="col-lg-3 col-md-4 label">Medical Conditions</div>
-                <div class="col-lg-9 col-md-8">{{ student.medical_conditions }}</div>
-              </div>
-
-              <div class="row">
-                <div class="col-lg-3 col-md-4 label">Blood Group</div>
-                <div class="col-lg-9 col-md-8">{{ student.blood_group }}</div>
+        <div class="tab-content">
+          <!-- Overview Tab -->
+          <div class="tab-pane fade show active" id="overview">
+            <div class="info-row row">
+              <div class="col-md-3 label">Email</div>
+              <div class="col-md-9">{{ student.email|default:"Not provided" }}</div>
+            </div>
+            <div class="info-row row">
+              <div class="col-md-3 label">Phone</div>
+              <div class="col-md-9">{{ student.phone_number|default:"Not provided" }}</div>
+            </div>
+            <div class="info-row row">
+              <div class="col-md-3 label">Date of Birth</div>
+              <div class="col-md-9">{{ student.date_of_birth|date:"M d, Y"|default:"Not provided" }}</div>
+            </div>
+            <div class="info-row row">
+              <div class="col-md-3 label">Address</div>
+              <div class="col-md-9">
+                {{ student.town|default:"" }}{% if student.town and student.county %}, {% endif %}
+                {{ student.county|default:"Not provided" }}
               </div>
             </div>
+          </div>
 
-            <!-- Edit Profile Section -->
-            <div class="tab-pane fade profile-edit pt-3" id="profile-edit">
-              <!-- Profile Edit Form -->
-              <form method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="row mb-3">
-                  <label for="profile_image" class="col-md-4 col-lg-3 col-form-label">Profile Image</label>
-                  <div class="col-md-8 col-lg-9">
-                    {% if student.profile_image %}
-                      <img src="{{ student.profile_image.url }}" alt="Profile" class="img-fluid mb-2">
-                    {% endif %}
-                    <div class="pt-2">
-                      <!-- Upload Button -->
-                      <label for="id_profile_image" class="btn btn-primary btn-sm" title="Upload new profile image">
-                        <i class="bi bi-upload"></i> Upload
-                        {{ form.profile_image }}
-                      </label>
-                      
-                      {% if student.profile_image %}
-                        <!-- Remove Button (only show if image exists) -->
-                        <button type="submit" name="remove_profile_image" class="btn btn-danger btn-sm" title="Remove profile image">
-                          <i class="bi bi-trash"></i> Remove
-                        </button>
-                      {% endif %}
-                    </div>
-                  </div>
-                </div>
+          <!-- Edit Tab -->
+          <div class="tab-pane fade" id="edit">
+            <form method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+              
+              <div class="mb-4 text-center">
+                {% if student.profile_picture %}
+                  <img src="{{ student.profile_picture.url }}" class="profile-img mb-3" id="profile-preview">
+                {% else %}
+                  <img src="{% static 'assets/img/profile.png' %}" class="profile-img mb-3" id="profile-preview">
+                {% endif %}
+                
+                <label class="btn btn-primary btn-upload">
+                  <i class="bi bi-upload"></i> Change Photo
+                  {{ form.profile_picture }}
+                </label>
+                
+                {% if student.profile_picture %}
+                  <button type="submit" name="remove_profile_image" class="btn btn-outline-danger">
+                    <i class="bi bi-trash"></i> Remove
+                  </button>
+                {% endif %}
+              </div>
 
-                {% for field in form %}
-                  {% if field.name != 'profile_image' %}
-                    <div class="row mb-3">
-                      <label for="{{ field.id_for_label }}" class="col-md-4 col-lg-3 col-form-label">
-                        {{ field.label }}
-                      </label>
-                      <div class="col-md-8 col-lg-9">
-                        {{ field }}
-                        {% if field.errors %}
-                          <div class="text-danger">
-                            {{ field.errors }}
-                          </div>
-                        {% endif %}
-                      </div>
-                    </div>
-                  {% endif %}
-                {% endfor %}
+              <div class="mb-3">
+                <label class="form-label">Email</label>
+                {{ form.email }}
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Phone Number</label>
+                {{ form.phone_number }}
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Date of Birth</label>
+                {{ form.date_of_birth }}
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Town/City</label>
+                {{ form.town }}
+              </div>
+              
+              <div class="mb-4">
+                <label class="form-label">County</label>
+                {{ form.county }}
+              </div>
 
-                <div class="text-center">
-                  <button type="submit" class="btn btn-primary">Save Changes</button>
-                </div>
-              </form>
-            </div>
-
+              <div class="d-flex justify-content-end">
+                <a href="{% url 'student_profile' %}" class="btn btn-outline-secondary me-2">Cancel</a>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
     </div>
   </div>
-</section>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // Hide the default file input
-  const fileInput = document.getElementById('id_profile_image');
-  fileInput.style.display = 'none';
-
-  // Optional: Preview image before upload
-  fileInput.addEventListener('change', function(event) {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const preview = document.querySelector('.img-fluid');
-        if (preview) {
+  // Image preview for upload
+  const fileInput = document.getElementById('id_profile_picture');
+  const preview = document.getElementById('profile-preview');
+  
+  if (fileInput && preview) {
+    fileInput.addEventListener('change', function() {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
           preview.src = e.target.result;
         }
+        reader.readAsDataURL(file);
       }
-      reader.readAsDataURL(file);
-    }
+    });
+  }
+
+  // Close messages
+  document.querySelectorAll('.close-message').forEach(btn => {
+    btn.addEventListener('click', function() {
+      this.parentElement.style.display = 'none';
+    });
   });
 });
 </script>
