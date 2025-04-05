@@ -20,7 +20,7 @@
             <li class="breadcrumb-item active">Student Promotion</li>
         </ol>
     </nav>
-</div><!-- End Page Title -->
+</div>
 
 <section class="section">
     <div class="row">
@@ -108,30 +108,32 @@
                         <!-- Promoted Students Tab -->
                         <div class="tab-pane fade show active" id="promoted" role="tabpanel">
                             {% if promotion_results.promoted %}
-                                {% for group, data in promotion_results.promoted.items %}
+                                {% for programme, data in promotion_results.promoted.items %}
                                 <div class="programme-group mb-5">
                                     <h5 class="group-header mb-3">
-                                        {{ group }}
+                                        {{ programme }}
                                         <span class="badge bg-primary">{{ data.students|length }}</span>
                                     </h5>
                                     
                                     <div class="table-responsive">
-                                        <table class="table datatable table-hover">
+                                        <table class="table table-hover">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">#</th>
-                                                    <th scope="col">Registration No.</th>
-                                                    <th scope="col">Student Name</th>
-                                                    <th scope="col">From</th>
-                                                    <th scope="col">To</th>
+                                                    <th>#</th>
+                                                    <th>Reg No.</th>
+                                                    <th>Student Name</th>
+                                                    <th>Programme</th>
+                                                    <th>From</th>
+                                                    <th>To</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {% for student in data.students %}
                                                 <tr>
-                                                    <th scope="row">{{ forloop.counter }}</th>
+                                                    <td>{{ forloop.counter }}</td>
                                                     <td>{{ student.reg_no }}</td>
                                                     <td>{{ student.name }}</td>
+                                                    <td>{{ student.programme }}</td>
                                                     <td>{{ data.from }}</td>
                                                     <td>{{ data.to }}</td>
                                                 </tr>
@@ -152,20 +154,20 @@
                         <div class="tab-pane fade" id="graduated" role="tabpanel">
                             {% if promotion_results.graduated %}
                             <div class="table-responsive">
-                                <table class="table datatable table-hover">
+                                <table class="table table-hover">
                                     <thead>
                                         <tr>
-                                            <th scope="col">#</th>
-                                            <th scope="col">Registration No.</th>
-                                            <th scope="col">Student Name</th>
-                                            <th scope="col">Programme</th>
-                                            <th scope="col">Completion</th>
+                                            <th>#</th>
+                                            <th>Reg No.</th>
+                                            <th>Student Name</th>
+                                            <th>Programme</th>
+                                            <th>Completion</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for student in promotion_results.graduated %}
                                         <tr>
-                                            <th scope="row">{{ forloop.counter }}</th>
+                                            <td>{{ forloop.counter }}</td>
                                             <td>{{ student.reg_no }}</td>
                                             <td>{{ student.name }}</td>
                                             <td>{{ student.programme }}</td>
@@ -186,21 +188,21 @@
                         <div class="tab-pane fade" id="not-promoted" role="tabpanel">
                             {% if promotion_results.not_promoted %}
                             <div class="table-responsive">
-                                <table class="table datatable table-hover">
+                                <table class="table table-hover">
                                     <thead>
                                         <tr>
-                                            <th scope="col">#</th>
-                                            <th scope="col">Registration No.</th>
-                                            <th scope="col">Student Name</th>
-                                            <th scope="col">Programme</th>
-                                            <th scope="col">Current Level</th>
-                                            <th scope="col">Reason</th>
+                                            <th>#</th>
+                                            <th>Reg No.</th>
+                                            <th>Student Name</th>
+                                            <th>Programme</th>
+                                            <th>Current Level</th>
+                                            <th>Reason</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for student in promotion_results.not_promoted %}
                                         <tr>
-                                            <th scope="row">{{ forloop.counter }}</th>
+                                            <td>{{ forloop.counter }}</td>
                                             <td>{{ student.reg_no }}</td>
                                             <td>{{ student.name }}</td>
                                             <td>{{ student.programme }}</td>
@@ -225,89 +227,4 @@
     </div>
 </section>
 
-{% endblock %}
-
-{% block extra_js %}
-<!-- DataTables JS -->
-<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
-
-<script>
-$(document).ready(function() {
-    // Initialize DataTables with pagination
-    $('.datatable').DataTable({
-        "dom": '<"top"f>rt<"bottom"lip><"clear">',
-        "pageLength": 10,
-        "language": {
-            "search": "_INPUT_",
-            "searchPlaceholder": "Search...",
-            "lengthMenu": "Show _MENU_ entries",
-            "info": "Showing _START_ to _END_ of _TOTAL_ entries",
-            "paginate": {
-                "previous": "<i class='bi bi-chevron-left'></i>",
-                "next": "<i class='bi bi-chevron-right'></i>"
-            }
-        },
-        "columnDefs": [
-            { "orderable": false, "targets": [3,4,5] } // Disable sorting on some columns
-        ]
-    });
-    
-    // Confirmation before processing promotion
-    $('form').submit(function(e) {
-        if (!confirm('Are you sure you want to process student promotions? This action cannot be undone.')) {
-            e.preventDefault();
-        }
-    });
-});
-</script>
-
-<style>
-    /* Custom styling for the tables */
-    .dataTables_wrapper .dataTables_filter input {
-        border: 1px solid #dee2e6;
-        padding: 5px 10px;
-        border-radius: 4px;
-        margin-bottom: 10px;
-    }
-    
-    .dataTables_wrapper .dataTables_paginate .paginate_button {
-        padding: 5px 10px;
-        margin: 0 2px;
-        border: 1px solid transparent;
-        border-radius: 4px;
-    }
-    
-    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-        background: #0d6efd;
-        color: white !important;
-        border: 1px solid #0d6efd;
-    }
-    
-    .programme-group {
-        border-left: 4px solid #0d6efd;
-        padding-left: 15px;
-        margin-bottom: 30px;
-    }
-    
-    .group-header {
-        font-weight: 600;
-        color: #2c3e50;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .info-card .card-icon {
-        font-size: 1.5rem;
-    }
-    
-    .nav-tabs .nav-link.active {
-        font-weight: 600;
-    }
-    
-    .table th {
-        white-space: nowrap;
-    }
-</style>
 {% endblock %}

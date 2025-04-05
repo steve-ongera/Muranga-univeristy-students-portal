@@ -1,16 +1,228 @@
-{% extends "base/base.html" %}
+{% extends 'base/base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="container mt-5">
-    <h2>Promote Students to Next Class</h2>
-    <p>Click the button below to promote all active students to the next class. Students in Form 4 will be graduated.</p>
 
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-success">Promote Students</button>
-    </form>
-
-    <br>
-    <a href="{% url 'students_list' %}" class="btn btn-secondary">Back to Student List</a>
+<div class="message-container">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
 </div>
+
+<div class="pagetitle">
+    <h1>Student Promotion</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Student Promotion</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="card-title">Promote Students</h5>
+                        <form method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-arrow-up-circle"></i> Process Promotion
+                            </button>
+                        </form>
+                    </div>
+
+                    {% if promoted_by_programme or graduated_students or not_promoted_students %}
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card info-card sales-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Promoted</h5>
+                                    <div class="d-flex align-items-center">
+                                        <div class="card-icon rounded-circle bg-primary">
+                                            <i class="bi bi-arrow-up-circle"></i>
+                                        </div>
+                                        <div class="ps-3">
+                                            <h6>{{ total_promoted }}</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card info-card revenue-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Graduated</h5>
+                                    <div class="d-flex align-items-center">
+                                        <div class="card-icon rounded-circle bg-success">
+                                            <i class="bi bi-award"></i>
+                                        </div>
+                                        <div class="ps-3">
+                                            <h6>{{ total_graduated }}</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card info-card customers-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Not Promoted</h5>
+                                    <div class="d-flex align-items-center">
+                                        <div class="card-icon rounded-circle bg-warning">
+                                            <i class="bi bi-exclamation-triangle"></i>
+                                        </div>
+                                        <div class="ps-3">
+                                            <h6>{{ total_not_promoted }}</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <ul class="nav nav-tabs nav-tabs-bordered" id="promotionTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="promoted-tab" data-bs-toggle="tab" data-bs-target="#promoted" type="button" role="tab">
+                                Promoted ({{ total_promoted }})
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="graduated-tab" data-bs-toggle="tab" data-bs-target="#graduated" type="button" role="tab">
+                                Graduated ({{ total_graduated }})
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="not-promoted-tab" data-bs-toggle="tab" data-bs-target="#not-promoted" type="button" role="tab">
+                                Not Promoted ({{ total_not_promoted }})
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content pt-2">
+                        <!-- Promoted Students Tab -->
+                        <div class="tab-pane fade show active" id="promoted" role="tabpanel">
+                            {% if promoted_by_programme %}
+                                {% for programme, data in promoted_by_programme.items %}
+                                <div class="programme-group mb-5">
+                                    <h5 class="group-header mb-3">
+                                        {{ programme }}
+                                        <span class="badge bg-primary">{{ data.students|length }}</span>
+                                    </h5>
+                                    
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Registration No.</th>
+                                                    <th>Student Name</th>
+                                                    <th>Current Level</th>
+                                                    <th>New Level</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for student in data.students %}
+                                                <tr>
+                                                    <td>{{ forloop.counter }}</td>
+                                                    <td>{{ student.reg_no }}</td>
+                                                    <td>{{ student.name }}</td>
+                                                    <td>Y{{ student.current_year }} S{{ student.current_semester }}</td>
+                                                    <td>Y{{ student.new_year }} S{{ student.new_semester }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="alert alert-info mt-3">
+                                    No students were promoted.
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Graduated Students Tab -->
+                        <div class="tab-pane fade" id="graduated" role="tabpanel">
+                            {% if graduated_students %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Registration No.</th>
+                                            <th>Student Name</th>
+                                            <th>Programme</th>
+                                            <th>Completion</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for student in graduated_students %}
+                                        <tr>
+                                            <td>{{ forloop.counter }}</td>
+                                            <td>{{ student.reg_no }}</td>
+                                            <td>{{ student.name }}</td>
+                                            <td>{{ student.programme }}</td>
+                                            <td><span class="badge bg-success">{{ student.completion }}</span></td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                                <div class="alert alert-info mt-3">
+                                    No students graduated.
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Not Promoted Students Tab -->
+                        <div class="tab-pane fade" id="not-promoted" role="tabpanel">
+                            {% if not_promoted_students %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Registration No.</th>
+                                            <th>Student Name</th>
+                                            <th>Programme</th>
+                                            <th>Current Level</th>
+                                            <th>Reason</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for student in not_promoted_students %}
+                                        <tr>
+                                            <td>{{ forloop.counter }}</td>
+                                            <td>{{ student.reg_no }}</td>
+                                            <td>{{ student.name }}</td>
+                                            <td>{{ student.programme }}</td>
+                                            <td>Y{{ student.current_year }} S{{ student.current_semester }}</td>
+                                            <td><span class="badge bg-danger">{{ student.reason }}</span></td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                                <div class="alert alert-info mt-3">
+                                    All eligible students were promoted.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 {% endblock %}

@@ -1457,13 +1457,10 @@ def promote_students(request):
     if request.method == 'POST':
         try:
             with transaction.atomic():
-                promotion_results = {
-                    'promoted': {},
-                    'not_promoted': [],
-                    'graduated': []
-                }
+                promoted_students = []
+                not_promoted_students = []
+                graduated_students = []
                 
-                # Get all active students
                 active_students = Student.objects.filter(status='active').select_related('programme')
                 
                 for student in active_students:
@@ -1471,35 +1468,36 @@ def promote_students(request):
                     current_year = student.current_year
                     current_semester = student.current_semester
                     
-                    # Check if student has failed more than 3 units
                     failed_units = StudentUnitGrade.objects.filter(
                         enrollment__student=student,
                         is_pass=False
                     ).count()
                     
-                    # Check if student has any fee balance
                     has_balance = StudentFee.objects.filter(
                         student=student,
                         balance__gt=0
                     ).exists()
                     
-                    # Determine promotion status
+                    student_data = {
+                        'id': student.id,
+                        'name': f"{student.first_name} {student.last_name}",
+                        'reg_no': student.registration_number,
+                        'programme': programme.name,
+                        'current_year': current_year,
+                        'current_semester': current_semester,
+                    }
+                    
                     if failed_units <= 3 and not has_balance:
-                        # Check if student is completing their programme
                         if current_year == programme.duration_years and current_semester == programme.semesters_per_year:
-                            # Graduate the student
                             student.status = 'graduated'
                             student.is_active = False
                             student.save()
                             
-                            promotion_results['graduated'].append({
-                                'name': f"{student.first_name} {student.last_name}",
-                                'reg_no': student.registration_number,
-                                'programme': programme.name,
+                            graduated_students.append({
+                                **student_data,
                                 'completion': f"Year {current_year} Semester {current_semester}"
                             })
                         else:
-                            # Regular promotion logic
                             new_year = current_year
                             new_semester = current_semester + 1
                             
@@ -1507,61 +1505,52 @@ def promote_students(request):
                                 new_year += 1
                                 new_semester = 1
                             
-                            # Update student's academic progress
                             student.current_year = new_year
                             student.current_semester = new_semester
                             student.save()
                             
-                            # Add to promoted group
-                            programme_name = programme.name
-                            promotion_key = (f"{programme_name} "
-                                            f"(Y{current_year}S{current_semester} → "
-                                            f"Y{new_year}S{new_semester})")
-                            
-                            if promotion_key not in promotion_results['promoted']:
-                                promotion_results['promoted'][promotion_key] = []
-                            
-                            promotion_results['promoted'][promotion_key].append({
-                                'name': f"{student.first_name} {student.last_name}",
-                                'reg_no': student.registration_number
+                            promoted_students.append({
+                                **student_data,
+                                'new_year': new_year,
+                                'new_semester': new_semester
                             })
                     else:
-                        # Add to not promoted with reason
                         reasons = []
                         if failed_units > 3:
                             reasons.append(f"Failed {failed_units} units")
                         if has_balance:
-                            reasons.append("Has fee balance")
+                            reasons.append("Outstanding balance")
                             
-                        promotion_results['not_promoted'].append({
-                            'name': f"{student.first_name} {student.last_name}",
-                            'reg_no': student.registration_number,
-                            'programme': programme.name,
-                            'current_year': current_year,
-                            'current_semester': current_semester,
-                            'reason': ", ".join(reasons) if reasons else "Unknown reason"
+                        not_promoted_students.append({
+                            **student_data,
+                            'reason': ", ".join(reasons)
                         })
                 
-                # Count totals
-                total_promoted = sum(len(v) for v in promotion_results['promoted'].values())
-                total_not_promoted = len(promotion_results['not_promoted'])
-                total_graduated = len(promotion_results['graduated'])
+                promoted_by_programme = {}
+                for student in promoted_students:
+                    programme_name = student['programme']
+                    if programme_name not in promoted_by_programme:
+                        promoted_by_programme[programme_name] = {
+                            'students': [],
+                            'from': f"Y{student['current_year']}S{student['current_semester']}",
+                            'to': f"Y{student['new_year']}S{student['new_semester']}"
+                        }
+                    promoted_by_programme[programme_name]['students'].append(student)
                 
-                messages.success(
-                    request,
-                    f"Promotion complete! {total_promoted} students promoted. "
-                    f"{total_graduated} students graduated. "
-                    f"{total_not_promoted} students not promoted."
-                )
-                return render(request, 'promote_students.html', {
-                    'promotion_results': promotion_results,
-                    'total_promoted': total_promoted,
-                    'total_not_promoted': total_not_promoted,
-                    'total_graduated': total_graduated
-                })
+                context = {
+                    'promoted_by_programme': promoted_by_programme,
+                    'graduated_students': graduated_students,
+                    'not_promoted_students': not_promoted_students,
+                    'total_promoted': len(promoted_students),
+                    'total_graduated': len(graduated_students),
+                    'total_not_promoted': len(not_promoted_students),
+                }
+                
+                return render(request, 'students/promote_students.html', context)
                 
         except Exception as e:
             messages.error(request, f"Error during promotion: {str(e)}")
             return redirect('promote_students')
     
-    return render(request, 'promote_students.html')
+    # GET request - show empty form
+    return render(request, 'students/promote_students.html')
