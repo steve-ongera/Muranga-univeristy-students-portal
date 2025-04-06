@@ -255,3 +255,44 @@ class StudentProfileUpdateForm(forms.ModelForm):
         if dob and dob > forms.fields.datetime.date.today():
             raise forms.ValidationError("Date of birth cannot be in the future")
         return dob
+    
+
+from django import forms
+from .models import StudentComment
+
+class StudentCommentForm(forms.ModelForm):
+    class Meta:
+        model = StudentComment
+        fields = ['comment']
+        widgets = {
+            'comment': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Enter your comment or question here...'
+            })
+        }
+
+
+
+from django import forms
+from .models import StudentComment
+
+class AdminCommentResponseForm(forms.ModelForm):
+    class Meta:
+        model = StudentComment
+        fields = ['admin_response', 'is_resolved']
+        widgets = {
+            'admin_response': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Type your response here...'
+            }),
+            'is_resolved': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            })
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['admin_response'].label = "Your Response"
+        self.fields['is_resolved'].label = "Mark as Resolved"

@@ -1,0 +1,86 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="mb-0"><i class="fas fa-comments me-2"></i>Student Comments Dashboard</h3>
+                <div>
+                    <span class="badge bg-danger me-2">Pending: {{ pending_count }}</span>
+                    <span class="badge bg-success">Resolved: {{ resolved_count }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <!-- Filter Options -->
+            <div class="mb-4">
+                <div class="btn-group" role="group">
+                    <a href="?status=all" class="btn btn-outline-primary {% if status_filter == 'all' %}active{% endif %}">
+                        All ({{ total_count }})
+                    </a>
+                    <a href="?status=pending" class="btn btn-outline-warning {% if status_filter == 'pending' %}active{% endif %}">
+                        Pending ({{ pending_count }})
+                    </a>
+                    <a href="?status=resolved" class="btn btn-outline-success {% if status_filter == 'resolved' %}active{% endif %}">
+                        Resolved ({{ resolved_count }})
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Comments Table -->
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="15%">Student</th>
+                            <th width="20%">Date</th>
+                            <th>Comment</th>
+                            <th width="15%">Status</th>
+                            <th width="10%">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for comment in comments %}
+                        <tr class="{% if comment.is_resolved %}table-success{% else %}table-warning{% endif %}">
+                            <td>
+                                <strong>{{ comment.student.registration_number }}</strong><br>
+                                <small class="text-muted">{{ comment.student.get_full_name }}</small>
+                            </td>
+                            <td>
+                                {{ comment.created_at|date:"M d, Y" }}<br>
+                                <small class="text-muted">{{ comment.created_at|time }}</small>
+                            </td>
+                            <td>
+                                <div class="comment-preview">
+                                    {{ comment.comment|truncatechars:100 }}
+                                </div>
+                            </td>
+                            <td>
+                                {% if comment.is_resolved %}
+                                    <span class="badge bg-success">Resolved</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'admin_comment_response' comment.id %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-reply"></i> Respond
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                No comments found
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

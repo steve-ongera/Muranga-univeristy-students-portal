@@ -1,0 +1,105 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0"><i class="fas fa-reply me-2"></i>Respond to Student Comment</h3>
+        </div>
+        
+        <div class="card-body">
+            <!-- Student Comment -->
+            <div class="mb-4 p-3 bg-light rounded">
+                <div class="d-flex justify-content-between mb-2">
+                    <h5>Student Comment</h5>
+                    <span class="text-muted">{{ comment.created_at|date:"F j, Y H:i" }}</span>
+                </div>
+                <div class="d-flex align-items-start mb-3">
+                    <div class="me-3">
+                        <div class="bg-primary text-white rounded-circle p-2 text-center" style="width: 40px; height: 40px;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">{{ comment.student.get_full_name }}</h6>
+                        <p class="mb-0 text-muted small">{{ comment.student.registration_number }}</p>
+                    </div>
+                </div>
+                <p class="mb-0 ps-4">{{ comment.comment }}</p>
+            </div>
+            
+            <!-- Admin Response Form -->
+            <form method="POST" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <div class="mb-4">
+                    <label for="id_admin_response" class="form-label fw-bold">Your Response</label>
+                    <textarea 
+                        class="form-control" 
+                        id="id_admin_response" 
+                        name="admin_response" 
+                        rows="5"
+                        placeholder="Type your detailed response here..."
+                    >{% if form.admin_response.value %}{{ form.admin_response.value }}{% endif %}</textarea>
+                    {% if form.admin_response.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.admin_response.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-4 form-check form-switch">
+                    <input 
+                        class="form-check-input" 
+                        type="checkbox" 
+                        id="id_is_resolved" 
+                        name="is_resolved"
+                        {% if form.is_resolved.value %}checked{% endif %}
+                    >
+                    <label class="form-check-label fw-bold" for="id_is_resolved">Mark as Resolved</label>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'admin_comment_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i>Submit Response
+                    </button>
+                </div>
+            </form>
+            
+            <!-- Previous Responses (if any) -->
+            {% if comment.admin_response %}
+            <div class="mt-5">
+                <h5 class="mb-3">Previous Response</h5>
+                <div class="p-3 bg-light rounded">
+                    <div class="d-flex justify-content-between mb-2">
+                        <h6>Admin Response</h6>
+                        <span class="text-muted">{{ comment.updated_at|date:"F j, Y H:i" }}</span>
+                    </div>
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="me-3">
+                            <div class="bg-success text-white rounded-circle p-2 text-center" style="width: 40px; height: 40px;">
+                                <i class="fas fa-user-shield"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">
+                                {% if comment.responded_by %}
+                                    {{ comment.responded_by.get_full_name }}
+                                {% else %}
+                                    Administrator
+                                {% endif %}
+                            </h6>
+                            <p class="mb-0 text-muted small">Staff</p>
+                        </div>
+                    </div>
+                    <p class="mb-0 ps-4">{{ comment.admin_response }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

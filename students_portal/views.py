@@ -1928,3 +1928,94 @@ def student_fee_history(request):
     }
     
     return render(request, 'students/fee_history.html', context)
+
+
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Student, StudentComment
+from .forms import StudentCommentForm
+
+@login_required
+def student_comments(request):
+    try:
+        student = Student.objects.get(registration_number=request.user.username)
+    except Student.DoesNotExist:
+        return render(request, 'students/access_denied.html', {
+            'message': 'No student record found matching your login credentials.'
+        })
+    
+    if request.method == 'POST':
+        form = StudentCommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.student = student
+            comment.save()
+            messages.success(request, 'Your comment has been submitted successfully!')
+            return redirect('student_comments')
+    else:
+        form = StudentCommentForm()
+    
+    comments = StudentComment.objects.filter(student=student).order_by('-created_at')
+    
+    context = {
+        'student': student,
+        'form': form,
+        'comments': comments,
+    }
+    return render(request, 'comments/comments.html', context)
+
+
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from .models import StudentComment
+from .forms import AdminCommentResponseForm
+
+def is_admin(user):
+    return user.is_authenticated and user.user_type == 'admin'
+
+@login_required
+@user_passes_test(is_admin)
+def admin_comment_dashboard(request):
+    # Get all comments ordered by newest first
+    comments = StudentComment.objects.all().order_by('-created_at').select_related('student')
+    
+    # Filter options
+    status_filter = request.GET.get('status', 'all')
+    if status_filter == 'pending':
+        comments = comments.filter(is_resolved=False)
+    elif status_filter == 'resolved':
+        comments = comments.filter(is_resolved=True)
+    
+    context = {
+        'comments': comments,
+        'status_filter': status_filter,
+        'pending_count': StudentComment.objects.filter(is_resolved=False).count(),
+        'resolved_count': StudentComment.objects.filter(is_resolved=True).count(),
+        'total_count': StudentComment.objects.count(),
+    }
+    return render(request, 'comments/comments_dashboard.html', context)
+
+@login_required
+@user_passes_test(is_admin)
+def admin_comment_response(request, comment_id):
+    comment = get_object_or_404(StudentComment, pk=comment_id)
+    
+    if request.method == 'POST':
+        form = AdminCommentResponseForm(request.POST, instance=comment)
+        if form.is_valid():
+            response = form.save(commit=False)
+            response.responded_by = request.user
+            response.save()
+            messages.success(request, 'Response submitted successfully!')
+            return redirect('admin_comment_dashboard')
+    else:
+        form = AdminCommentResponseForm(instance=comment)
+    
+    context = {
+        'comment': comment,
+        'form': form,
+    }
+    return render(request, 'comments/comment_response.html', context)

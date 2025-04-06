@@ -567,3 +567,21 @@ class StudentReporting(models.Model):
         if self.reporting_status == 'reported' and not self.reporting_date:
             self.reporting_date = timezone.now().date()
         super().save(*args, **kwargs)
+
+
+class StudentComment(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='comments')
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_resolved = models.BooleanField(default=False)
+    admin_response = models.TextField(blank=True, null=True)
+    responded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='responded_comments')
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Student Comment'
+        verbose_name_plural = 'Student Comments'
+    
+    def __str__(self):
+        return f"Comment by {self.student.registration_number} on {self.created_at.date()}"

@@ -54,6 +54,10 @@ urlpatterns = [
 
     path('promote-students/', views.promote_students, name='promote_students'),
     path('fee-history/', views.student_fee_history, name='student_fee_history'),
+    
+    path('comments/', views.student_comments, name='student_comments'),
+    path('admins/comments/', views.admin_comment_dashboard, name='admin_comment_dashboard'),
+    path('admins/comments/<int:comment_id>/', views.admin_comment_response, name='admin_comment_response'),
    
- 
+
 ]
