@@ -296,3 +296,28 @@ class AdminCommentResponseForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['admin_response'].label = "Your Response"
         self.fields['is_resolved'].label = "Mark as Resolved"
+
+
+from django import forms
+from .models import LectureNotes
+from django import forms
+from .models import LectureNotes
+
+class LectureNotesForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add Bootstrap classes to all fields
+        self.fields['topic'].widget.attrs.update({'class': 'form-control'})
+        self.fields['description'].widget.attrs.update({
+            'class': 'form-control',
+            'rows': 3
+        })
+        self.fields['pdf_file'].widget.attrs.update({'class': 'form-control'})
+        self.fields['is_published'].widget.attrs.update({'class': 'form-check-input'})
+
+    class Meta:
+        model = LectureNotes
+        fields = ['topic', 'description', 'pdf_file', 'is_published']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+        }

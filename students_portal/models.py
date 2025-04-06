@@ -616,3 +616,26 @@ class Announcement(models.Model):
     
     class Meta:
         ordering = ['-publish_date']
+
+
+from django.db import models
+from django.utils import timezone
+
+class LectureNotes(models.Model):
+    unit_allocation = models.ForeignKey(
+        'UnitAllocation', 
+        on_delete=models.CASCADE,
+        related_name='lecture_notes'
+    )
+    topic = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    pdf_file = models.FileField(upload_to='lecture_notes/')
+    date_uploaded = models.DateTimeField(default=timezone.now)
+    is_published = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['-date_uploaded']
+        verbose_name_plural = "Lecture Notes"
+
+    def __str__(self):
+        return f"{self.topic} - {self.unit_allocation.programme_unit.unit.code}"

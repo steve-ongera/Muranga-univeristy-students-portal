@@ -2148,3 +2148,58 @@ def unit_students(request, unit_allocation_id=None):
         }
     
     return render(request, 'lecturer/unit_students.html', context)
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import UnitAllocation, LectureNotes
+from .forms import LectureNotesForm
+
+
+
+@login_required
+def upload_lecture_notes(request, unit_allocation_id=None):
+    # Check if user is a lecturer
+    if request.session.get('user_type') != 'lecturer':
+        messages.error(request, "You don't have permission to access this page")
+        return redirect('login')
+    
+    lecturer_id = request.session.get('lecturer_id')
+    
+    # Get all units assigned to this lecturer
+    lecturer_units = UnitAllocation.objects.filter(
+        lecturer_id=lecturer_id,
+        semester__is_current=True
+    ).select_related('programme_unit__unit')
+    
+    # If specific unit is selected
+    selected_unit = None
+    notes = None
+    
+    if unit_allocation_id:
+        selected_unit = get_object_or_404(UnitAllocation, 
+                                        id=unit_allocation_id,
+                                        lecturer_id=lecturer_id)
+        notes = LectureNotes.objects.filter(
+            unit_allocation=selected_unit
+        ).order_by('-date_uploaded')
+    
+    if request.method == 'POST':
+        form = LectureNotesForm(request.POST, request.FILES)
+        if form.is_valid():
+            note = form.save(commit=False)
+            note.unit_allocation = selected_unit
+            note.save()
+            messages.success(request, "Lecture notes uploaded successfully!")
+            return redirect('upload_lecture_notes_unit', unit_allocation_id=unit_allocation_id)
+    else:
+        form = LectureNotesForm()
+    
+    context = {
+        'lecturer_units': lecturer_units,
+        'selected_unit': selected_unit,
+        'notes': notes,
+        'form': form,
+    }
+    return render(request, 'lecturer/upload_lecture_notes.html', context)
