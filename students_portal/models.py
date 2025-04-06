@@ -585,3 +585,34 @@ class StudentComment(models.Model):
     
     def __str__(self):
         return f"Comment by {self.student.registration_number} on {self.created_at.date()}"
+    
+
+# In models.py
+class ClassSchedule(models.Model):
+    unit_allocation = models.ForeignKey(UnitAllocation, on_delete=models.CASCADE)
+    day_of_week = models.IntegerField(
+        choices=[
+            (0, 'Monday'),
+            (1, 'Tuesday'),
+            (2, 'Wednesday'),
+            (3, 'Thursday'),
+            (4, 'Friday'),
+            # If you need weekends:
+            # (5, 'Saturday'),
+            # (6, 'Sunday')
+        ],
+        help_text="Day of the week (0=Monday, 1=Tuesday, ..., 4=Friday)"
+    )
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    venue = models.CharField(max_length=100)
+    
+class Announcement(models.Model):
+    department = models.ForeignKey(Department, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+    publish_date = models.DateTimeField(default=timezone.now)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    
+    class Meta:
+        ordering = ['-publish_date']

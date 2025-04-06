@@ -389,12 +389,11 @@ def student_dashboard(request):
         return redirect('login')
     
 
-
 @login_required
 def lecturer_dashboard(request):
     """
     Dashboard view for lecturers.
-    Displays lecturer profile information and academic details.
+    Displays lecturer profile information, courses, schedule, and other academic details.
     """
     # Check if user is a lecturer
     if request.session.get('user_type') != 'lecturer':
@@ -408,12 +407,69 @@ def lecturer_dashboard(request):
         # Fetch the lecturer record
         lecturer = Lecturer.objects.get(id=lecturer_id)
         
+        # Get current academic year and semester
+        current_semester = Semester.objects.filter(is_current=True).first()
+        current_year = current_semester.academic_year if current_semester else None
+        
         # Fetch related department information
         department = lecturer.department
+        
+        # Get courses assigned to this lecturer for current semester
+        current_courses = UnitAllocation.objects.filter(
+            lecturer=lecturer,
+            semester=current_semester
+        ).select_related(
+            'programme_unit__unit',
+            'programme_unit__programme'
+        )
+        
+        # Get today's schedule
+        today = timezone.now().date()
+        today_schedule = ClassSchedule.objects.filter(
+            unit_allocation__lecturer=lecturer,
+            day_of_week=today.weekday(),
+            unit_allocation__semester=current_semester
+        ).select_related(
+            'unit_allocation__programme_unit__unit'
+        ).order_by('start_time')
+        
+        # Get pending tasks (example data - could be replaced with real task model)
+        pending_tasks = [
+            {
+                'title': 'Grade Midterm Exams',
+                'course': 'CS 401',
+                'due': 'Due tomorrow',
+                'priority': 'High'
+            },
+            {
+                'title': 'Prepare Lecture Notes',
+                'course': 'CS 402',
+                'due': 'Due Friday',
+                'priority': 'Medium'
+            },
+            {
+                'title': 'Department Meeting',
+                'course': '',
+                'due': 'Tomorrow 10:00 AM',
+                'priority': 'Low'
+            }
+        ]
+        
+        # Get department announcements
+        announcements = Announcement.objects.filter(
+            department=department,
+            publish_date__lte=timezone.now()
+        ).order_by('-publish_date')[:5]
         
         context = {
             'lecturer': lecturer,
             'department': department,
+            'courses': current_courses,
+            'schedule': today_schedule,
+            'tasks': pending_tasks,
+            'announcements': announcements,
+            'current_semester': current_semester,
+            'current_year': current_year,
             'page_title': 'Lecturer Dashboard',
         }
         

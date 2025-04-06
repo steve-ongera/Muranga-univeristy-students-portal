@@ -177,6 +177,112 @@ class StudentReportingAdmin(admin.ModelAdmin):
     list_filter = ('academic_year', 'semester', 'programme', 'reporting_status')
     search_fields = ('student__registration_number', 'student__first_name', 'student__last_name')
 
+from django.contrib import admin
+from django.utils.html import format_html
+from .models import StudentComment, ClassSchedule, Announcement
+
+@admin.register(StudentComment)
+class StudentCommentAdmin(admin.ModelAdmin):
+    list_display = ('student', 'truncated_comment', 'created_at', 'is_resolved', 'admin_action')
+    list_filter = ('is_resolved', 'created_at', 'student__programme')
+    search_fields = ('student__registration_number', 'student__first_name', 'student__last_name', 'comment')
+    list_per_page = 20
+    date_hierarchy = 'created_at'
+    actions = ['mark_as_resolved', 'mark_as_unresolved']
+    
+    fieldsets = (
+        ('Student Information', {
+            'fields': ('student',)
+        }),
+        ('Comment Details', {
+            'fields': ('comment', 'is_resolved')
+        }),
+        ('Admin Response', {
+            'fields': ('admin_response', 'responded_by'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def truncated_comment(self, obj):
+        return obj.comment[:50] + '...' if len(obj.comment) > 50 else obj.comment
+    truncated_comment.short_description = 'Comment'
+    
+    def admin_action(self, obj):
+        if obj.is_resolved:
+            return format_html('<span style="color:green;">Resolved</span>')
+        return format_html('<a href="/admin/your_app/studentcomment/{}/change/">Respond</a>', obj.id)
+    admin_action.short_description = 'Action'
+    
+    def mark_as_resolved(self, request, queryset):
+        queryset.update(is_resolved=True, responded_by=request.user)
+    mark_as_resolved.short_description = "Mark selected comments as resolved"
+    
+    def mark_as_unresolved(self, request, queryset):
+        queryset.update(is_resolved=False)
+    mark_as_unresolved.short_description = "Mark selected comments as unresolved"
+    
+    def save_model(self, request, obj, form, change):
+        if 'admin_response' in form.changed_data and not obj.responded_by:
+            obj.responded_by = request.user
+        super().save_model(request, obj, form, change)
+
+@admin.register(ClassSchedule)
+class ClassScheduleAdmin(admin.ModelAdmin):
+    list_display = ('course_name', 'day_of_week', 'time_slot', 'venue', 'lecturer_name')
+    list_filter = ('day_of_week', 'unit_allocation__semester', 'unit_allocation__lecturer')
+    search_fields = ('unit_allocation__programme_unit__unit__name', 
+                    'unit_allocation__programme_unit__unit__code',
+                    'unit_allocation__lecturer__first_name',
+                    'unit_allocation__lecturer__last_name')
+    ordering = ('day_of_week', 'start_time')
+    
+    fieldsets = (
+        ('Course Information', {
+            'fields': ('unit_allocation',)
+        }),
+        ('Schedule Details', {
+            'fields': ('day_of_week', ('start_time', 'end_time'), 'venue')
+        }),
+    )
+    
+    def course_name(self, obj):
+        return obj.unit_allocation.programme_unit.unit.name
+    course_name.short_description = 'Course'
+    
+    def lecturer_name(self, obj):
+        return obj.unit_allocation.lecturer.get_full_name()
+    lecturer_name.short_description = 'Lecturer'
+    
+    def time_slot(self, obj):
+        return f"{obj.start_time.strftime('%H:%M')} - {obj.end_time.strftime('%H:%M')}"
+    time_slot.short_description = 'Time'
+
+@admin.register(Announcement)
+class AnnouncementAdmin(admin.ModelAdmin):
+    list_display = ('title', 'department', 'author', 'publish_date', 'is_recent')
+    list_filter = ('department', 'publish_date', 'author')
+    search_fields = ('title', 'content', 'department__name')
+    date_hierarchy = 'publish_date'
+    readonly_fields = ('author',)
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('title', 'department', 'publish_date')
+        }),
+        ('Content', {
+            'fields': ('content',)
+        }),
+    )
+    
+    def is_recent(self, obj):
+        return obj.publish_date >= timezone.now() - timezone.timedelta(days=7)
+    is_recent.boolean = True
+    is_recent.short_description = 'Recent?'
+    
+    def save_model(self, request, obj, form, change):
+        if not obj.author_id:
+            obj.author = request.user
+        super().save_model(request, obj, form, change)
     
 admin.site.register(UserNotification, UserNotificationAdmin)
 admin.site.register(FeesStructure, FeesStructureAdmin)
