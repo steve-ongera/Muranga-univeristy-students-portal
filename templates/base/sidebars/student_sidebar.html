@@ -6,172 +6,184 @@
 
       <li class="nav-item">
         <a class="nav-link " href="{% url 'student_dashboard'%}">
-          <i class="bi bi-grid"></i>
-          <span>Dashboard</span>
+          <i class="bi bi-speedometer2"></i>
+          <span>Student Dashboard</span>
         </a>
       </li><!-- End Dashboard Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#staff-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-people"></i><span>Admission</span><i class="bi bi-chevron-down ms-auto"></i>
+        <a class="nav-link collapsed" data-bs-target="#admission-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-door-open"></i><span>Admission</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-        <ul id="staff-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
-          
-         
+        <ul id="admission-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
           <li>
-            <a class="nav-link collapsed" data-bs-target="#doctors-subnav"  href="{% url 'report_for_semester'%}">
-              <i class="bi bi-minus"></i><span>Reporting</span>
-            </a>
-            
-          </li>
-
-          <li>
-            <a class="nav-link collapsed" data-bs-target="#doctors-subnav"  href="#">
-              <i class="bi bi-person-badge"></i><span>Hostel Bookings</span>
-            </a>
-            
-          </li>
-
-          <li>
-            <a class="nav-link collapsed" data-bs-target="#doctors-subnav"  href="#">
-              <i class="bi bi-person-badge"></i><span>Defarments</span>
-            </a>
-            
-          </li>
-
-          <li>
-            <a class="nav-link collapsed" data-bs-target="#doctors-subnav"  href="#">
-              <i class="bi bi-person-badge"></i><span>Clearance</span>
-            </a>
-            
-          </li>
-          
-          
-        </ul>
-      </li>
-      
-      <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-journal-text"></i><span>Academics</span><i class="bi bi-chevron-down ms-auto"></i>
-        </a>
-        <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-          <li>
-            <a href="{% url 'unit_enrollment'%}">
-              <i class="bi bi-circle"></i><span>Unit Enrollment</span>
+            <a href="{% url 'report_for_semester'%}">
+              <i class="bi bi-check-circle"></i><span>Semester Reporting</span>
             </a>
           </li>
           <li>
             <a href="#">
-              <i class="bi bi-circle"></i><span>Exam Card</span>
+              <i class="bi bi-house-door"></i><span>Hostel Booking</span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <i class="bi bi-file-text"></i><span>Departmental Forms</span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <i class="bi bi-clipboard-check"></i><span>Clearance</span>
+            </a>
+          </li>
+        </ul>
+      </li><!-- End Admission Nav -->
+      
+      <li class="nav-item">
+        <a class="nav-link collapsed" data-bs-target="#academics-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-book"></i><span>Academics</span><i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul id="academics-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+          <li>
+            <a href="{% url 'unit_enrollment'%}">
+              <i class="bi bi-journal-plus"></i><span>Unit Enrollment</span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <i class="bi bi-file-earmark-text"></i><span>Exam Card</span>
             </a>
           </li>
           <li>
             <a href="{% url 'academic_results'%}">
-              <i class="bi bi-circle"></i><span>Transcripts</span>
+              <i class="bi bi-award"></i><span>Transcripts</span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <i class="bi bi-calendar-week"></i><span>Timetable</span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <i class="bi bi-collection"></i><span>Learning Materials</span>
             </a>
           </li>
         </ul>
-      </li><!-- End Forms Nav -->
+      </li><!-- End Academics Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#tables-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-layout-text-window-reverse"></i><span>Financials</span><i class="bi bi-chevron-down ms-auto"></i>
+        <a class="nav-link collapsed" data-bs-target="#finance-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-wallet2"></i><span>Financials</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-        <ul id="tables-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <ul id="finance-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
             <a href="{% url 'student_fee_history'%}">
-              <i class="bi bi-circle"></i><span>Fees</span>
+              <i class="bi bi-cash-stack"></i><span>Fee Statements</span>
             </a>
           </li>
-          
-          
+          <li>
+            <a href="#">
+              <i class="bi bi-credit-card"></i><span>Make Payment</span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <i class="bi bi-receipt"></i><span>Payment History</span>
+            </a>
+          </li>
         </ul>
-      </li><!-- End Tables Nav -->
+      </li><!-- End Financials Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#charts-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-bar-chart"></i><span>Evaluations</span><i class="bi bi-chevron-down ms-auto"></i>
+        <a class="nav-link collapsed" data-bs-target="#evaluation-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-clipboard-data"></i><span>Evaluations</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-        <ul id="charts-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <ul id="evaluation-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
             <a href="#">
-              <i class="bi bi-circle"></i><span>Course Evaluation</span>
+              <i class="bi bi-star"></i><span>Course Evaluation</span>
             </a>
           </li>
-          
+          <li>
+            <a href="#">
+              <i class="bi bi-chat-square-text"></i><span>Lecturer Feedback</span>
+            </a>
+          </li>
         </ul>
-      </li><!-- End Charts Nav -->
+      </li><!-- End Evaluations Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#icons-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-gem"></i><span>Socials </span><i class="bi bi-chevron-down ms-auto"></i>
+        <a class="nav-link collapsed" data-bs-target="#community-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-people"></i><span>Community</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-        <ul id="icons-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <ul id="community-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
             <a href="#">
-              <i class="bi bi-circle"></i><span>Events</span>
+              <i class="bi bi-calendar-event"></i><span>Events</span>
             </a>
           </li>
           <li>
             <a href="#">
-              <i class="bi bi-circle"></i><span>News</span>
+              <i class="bi bi-newspaper"></i><span>Campus News</span>
             </a>
           </li>
-          
-          
+          <li>
+            <a href="#">
+              <i class="bi bi-chat-dots"></i><span>Discussion Forums</span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <i class="bi bi-collection"></i><span>Student Clubs</span>
+            </a>
+          </li>
         </ul>
-      </li><!-- End Icons Nav -->
+      </li><!-- End Community Nav -->
 
-      <li class="nav-heading">Pages</li>
+      <li class="nav-heading">Student Services</li>
 
       <li class="nav-item">
         <a class="nav-link collapsed" href="{% url 'student_profile'%}">
-          <i class="bi bi-person"></i>
-          <span>Profile</span>
+          <i class="bi bi-person-circle"></i>
+          <span>My Profile</span>
         </a>
-      </li><!-- End Profile Page Nav -->
+      </li><!-- End Profile Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#tb-nav"  href="{% url 'student_comments'%}">
-          <i class="bi bi-people"></i><span>Complaints</span>
-        </a>
-    
-      </li>
-
-      <li class="nav-item">
-        <a class="nav-link collapsed" href="#">
-          <i class="bi bi-card-list"></i>
-          <span>Virtual Assist</span>
+        <a class="nav-link collapsed" href="{% url 'student_comments'%}">
+          <i class="bi bi-megaphone"></i>
+          <span>Feedback & Complaints</span>
         </a>
       </li>
 
       <li class="nav-item">
         <a class="nav-link collapsed" href="#">
-          <i class="bi bi-card-list"></i>
-          <span>Register</span>
+          <i class="bi bi-question-circle"></i>
+          <span>Virtual Assistant</span>
         </a>
       </li>
 
       <li class="nav-item">
         <a class="nav-link collapsed" href="#">
-          <i class="bi bi-box-arrow-in-right"></i>
-          <span>Login</span>
-        </a>
-      </li>
-
-      <li class="nav-item">
-        <a class="nav-link collapsed" href="#">
-          <i class="bi bi-dash-circle"></i>
-          <span>System Settings</span>
-        </a>
-      </li>
-
-      <li class="nav-item">
-        <a class="nav-link collapsed" href="#">
-          <i class="bi bi-file-earmark"></i>
+          <i class="bi bi-life-preserver"></i>
           <span>Help & Support</span>
         </a>
-      </li><!-- End Blank Page Nav -->
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#">
+          <i class="bi bi-gear"></i>
+          <span>Settings</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#">
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Logout</span>
+        </a>
+      </li>
 
     </ul>
 

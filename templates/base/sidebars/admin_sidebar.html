@@ -7,33 +7,36 @@
       <li class="nav-item">
         <a class="nav-link " href="{% url 'admin_dashboard'%}">
           <i class="bi bi-grid"></i>
-          <span>Dashboard</span>
+          <span>Admin Dashboard</span>
         </a>
       </li><!-- End Dashboard Nav -->
 
       <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#staff-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-people"></i><span>Lecturers</span><i class="bi bi-chevron-down ms-auto"></i>
+          <i class="bi bi-people"></i><span>User Management</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
         <ul id="staff-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
-          
-       
-          
-          
           <li>
-            <a class="nav-link collapsed"  href="{% url 'lecturer_list'%}">
-              <i class="bi bi-person-lines-fill"></i><span>Lecturers</span><i class="bi bi-chevron-down ms-auto"></i>
+            <a class="nav-link collapsed" href="{% url 'lecturer_list'%}">
+              <i class="bi bi-person-badge"></i><span>Lecturers</span>
             </a>
-            
           </li>
-
-          
+          <li>
+            <a class="nav-link collapsed" href="#">
+              <i class="bi bi-person-lines-fill"></i><span>Administrators</span>
+            </a>
+          </li>
+          <li>
+            <a class="nav-link collapsed" href="#">
+              <i class="bi bi-gear"></i><span>User Permissions</span>
+            </a>
+          </li>
         </ul>
-      </li>
+      </li><!-- End User Management Nav -->
       
       <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-journal-text"></i><span>Students</span><i class="bi bi-chevron-down ms-auto"></i>
+          <i class="bi bi-journal-text"></i><span>Student Management</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
         <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
@@ -56,8 +59,13 @@
               <i class="bi bi-circle"></i><span>Promote Student</span>
             </a>
           </li>
+          <li>
+            <a href="#"> 
+              <i class="bi bi-circle"></i><span>Bulk Operations</span>
+            </a>
+          </li>
         </ul>
-      </li><!-- End Forms Nav -->
+      </li><!-- End Student Management Nav -->
 
       <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#tables-nav" data-bs-toggle="collapse" href="#">
@@ -71,7 +79,7 @@
           </li>
           <li>
             <a href="#">
-              <i class="bi bi-circle"></i><span>Units</span>
+              <i class="bi bi-circle"></i><span>Units/Courses</span>
             </a>
           </li>
           <li>
@@ -79,23 +87,27 @@
               <i class="bi bi-circle"></i><span>Timetable</span>
             </a>
           </li>
-          
           <li>
             <a href="#">
               <i class="bi bi-circle"></i><span>Assignments</span>
             </a>
           </li>
+          <li>
+            <a href="#">
+              <i class="bi bi-circle"></i><span>Academic Calendar</span>
+            </a>
+          </li>
         </ul>
-      </li><!-- End Tables Nav -->
+      </li><!-- End Academic Management Nav -->
 
       <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#charts-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-bar-chart"></i><span>Semester</span><i class="bi bi-chevron-down ms-auto"></i>
+          <i class="bi bi-bar-chart"></i><span>Semester Management</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
         <ul id="charts-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
             <a href="#">
-              <i class="bi bi-circle"></i><span>Semesters</span>
+              <i class="bi bi-circle"></i><span>Current Semester</span>
             </a>
           </li>
           <li>
@@ -103,98 +115,118 @@
               <i class="bi bi-circle"></i><span>Add Semester</span>
             </a>
           </li>
+          <li>
+            <a href="#">
+              <i class="bi bi-circle"></i><span>Semester Settings</span>
+            </a>
+          </li>
         </ul>
-      </li><!-- End Charts Nav -->
+      </li><!-- End Semester Management Nav -->
 
       <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#icons-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-gem"></i><span>Exams Records</span><i class="bi bi-chevron-down ms-auto"></i>
+          <i class="bi bi-gem"></i><span>Examination</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
         <ul id="icons-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-          
           <li>
             <a href="{% url 'enter-grades'%}">
-              <i class="bi bi-circle"></i><span>Add Exam Record</span>
+              <i class="bi bi-circle"></i><span>Enter Grades</span>
             </a>
           </li>
-      
+          <li>
+            <a href="#">
+              <i class="bi bi-circle"></i><span>Exam Scheduling</span>
+            </a>
+          </li>
           <li>
             <a href="#">
               <i class="bi bi-circle"></i><span>Reports</span>
             </a>
           </li>
+          <li>
+            <a href="#">
+              <i class="bi bi-circle"></i><span>Transcripts</span>
+            </a>
+          </li>
         </ul>
-      </li><!-- End Icons Nav -->
+      </li><!-- End Examination Nav -->
 
-      <li class="nav-heading">Pages</li>
+      <li class="nav-heading">System Administration</li>
 
       <li class="nav-item">
         <a class="nav-link collapsed" href="#">
           <i class="bi bi-person"></i>
-          <span>Profile</span>
+          <span>Admin Profile</span>
         </a>
       </li><!-- End Profile Page Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#tb-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-people"></i><span>Analysis Section</span><i class="bi bi-chevron-down ms-auto"></i>
+        <a class="nav-link collapsed" data-bs-target="#analytics-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-graph-up"></i><span>Analytics</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-        <ul id="tb-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+        <ul id="analytics-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
           <li class="nav-item">
             <a class="nav-link collapsed" href="#">
               <i class="bi bi-card-list"></i>
-              <span>Population Graphs</span>
+              <span>Institution Analytics</span>
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link collapsed" href="#">
               <i class="bi bi-card-list"></i>
-              <span>class-distribution</span>
+              <span>Academic Performance</span>
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link collapsed" href="#">
               <i class="bi bi-card-list"></i>
-              <span>student results</span>
+              <span>Student Demographics</span>
             </a>
           </li>
         </ul>
-      </li><!-- End Staff Nav -->
+      </li><!-- End Analytics Nav -->
 
       <li class="nav-item">
         <a class="nav-link collapsed" href="{% url 'admin_comment_dashboard'%}">
-          <i class="bi bi-card-list"></i>
-          <span>Complains</span>
+          <i class="bi bi-chat-left-text"></i>
+          <span>Complaints & Feedback</span>
         </a>
       </li>
 
       <li class="nav-item">
         <a class="nav-link collapsed" href="#">
-          <i class="bi bi-card-list"></i>
-          <span>Register</span>
+          <i class="bi bi-shield-lock"></i>
+          <span>Security Settings</span>
         </a>
       </li>
 
       <li class="nav-item">
         <a class="nav-link collapsed" href="#">
-          <i class="bi bi-box-arrow-in-right"></i>
-          <span>Login</span>
+          <i class="bi bi-gear"></i>
+          <span>System Configuration</span>
         </a>
       </li>
 
       <li class="nav-item">
         <a class="nav-link collapsed" href="#">
-          <i class="bi bi-dash-circle"></i>
-          <span>System Settings</span>
+          <i class="bi bi-database"></i>
+          <span>Data Management</span>
         </a>
       </li>
 
       <li class="nav-item">
         <a class="nav-link collapsed" href="#">
           <i class="bi bi-file-earmark"></i>
-          <span>Help & Support</span>
+          <span>Documentation</span>
         </a>
-      </li><!-- End Blank Page Nav -->
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#">
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Logout</span>
+        </a>
+      </li>
 
     </ul>
 
