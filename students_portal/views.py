@@ -2203,3 +2203,34 @@ def upload_lecture_notes(request, unit_allocation_id=None):
         'form': form,
     }
     return render(request, 'lecturer/upload_lecture_notes.html', context)
+
+
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import LectureNotes
+
+@login_required
+def delete_lecture_note(request, note_id):
+    # Check if user is a lecturer
+    if request.session.get('user_type') != 'lecturer':
+        messages.error(request, "You don't have permission to perform this action")
+        return redirect('login')
+    
+    # Get the note and verify ownership
+    note = get_object_or_404(
+        LectureNotes,
+        id=note_id,
+        unit_allocation__lecturer_id=request.session.get('lecturer_id')
+    )
+    
+    if request.method == 'POST':
+        unit_allocation_id = note.unit_allocation.id
+        note.pdf_file.delete()  # Delete the file from storage
+        note.delete()          # Delete the database record
+        messages.success(request, "Lecture notes deleted successfully")
+        return redirect('upload_lecture_notes_unit', unit_allocation_id=unit_allocation_id)
+    
+    # If not POST, show confirmation (handled via JavaScript in your template)
+    messages.error(request, "Invalid request method")
+    return redirect('upload_lecture_notes')

@@ -100,11 +100,15 @@
                                                target="_blank">
                                                 <i class="bi bi-download"></i>
                                             </a>
-                                            <a href="#" 
-                                               class="btn btn-outline-danger"
-                                               onclick="confirmDelete('{{ note.id }}')">
-                                                <i class="bi bi-trash"></i>
-                                            </a>
+                                            <form action="{% url 'delete_lecture_note' note.id %}" method="post" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" 
+                                                        class="btn btn-outline-danger"
+                                                        onclick="return confirm('Are you sure you want to delete these notes?')"
+                                                       >
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>
