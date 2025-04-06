@@ -81,32 +81,37 @@
             <!-- Current Courses -->
             <div class="card mb-4 shadow-sm">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">My Courses</h5>
+                    <h5 class="card-title mb-0">My Courses - {{ current_semester }}</h5>
                     <div>
                         <a href="#" class="btn btn-sm btn-light">View All</a>
                     </div>
                 </div>
                 <div class="card-body">
-                    {% if courses %}
+                    {% if unit_allocations %}
                     <div class="table-responsive">
                         <table class="table table-hover align-middle">
                             <thead class="table-light">
                                 <tr>
                                     <th>Course</th>
                                     <th>Program</th>
+                                    <th>Year/Semester</th>
                                     <th>Students</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for course in courses %}
+                                {% for allocation in unit_allocations %}
                                 <tr>
                                     <td>
-                                        <strong>{{ course.code }}</strong><br>
-                                        <small class="text-muted">{{ course.name }}</small>
+                                        <strong>{{ allocation.programme_unit.unit.code }}</strong><br>
+                                        <small class="text-muted">{{ allocation.programme_unit.unit.name }}</small>
                                     </td>
-                                    <td>{{ course.programme }}</td>
-                                    <td>{{ course.enrolled_students.count }}</td>
+                                    <td>{{ allocation.programme_unit.programme.code }}</td>
+                                    <td>
+                                        Year {{ allocation.programme_unit.year_of_study }}<br>
+                                        Sem {{ allocation.programme_unit.semester }}
+                                    </td>
+                                    <td>{{ allocation.student_count }}</td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
                                             <a href="#" class="btn btn-outline-primary" title="View">

@@ -415,13 +415,16 @@ def lecturer_dashboard(request):
         department = lecturer.department
         
         # Get courses assigned to this lecturer for current semester
+        # Get courses assigned to this lecturer for current semester
         current_courses = UnitAllocation.objects.filter(
             lecturer=lecturer,
             semester=current_semester
         ).select_related(
             'programme_unit__unit',
             'programme_unit__programme'
-        )
+        ).annotate(
+            student_count=Count('programme_unit__enrollments', 
+                              filter=Q(programme_unit__enrollments__semester=current_semester)))
         
         # Get today's schedule
         today = timezone.now().date()
@@ -464,7 +467,7 @@ def lecturer_dashboard(request):
         context = {
             'lecturer': lecturer,
             'department': department,
-            'courses': current_courses,
+            'unit_allocations': current_courses,  # Changed from 'courses' to 'unit_allocations'
             'schedule': today_schedule,
             'tasks': pending_tasks,
             'announcements': announcements,
