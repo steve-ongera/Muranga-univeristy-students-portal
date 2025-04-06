@@ -111,7 +111,15 @@
                                         Year {{ allocation.programme_unit.year_of_study }}.{{ allocation.programme_unit.semester }}
                                          
                                     </td>
-                                    <td>{{ allocation.student_count }}</td>
+                                    <td>
+                                        {% if allocation.student_count > 0 %}
+                                            <a href="#" data-bs-toggle="tooltip" title="View students">
+                                                {{ allocation.student_count }}
+                                            </a>
+                                        {% else %}
+                                            0
+                                        {% endif %}
+                                    </td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
                                             <a href="#" class="btn btn-outline-primary" title="View">

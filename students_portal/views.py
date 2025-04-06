@@ -416,6 +416,7 @@ def lecturer_dashboard(request):
         
         
         # Get courses assigned to this lecturer for current semester
+        # Get courses with proper student count annotation
         current_courses = UnitAllocation.objects.filter(
             lecturer=lecturer,
             semester=current_semester
@@ -423,8 +424,12 @@ def lecturer_dashboard(request):
             'programme_unit__unit',
             'programme_unit__programme'
         ).annotate(
-            student_count=Count('programme_unit__enrollments', 
-                              filter=Q(programme_unit__enrollments__semester=current_semester)))
+            student_count=Count(
+                'programme_unit__enrollments',
+                filter=Q(programme_unit__enrollments__semester=current_semester),
+                distinct=True
+            )
+        )
         
         # Get today's schedule
         today = timezone.now().date()
