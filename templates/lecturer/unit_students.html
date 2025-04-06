@@ -1,0 +1,105 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">
+                {% if is_specific_unit %}
+                    Students in {{ unit_allocation.programme_unit.unit.name }} 
+                    ({{ current_semester }})
+                {% else %}
+                    My Units - Student Enrollment ({{ current_semester }})
+                {% endif %}
+            </h5>
+        </div>
+        
+        <div class="card-body">
+            {% if is_specific_unit %}
+                <!-- Student list for specific unit -->
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Student</th>
+                                <th>Registration No.</th>
+                                <th>Programme</th>
+                                <th>Year</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for enrollment in enrollments %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ enrollment.student.get_full_name }}</td>
+                                <td>{{ enrollment.student.registration_number }}</td>
+                                <td>{{ enrollment.student.programme.code }}</td>
+                                <td>Year {{ enrollment.student.current_year }}</td>
+                                <td>
+                                    <a href="#" class="btn btn-sm btn-outline-primary">
+                                        View Profile
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <i class="bi bi-people fs-1 text-muted"></i>
+                                    <p class="text-muted mt-2">No students enrolled in this unit</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <a href="{% url 'lecturer_unit_students' %}" class="btn btn-secondary mt-3">
+                    <i class="bi bi-arrow-left"></i> Back to All Units
+                </a>
+                
+            {% else %}
+                <!-- List of all units -->
+                <div class="row">
+                    {% for unit in lecturer_units %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">
+                                    {{ unit.programme_unit.unit.code }} - {{ unit.programme_unit.unit.name }}
+                                </h6>
+                                <span class="badge bg-primary">
+                                    {{ unit.student_count }} students
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-1">
+                                    <strong>Programme:</strong> {{ unit.programme_unit.programme.name }}
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Year/Semester:</strong> 
+                                    Year {{ unit.programme_unit.year_of_study }}, Sem {{ unit.programme_unit.semester }}
+                                </p>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <a href="{% url 'lecturer_unit_students_detail' unit.id %}" 
+                                    class="btn btn-sm btn-primary w-100">
+                                        View Students
+                                    </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center py-4">
+                        <i class="bi bi-journal-x fs-1 text-muted"></i>
+                        <p class="text-muted mt-2">No units assigned to you this semester</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

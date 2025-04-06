@@ -2087,3 +2087,64 @@ def admin_comment_response(request, comment_id):
         'form': form,
     }
     return render(request, 'comments/comment_response.html', context)
+
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from students_portal.models import UnitAllocation, StudentEnrollment, Semester
+from django.db.models import Prefetch
+
+@login_required
+def unit_students(request, unit_allocation_id=None):
+    # Check if user is a lecturer
+    if request.session.get('user_type') != 'lecturer':
+        messages.error(request, "You don't have permission to view this page")
+        return redirect('login')
+    
+    lecturer_id = request.session.get('lecturer_id')
+    current_semester = Semester.objects.filter(is_current=True).first()
+    
+    # Get all units assigned to this lecturer
+    lecturer_units = UnitAllocation.objects.filter(
+        lecturer_id=lecturer_id,
+        semester=current_semester
+    ).select_related(
+        'programme_unit__unit',
+        'programme_unit__programme'
+    )
+    
+    # If specific unit is requested
+    if unit_allocation_id:
+        unit_allocation = get_object_or_404(UnitAllocation, 
+                                          id=unit_allocation_id,
+                                          lecturer_id=lecturer_id)
+        
+        # Get enrolled students with related data
+        enrollments = StudentEnrollment.objects.filter(
+            programme_unit=unit_allocation.programme_unit,
+            semester=current_semester
+        ).select_related(
+            'student',
+            'student__programme'
+        ).order_by('student__last_name', 'student__first_name')
+        
+        context = {
+            'unit_allocation': unit_allocation,
+            'enrollments': enrollments,
+            'lecturer_units': lecturer_units,
+            'current_semester': current_semester,
+            'is_specific_unit': True,
+        }
+    else:
+        # Show all units with student counts
+        lecturer_units = lecturer_units.annotate(
+            student_count=Count('programme_unit__enrollments',
+                              filter=Q(programme_unit__enrollments__semester=current_semester)))
+        
+        context = {
+            'lecturer_units': lecturer_units,
+            'current_semester': current_semester,
+            'is_specific_unit': False,
+        }
+    
+    return render(request, 'lecturer/unit_students.html', context)

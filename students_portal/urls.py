@@ -58,6 +58,8 @@ urlpatterns = [
     path('comments/', views.student_comments, name='student_comments'),
     path('admins/comments/', views.admin_comment_dashboard, name='admin_comment_dashboard'),
     path('admins/comments/<int:comment_id>/', views.admin_comment_response, name='admin_comment_response'),
-   
+
+    path('lecturer/units/', views.unit_students, name='lecturer_unit_students'),
+    path('lecturer/units/<int:unit_allocation_id>/', views.unit_students, name='lecturer_unit_students_detail'),
 
 ]
