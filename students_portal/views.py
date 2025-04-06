@@ -414,7 +414,7 @@ def lecturer_dashboard(request):
         # Fetch related department information
         department = lecturer.department
         
-        # Get courses assigned to this lecturer for current semester
+        
         # Get courses assigned to this lecturer for current semester
         current_courses = UnitAllocation.objects.filter(
             lecturer=lecturer,
@@ -428,12 +428,15 @@ def lecturer_dashboard(request):
         
         # Get today's schedule
         today = timezone.now().date()
+        today_weekday = today.weekday()  # Monday=0, Sunday=6
+        
         today_schedule = ClassSchedule.objects.filter(
             unit_allocation__lecturer=lecturer,
-            day_of_week=today.weekday(),
+            day_of_week=today_weekday,
             unit_allocation__semester=current_semester
         ).select_related(
-            'unit_allocation__programme_unit__unit'
+            'unit_allocation__programme_unit__unit',
+            'unit_allocation__programme_unit__programme'
         ).order_by('start_time')
         
         # Get pending tasks (example data - could be replaced with real task model)
@@ -469,6 +472,7 @@ def lecturer_dashboard(request):
             'department': department,
             'unit_allocations': current_courses,  # Changed from 'courses' to 'unit_allocations'
             'schedule': today_schedule,
+            'today_weekday': today_weekday,  # For debugging
             'tasks': pending_tasks,
             'announcements': announcements,
             'current_semester': current_semester,
