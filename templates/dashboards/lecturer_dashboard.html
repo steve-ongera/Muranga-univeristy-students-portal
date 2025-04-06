@@ -1,8 +1,9 @@
 {% extends "base/base.html" %}
 {% load static %}
-{% block content %}
 
+{% block content %}
 <div class="container-fluid py-4">
+    <!-- Alert Messages -->
     {% if messages %}
         {% for message in messages %}
             <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
@@ -13,154 +14,184 @@
     {% endif %}
 
     <div class="row">
-        <div class="col-md-3">
-            <div class="card mb-4">
+        <!-- Left Column - Profile Section -->
+        <div class="col-md-4 col-lg-3">
+            <!-- Profile Card -->
+            <div class="card mb-4 shadow-sm">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0">Profile</h5>
+                    <h5 class="card-title mb-0">My Profile</h5>
                 </div>
                 <div class="card-body text-center">
                     {% if lecturer.profile_picture %}
-                        <img src="{{ lecturer.profile_picture.url }}" alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="max-width: 150px;">
+                        <img src="{{ lecturer.profile_picture.url }}" alt="Profile" class="img-thumbnail rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover;">
                     {% else %}
-                        <div class="bg-light rounded-circle d-inline-flex justify-content-center align-items-center mb-3" style="width: 150px; height: 150px;">
-                            <span class="display-4 text-secondary">{{ lecturer.first_name.0 }}{{ lecturer.last_name.0 }}</span>
+                        <div class="bg-light rounded-circle d-flex justify-content-center align-items-center mb-3 mx-auto" style="width: 120px; height: 120px;">
+                            <span class="fs-3 text-secondary fw-bold">{{ lecturer.first_name.0 }}{{ lecturer.last_name.0 }}</span>
                         </div>
                     {% endif %}
-                    <h4>{{ lecturer.get_full_name }}</h4>
-                    <p class="text-muted">{{ lecturer.staff_id }}</p>
-                    <p class="badge bg-info">{{ lecturer.get_academic_rank_display|default:"No Rank Specified" }}</p>
-                    <div class="d-grid gap-2">
-                        <a href="#" class="btn btn-outline-primary">Edit Profile</a>
+                    
+                    <h4 class="mb-1">{{ lecturer.get_full_name }}</h4>
+                    <p class="text-muted mb-2">{{ lecturer.staff_id }}</p>
+                    <span class="badge bg-info text-dark mb-3">{{ lecturer.get_academic_rank_display|default:"Lecturer" }}</span>
+                    
+                    <div class="d-grid">
+                        <a href="#" class="btn btn-sm btn-outline-primary">Update Profile</a>
                     </div>
                 </div>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>Status:</span>
+                
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Status</span>
                         <span class="badge {% if lecturer.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
                             {{ lecturer.get_status_display }}
                         </span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>Employment Type:</span>
-                        <span>{{ lecturer.get_employment_type_display }}</span>
-                    </li>
-                </ul>
+                    </div>
+                    <div class="list-group-item">
+                        <i class="bi bi-envelope me-2"></i> {{ lecturer.email|default:"-" }}
+                    </div>
+                    <div class="list-group-item">
+                        <i class="bi bi-telephone me-2"></i> {{ lecturer.phone_number|default:"-" }}
+                    </div>
+                </div>
             </div>
 
-            <div class="card">
+            <!-- Quick Actions -->
+            <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0">Contact Information</h5>
+                    <h5 class="card-title mb-0">Quick Actions</h5>
                 </div>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">
-                        <i class="bi bi-envelope"></i> {{ lecturer.email|default:"Not provided" }}
-                    </li>
-                    <li class="list-group-item">
-                        <i class="bi bi-telephone"></i> {{ lecturer.phone_number|default:"Not provided" }}
-                    </li>
-                </ul>
+                <div class="card-body p-2">
+                    <div class="d-grid gap-2">
+                        <a href="#" class="btn btn-sm btn-outline-primary text-start">
+                            <i class="bi bi-calendar-plus me-2"></i> Schedule Class
+                        </a>
+                        <a href="#" class="btn btn-sm btn-outline-primary text-start">
+                            <i class="bi bi-upload me-2"></i> Upload Materials
+                        </a>
+                        <a href="#" class="btn btn-sm btn-outline-primary text-start">
+                            <i class="bi bi-journal-check me-2"></i> Grade Assignments
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="col-md-9">
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0">Academic Information</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6>Department</h6>
-                            <p>{{ department.name }}</p>
-                            
-                            <h6>Qualification</h6>
-                            <p>{{ lecturer.qualification|default:"Not provided" }}</p>
-                            
-                            <h6>Specialization</h6>
-                            <p>{{ lecturer.specialization|default:"Not provided" }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <h6>Date of Employment</h6>
-                            <p>{{ lecturer.date_of_employment|default:"Not provided" }}</p>
-                            
-                            <h6>National ID</h6>
-                            <p>{{ lecturer.national_id|default:"Not provided" }}</p>
-                        </div>
-                    </div>
-                    
-                    {% if lecturer.biography %}
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <h6>Biography</h6>
-                            <p>{{ lecturer.biography }}</p>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <div class="card mb-4">
+        <!-- Right Column - Main Content -->
+        <div class="col-md-8 col-lg-9">
+            <!-- Current Courses -->
+            <div class="card mb-4 shadow-sm">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Current Courses</h5>
-                    <a href="#" class="btn btn-sm btn-light">Manage Courses</a>
+                    <h5 class="card-title mb-0">My Courses</h5>
+                    <div>
+                        <a href="#" class="btn btn-sm btn-light">View All</a>
+                    </div>
                 </div>
                 <div class="card-body">
+                    {% if courses %}
                     <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
                                 <tr>
-                                    <th>Course Code</th>
-                                    <th>Course Name</th>
-                                    <th>Programme</th>
-                                    <th>Year/Semester</th>
+                                    <th>Course</th>
+                                    <th>Program</th>
                                     <th>Students</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
+                                {% for course in courses %}
                                 <tr>
-                                    <td colspan="6" class="text-center">No courses assigned for this semester.</td>
+                                    <td>
+                                        <strong>{{ course.code }}</strong><br>
+                                        <small class="text-muted">{{ course.name }}</small>
+                                    </td>
+                                    <td>{{ course.programme }}</td>
+                                    <td>{{ course.enrolled_students.count }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="#" class="btn btn-outline-primary" title="View">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="#" class="btn btn-outline-success" title="Manage">
+                                                <i class="bi bi-gear"></i>
+                                            </a>
+                                        </div>
+                                    </td>
                                 </tr>
-                                <!-- Course data would be populated here dynamically -->
+                                {% endfor %}
                             </tbody>
                         </table>
                     </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-journal-x fs-1 text-muted"></i>
+                        <p class="text-muted mt-2">No courses assigned this semester</p>
+                        <a href="#" class="btn btn-sm btn-primary">Request Courses</a>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
 
+            <!-- Upcoming Schedule & Tasks -->
             <div class="row">
-                <div class="col-md-6">
-                    <div class="card mb-4">
-                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                            <h5 class="card-title mb-0">Upcoming Classes</h5>
-                            <a href="#" class="btn btn-sm btn-light">View Schedule</a>
+                <!-- Upcoming Schedule -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">Today's Schedule</h5>
                         </div>
                         <div class="card-body">
-                            <p class="text-center">No upcoming classes scheduled.</p>
-                            <!-- Upcoming classes would be populated here dynamically -->
+                            {% if schedule %}
+                            <ul class="list-group list-group-flush">
+                                {% for event in schedule %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ event.course.code }}</strong><br>
+                                        <small class="text-muted">{{ event.venue }} • {{ event.start_time|time:"H:i" }}-{{ event.end_time|time:"H:i" }}</small>
+                                    </div>
+                                    <span class="badge bg-info">{{ event.get_day_display }}</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <div class="text-center py-3">
+                                <i class="bi bi-calendar-x fs-1 text-muted"></i>
+                                <p class="text-muted mt-2">No classes scheduled today</p>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
 
-                <div class="col-md-6">
-                    <div class="card mb-4">
+                <!-- Pending Tasks -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100 shadow-sm">
                         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                             <h5 class="card-title mb-0">Pending Tasks</h5>
-                            <a href="#" class="btn btn-sm btn-light">View All</a>
+                            <a href="#" class="btn btn-sm btn-light">Add Task</a>
                         </div>
                         <div class="card-body">
-                            <ul class="list-group">
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    Grade end-of-semester examinations
-                                    <span class="badge bg-danger">Due soon</span>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between align-items-start">
+                                    <div class="ms-2 me-auto">
+                                        <div class="fw-bold">Grade Midterm Exams</div>
+                                        <small class="text-muted">CS 401 - Due tomorrow</small>
+                                    </div>
+                                    <span class="badge bg-danger">High</span>
                                 </li>
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    Submit research proposal
-                                    <span class="badge bg-warning">In progress</span>
+                                <li class="list-group-item d-flex justify-content-between align-items-start">
+                                    <div class="ms-2 me-auto">
+                                        <div class="fw-bold">Prepare Lecture Notes</div>
+                                        <small class="text-muted">CS 402 - Due Friday</small>
+                                    </div>
+                                    <span class="badge bg-warning">Medium</span>
                                 </li>
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    Department meeting
-                                    <span class="badge bg-info">March 31, 2:00 PM</span>
+                                <li class="list-group-item d-flex justify-content-between align-items-start">
+                                    <div class="ms-2 me-auto">
+                                        <div>Department Meeting</div>
+                                        <small class="text-muted">Tomorrow 10:00 AM</small>
+                                    </div>
+                                    <span class="badge bg-info">Low</span>
                                 </li>
                             </ul>
                         </div>
@@ -168,49 +199,31 @@
                 </div>
             </div>
 
-            <div class="card">
+            <!-- Recent Announcements -->
+            <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0">Quick Links</h5>
+                    <h5 class="card-title mb-0">Department Announcements</h5>
                 </div>
                 <div class="card-body">
-                    <div class="row g-4">
-                        <div class="col-md-3 col-sm-6">
-                            <div class="d-grid">
-                                <a href="#" class="btn btn-outline-primary">
-                                    <i class="bi bi-journal-text fs-4 d-block mb-2"></i>
-                                    Course Materials
-                                </a>
+                    <div class="list-group list-group-flush">
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Semester End Evaluation</h6>
+                                <small class="text-muted">2 days ago</small>
                             </div>
-                        </div>
-                        <div class="col-md-3 col-sm-6">
-                            <div class="d-grid">
-                                <a href="#" class="btn btn-outline-primary">
-                                    <i class="bi bi-people fs-4 d-block mb-2"></i>
-                                    Students
-                                </a>
+                            <p class="mb-1">All lecturers are required to submit their course evaluations by Friday.</p>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Research Grant Opportunity</h6>
+                                <small class="text-muted">1 week ago</small>
                             </div>
-                        </div>
-                        <div class="col-md-3 col-sm-6">
-                            <div class="d-grid">
-                                <a href="#" class="btn btn-outline-primary">
-                                    <i class="bi bi-calendar-event fs-4 d-block mb-2"></i>
-                                    Exam Schedule
-                                </a>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-sm-6">
-                            <div class="d-grid">
-                                <a href="#" class="btn btn-outline-primary">
-                                    <i class="bi bi-file-earmark-text fs-4 d-block mb-2"></i>
-                                    Reports
-                                </a>
-                            </div>
-                        </div>
+                            <p class="mb-1">Applications for the annual research grant are now open.</p>
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
 {% endblock %}
