@@ -1,0 +1,78 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4">My Fee Payment History</h2>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Student Information</h5>
+            <p><strong>Name:</strong> {{ student.get_full_name }}</p>
+            <p><strong>Registration Number:</strong> {{ student.registration_number }}</p>
+            <p><strong>Programme:</strong> {{ student.programme.name }}</p>
+            <p><strong>Date of Admission:</strong> {{ student.date_of_admission }}</p>
+            <p><strong>Total Paid Since Admission:</strong> Ksh {{ total_paid|floatformat:2 }}</p>
+        </div>
+    </div>
+
+    {% for academic_year, year_data in payment_history.items %}
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5>{{ academic_year.name }} (Total Paid: Ksh {{ year_data.total_paid|floatformat:2 }})</h5>
+        </div>
+        
+        <div class="card-body">
+            {% for semester, semester_data in year_data.semesters.items %}
+            <div class="mb-4 p-3 border rounded {% if semester_data.is_complete %}border-success{% else %}border-warning{% endif %}">
+                <h6>Semester {{ semester.number }} - {{ semester.name }}</h6>
+                
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <p><strong>Expected Amount:</strong> Ksh {{ semester_data.expected_amount|floatformat:2 }}</p>
+                        <p><strong>Amount Paid:</strong> Ksh {{ semester_data.paid_amount|floatformat:2 }}</p>
+                        <p><strong>Balance:</strong> Ksh {{ semester_data.balance|floatformat:2 }}</p>
+                        <p class="{% if semester_data.is_complete %}text-success{% else %}text-danger{% endif %}">
+                            <strong>Status:</strong> 
+                            {% if semester_data.is_complete %}Fully Paid{% else %}Pending Balance{% endif %}
+                        </p>
+                    </div>
+                </div>
+                
+                {% if semester_data.payments %}
+                <h6>Payment Details:</h6>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Receipt No.</th>
+                                <th>Amount</th>
+                                <th>Payment Method</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in semester_data.payments %}
+                            <tr>
+                                <td>{{ payment.payment_date }}</td>
+                                <td>{{ payment.receipt_number }}</td>
+                                <td>Ksh {{ payment.amount|floatformat:2 }}</td>
+                                <td>{{ payment.payment_method }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No payments recorded for this semester.</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="alert alert-info">
+        No fee records found for your account.
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1858,3 +1858,73 @@ def student_profile_view(request):
         messages.error(request, f"An error occurred: {str(e)}")
         print(f"Error in student_profile_view: {str(e)}")
         return redirect('student_dashboard')
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, get_object_or_404
+from django.db.models import Sum
+from django.core.exceptions import ObjectDoesNotExist
+from .models import Student, StudentFee, FeePayment, FeesStructure, AcademicYear, Semester
+
+@login_required
+def student_fee_history(request):
+    try:
+        # Get student directly using the username (which is admission number)
+        student = Student.objects.get(registration_number=request.user.username)
+    except ObjectDoesNotExist:
+        return render(request, 'students/access_denied.html', {
+            'message': 'No student record found matching your login credentials.'
+        })
+    
+    # Get all fee records for this student, ordered by academic year and semester
+    fee_records = StudentFee.objects.filter(student=student).select_related(
+        'fee_structure__academic_year',
+        'fee_structure__programme',
+        'fee_structure'
+    ).order_by(
+        'fee_structure__academic_year__start_date',
+        'fee_structure__semester'
+    )
+    
+    # Organize data by academic year
+    payment_history = {}
+    total_paid = 0
+    
+    for record in fee_records:
+        academic_year = record.fee_structure.academic_year
+        semester = record.fee_structure.semester
+        
+        # Get all payments for this fee record
+        payments = FeePayment.objects.filter(student_fee=record).order_by('payment_date')
+        
+        # Calculate total paid for this record
+        paid_for_record = payments.aggregate(total=Sum('amount'))['total'] or 0
+        total_paid += paid_for_record
+        
+        # Prepare the academic year entry if it doesn't exist
+        if academic_year not in payment_history:
+            payment_history[academic_year] = {
+                'total_paid': 0,
+                'semesters': {}
+            }
+        
+        # Add semester data
+        payment_history[academic_year]['semesters'][semester] = {
+            'fee_structure': record.fee_structure,
+            'expected_amount': record.fee_structure.amount,
+            'paid_amount': paid_for_record,
+            'balance': record.balance,
+            'payments': payments,
+            'is_complete': record.balance <= 0
+        }
+        
+        # Update academic year total
+        payment_history[academic_year]['total_paid'] += paid_for_record
+    
+    context = {
+        'student': student,
+        'payment_history': payment_history,
+        'total_paid': total_paid,
+        'semesters_per_year': student.programme.semesters_per_year,
+    }
+    
+    return render(request, 'students/fee_history.html', context)
