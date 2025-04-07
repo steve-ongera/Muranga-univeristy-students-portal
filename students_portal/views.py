@@ -2553,3 +2553,4 @@ def student_sign_attendance(request, unit_allocation_id):
         'student': enrollment.student,
     }
     return render(request, 'attendance/student_sign.html', context)
+

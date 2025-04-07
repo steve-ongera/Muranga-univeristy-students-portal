@@ -1,26 +1,16 @@
 from django import template
-from ..models import AttendanceRecord
+from ..models import AttendanceRecord, StudentAttendance
 
 register = template.Library()
 
 @register.filter
-def get_week(records, week):
-    """Filter to get attendance record for specific week"""
+def get_week(queryset, week):
+    """Get attendance record for specific week"""
     try:
         week_num = int(week)
-        return next((r for r in records if r.week_number == week_num), None)
-    except (ValueError, StopIteration):
+        return queryset.filter(week_number=week_num).first()
+    except (ValueError, AttributeError):
         return None
-
-@register.filter
-def get_student_attendance(record, student_id):
-    """Filter to get student's attendance status for a record"""
-    if not record:
-        return {'is_present': False, 'remarks': ''}
-    try:
-        return record.student_attendances.get(student_id=student_id)
-    except:
-        return {'is_present': False, 'remarks': ''}
 
 @register.filter
 def count_present(record):
@@ -29,38 +19,23 @@ def count_present(record):
         return 0
     return record.student_attendances.filter(is_present=True).count()
 
-
-from django import template
-
-register = template.Library()
-
 @register.filter
-def has_signed_current_week(enrollment, current_week):
-    """Check if student has signed attendance for current week"""
-    unit = enrollment.programme_unit.unit_allocation
-    return unit.attendance_records.filter(
-        week_number=current_week,
-        student_attendances__student_id=enrollment.student_id
-    ).exists()
-
-@register.filter
-def multiply(value, arg):
-    """Multiply value by arg for progress bar calculation"""
-    return value * arg
-
-from django import template
-from ..models import AttendanceRecord, StudentAttendance
-
-# Create the register variable
-register = template.Library()
+def get_student_attendance(record, student_id):
+    """Get student's attendance status"""
+    if not record:
+        return {'is_present': False, 'remarks': ''}
+    try:
+        return record.student_attendances.get(student_id=student_id)
+    except StudentAttendance.DoesNotExist:
+        return {'is_present': False, 'remarks': ''}
 
 @register.filter
 def has_signed_current_week(enrollment, args):
-    """Check if student has signed attendance for current week"""
+    """Check if student has signed for current week"""
     try:
-        current_week, unit_allocation_id = args.split(',')
+        current_week, unit_id = args.split(',')
         return AttendanceRecord.objects.filter(
-            unit_allocation_id=unit_allocation_id,
+            unit_allocation_id=unit_id,
             week_number=int(current_week),
             student_attendances__student_id=enrollment.student_id
         ).exists()
@@ -69,9 +44,8 @@ def has_signed_current_week(enrollment, args):
 
 @register.filter
 def multiply(value, arg):
-    """Multiply value by arg for progress bar calculation"""
+    """Multiply two values"""
     try:
-        return int(value) * int(arg)
+        return float(value) * float(arg)
     except:
         return 0
-    
