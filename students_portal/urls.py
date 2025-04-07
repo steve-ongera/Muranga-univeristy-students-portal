@@ -64,6 +64,7 @@ urlpatterns = [
     path('lecturer/notes/', views.upload_lecture_notes, name='upload_lecture_notes'),
     path('lecturer/notes/<int:unit_allocation_id>/', views.upload_lecture_notes, name='upload_lecture_notes_unit'),
     path('lecturer/notes/delete/<int:note_id>/', views.delete_lecture_note, name='delete_lecture_note'),
+    path('student/notes/', views.student_view_notes, name='student_view_notes'),
 
 
 ]

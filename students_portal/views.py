@@ -2234,3 +2234,43 @@ def delete_lecture_note(request, note_id):
     # If not POST, show confirmation (handled via JavaScript in your template)
     messages.error(request, "Invalid request method")
     return redirect('upload_lecture_notes')
+
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import StudentEnrollment, LectureNotes
+
+@login_required
+def student_view_notes(request):
+    # Check if user is a student
+    if request.session.get('user_type') != 'student':
+        messages.error(request, "You don't have permission to access this page")
+        return redirect('login')
+    
+    student_id = request.session.get('student_id')
+    current_semester = Semester.objects.filter(is_current=True).first()
+    
+    # Get all enrolled units for current semester
+    enrollments = StudentEnrollment.objects.filter(
+        student_id=student_id,
+        semester=current_semester
+    ).select_related(
+        'programme_unit__unit',
+        'programme_unit__programme'
+    )
+    
+    # Get notes for these units
+    notes = LectureNotes.objects.filter(
+        unit_allocation__programme_unit__in=[e.programme_unit for e in enrollments],
+        is_published=True
+    ).select_related(
+        'unit_allocation__programme_unit__unit',
+        'unit_allocation__lecturer'
+    ).order_by('-date_uploaded')
+    
+    context = {
+        'enrollments': enrollments,
+        'notes': notes,
+        'current_semester': current_semester,
+    }
+    return render(request, 'notes/view_notes.html', context)
