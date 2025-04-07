@@ -651,3 +651,33 @@ class LectureNotes(models.Model):
 
     def __str__(self):
         return f"{self.topic} - {self.unit_allocation.programme_unit.unit.code}"
+    
+
+    # models.py
+# models.py
+from django.db import models
+
+class QRAttendanceSession(models.Model):
+    """Temporary QR code sessions without GIS"""
+    unit_allocation = models.ForeignKey(UnitAllocation, on_delete=models.CASCADE)
+    lecturer = models.ForeignKey(Lecturer, on_delete=models.CASCADE)
+    qr_token = models.CharField(max_length=255, unique=True)
+    valid_from = models.DateTimeField()
+    valid_to = models.DateTimeField()
+    latitude = models.DecimalField(max_digits=9, decimal_places=6)  # Instead of PointField
+    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    max_distance_km = models.DecimalField(max_digits=5, decimal_places=2, default=0.05)  # 50m = 0.05km
+
+class QRAttendanceLog(models.Model):
+    """Track QR scans without GIS"""
+    session = models.ForeignKey(QRAttendanceSession, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    scan_time = models.DateTimeField(auto_now_add=True)
+    device_fingerprint = models.CharField(max_length=64)
+    scan_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True)
+    scan_longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True)
+    
+    class Meta:
+        unique_together = [('session', 'student'), ('session', 'device_fingerprint')]
+
+        

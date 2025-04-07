@@ -67,30 +67,20 @@ urlpatterns = [
     path('student/notes/', views.student_view_notes, name='student_view_notes'),
 
     # Lecturer URLs
-    path('lecturer/attendance/', 
-         views.lecturer_attendance_view, 
-         name='lecturer_attendance_view'),
+    path('lecturer/attendance/', views.lecturer_attendance_view, name='lecturer_attendance_view'),
     
-    path('lecturer/attendance/unit/<int:unit_allocation_id>/', 
-         views.lecturer_unit_attendance, 
-         name='lecturer_unit_attendance'),
+    path('lecturer/attendance/unit/<int:unit_allocation_id>/', views.lecturer_unit_attendance, name='lecturer_unit_attendance'),
     
     # Student URLs
-    path('student/attendance/', 
-         views.student_attendance_view, 
-         name='student_attendance_view'),
+    path('student/attendance/', views.student_attendance_view, name='student_attendance_view'),
     
-    path('student/attendance/sign/<int:unit_allocation_id>/', 
-         views.student_sign_attendance, 
-         name='student_sign_attendance'),
+    path('student/attendance/sign/<int:unit_allocation_id>/', views.student_sign_attendance, name='student_sign_attendance'),
 
-     path('lecturer/attendance/update/<int:unit_allocation_id>/<int:week>/',
-          views.update_attendance,
-          name='update_attendance'),
+     path('lecturer/attendance/update/<int:unit_allocation_id>/<int:week>/', views.update_attendance,name='update_attendance'),
 
-     path('student/attendance/history/<int:unit_allocation_id>/',
-     views.student_attendance_history,
-     name='student_attendance_history'),
+     path('student/attendance/history/<int:unit_allocation_id>/',views.student_attendance_history, name='student_attendance_history'),
+     path('lecturer/units/<int:unit_allocation_id>/qr/', views.lecturer_generate_qr, name='lecturer_generate_qr'),
+     path('attendance/scan/', views.student_scan_qr, name='student_scan_qr'),
 
     
 

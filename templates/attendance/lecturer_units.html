@@ -18,10 +18,15 @@
             <td>{{ unit.programme_unit.unit.name }}</td>
             <td>{{ unit.student_count }}</td>
             <td>
+                <a href="{% url 'lecturer_generate_qr' unit.id %}" 
+                   class="btn btn-sm btn-success">
+                    <i class="fas fa-qrcode mr-1"></i> Generate QR
+                </a>
                 <a href="{% url 'lecturer_unit_attendance' unit.id %}" class="btn btn-primary">
                     View Attendance ({{ unit.weeks_with_attendance }}/10 weeks)
                 </a>
             </td>
+            
         </tr>
         {% endfor %}
     </tbody>

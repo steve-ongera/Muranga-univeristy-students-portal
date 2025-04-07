@@ -2554,3 +2554,163 @@ def student_sign_attendance(request, unit_allocation_id):
     }
     return render(request, 'attendance/student_sign.html', context)
 
+
+
+# views.py
+import jwt
+from datetime import datetime, timedelta
+from .utils import calculate_distance
+
+
+# views.py
+@login_required
+def lecturer_generate_qr(request, unit_allocation_id):
+    """Display QR generation page and handle AJAX requests"""
+    if request.session.get('user_type') != 'lecturer':
+        return redirect('login')
+    
+    unit = get_object_or_404(UnitAllocation, id=unit_allocation_id)
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # Handle AJAX QR generation
+        try:
+            lat = float(request.GET.get('lat'))
+            lng = float(request.GET.get('lng'))
+        except (TypeError, ValueError):
+            return JsonResponse({'error': 'Invalid location'}, status=400)
+        
+        payload = {
+            'unit_id': unit_allocation_id,
+            'lecturer_id': request.session.get('lecturer_id'),
+            'latitude': lat,
+            'longitude': lng,
+            'exp': datetime.utcnow() + timedelta(minutes=15)
+        }
+        qr_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+        
+        session = QRAttendanceSession.objects.create(
+            unit_allocation=unit,
+            lecturer_id=request.session.get('lecturer_id'),
+            qr_token=qr_token,
+            valid_from=datetime.now(),
+            valid_to=datetime.now() + timedelta(minutes=15),
+            latitude=lat,
+            longitude=lng,
+            max_distance_km=0.05  # 50 meters
+        )
+        
+        return JsonResponse({
+            'qr_token': qr_token,
+            'expires_at': session.valid_to.isoformat()
+        })
+    
+    # Regular GET request - show QR page
+    context = {
+        'unit': unit,
+        'current_semester': unit.semester
+    }
+    return render(request, 'attendance/lecturer_generate_qr.html', context)
+
+@login_required
+def student_scan_qr(request):
+    """Handle QR code attendance scanning for students"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid method'}, status=405)
+    
+    try:
+        # Get data from student's device
+        qr_token = request.POST.get('qr_token')
+        student_lat = float(request.POST.get('lat'))
+        student_lng = float(request.POST.get('lng'))
+        device_fp = request.POST.get('device_fp')
+        
+        # 1. Verify JWT token
+        try:
+            payload = jwt.decode(qr_token, settings.SECRET_KEY, algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            return JsonResponse({'error': 'QR code expired'}, status=400)
+        except jwt.InvalidTokenError:
+            return JsonResponse({'error': 'Invalid QR code'}, status=400)
+        
+        # 2. Verify session exists and is valid
+        try:
+            session = QRAttendanceSession.objects.get(
+                qr_token=qr_token,
+                valid_from__lte=timezone.now(),
+                valid_to__gte=timezone.now()
+            )
+        except QRAttendanceSession.DoesNotExist:
+            return JsonResponse({'error': 'Invalid or expired session'}, status=400)
+        
+        # 3. Verify location
+        distance_km = calculate_distance(
+            float(session.latitude),
+            float(session.longitude),
+            student_lat,
+            student_lng
+        )
+        
+        if distance_km > float(session.max_distance_km):
+            return JsonResponse({
+                'error': f'You must be within {session.max_distance_km*1000:.0f}m of classroom',
+                'distance': f'{distance_km*1000:.0f}m'
+            }, status=400)
+        
+        # 4. Prevent duplicate scans
+        if QRAttendanceLog.objects.filter(
+            session=session,
+            device_fingerprint=device_fp
+        ).exists():
+            return JsonResponse({'error': 'This device already scanned'}, status=400)
+        
+        if QRAttendanceLog.objects.filter(
+            session=session,
+            student=request.user.student
+        ).exists():
+            return JsonResponse({'error': 'Attendance already recorded'}, status=400)
+        
+        # 5. Create attendance log
+        QRAttendanceLog.objects.create(
+            session=session,
+            student=request.user.student,
+            device_fingerprint=device_fp,
+            scan_latitude=student_lat,
+            scan_longitude=student_lng
+        )
+        
+        # 6. Record in main attendance system
+        week = session.unit_allocation.semester.get_current_week()
+        
+        # Get or create attendance record
+        record, created = AttendanceRecord.objects.get_or_create(
+            unit_allocation=session.unit_allocation,
+            week_number=week,
+            defaults={
+                'date': timezone.now().date(),
+                'topic': f"Week {week} QR Attendance",
+                'is_locked': False
+            }
+        )
+        
+        # Update student attendance
+        StudentAttendance.objects.update_or_create(
+            attendance_record=record,
+            student=request.user.student,
+            defaults={
+                'is_present': True,
+                'remarks': f"QR verified at {distance_km*1000:.0f}m from class"
+            }
+        )
+        
+        # Return success
+        return JsonResponse({
+            'success': 'Attendance recorded!',
+            'unit': session.unit_allocation.programme_unit.unit.code,
+            'week': week,
+            'distance': f'{distance_km*1000:.0f}m'
+        })
+    
+    except ValueError:
+        return JsonResponse({'error': 'Invalid location data'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)

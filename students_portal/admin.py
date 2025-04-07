@@ -283,7 +283,42 @@ class AnnouncementAdmin(admin.ModelAdmin):
         if not obj.author_id:
             obj.author = request.user
         super().save_model(request, obj, form, change)
-    
+
+ # admin.py
+from django.contrib import admin
+from .models import QRAttendanceSession, QRAttendanceLog
+
+@admin.register(QRAttendanceSession)
+class QRAttendanceSessionAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'unit_allocation',
+        'lecturer',
+        'qr_token',
+        'valid_from',
+        'valid_to',
+        'latitude',
+        'longitude',
+        'max_distance_km',
+    )
+    search_fields = ('qr_token', 'lecturer__first_name', 'lecturer__last_name')
+    list_filter = ('valid_from', 'valid_to')
+
+
+@admin.register(QRAttendanceLog)
+class QRAttendanceLogAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'session',
+        'student',
+        'scan_time',
+        'device_fingerprint',
+        'scan_latitude',
+        'scan_longitude',
+    )
+    search_fields = ('student__registration_number', 'device_fingerprint')
+    list_filter = ('scan_time', 'session__lecturer')
+   
 admin.site.register(UserNotification, UserNotificationAdmin)
 admin.site.register(FeesStructure, FeesStructureAdmin)
 admin.site.register(StudentFee, StudentFeeAdmin)

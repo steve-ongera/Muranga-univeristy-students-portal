@@ -1,0 +1,129 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+                <i class="fas fa-qrcode mr-2"></i>
+                Attendance QR Code - {{ unit.programme_unit.unit.code }}
+            </h4>
+        </div>
+        
+        <div class="card-body text-center">
+            <div id="qrCodeContainer" class="mb-4">
+                <!-- QR code will appear here -->
+                <div id="qrCode" class="mx-auto" style="width: 250px; height: 250px;"></div>
+            </div>
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle mr-2"></i>
+                This QR code will expire in <span id="countdown">15:00</span> minutes
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mx-auto">
+                    <div class="form-group">
+                        <label>Classroom Location</label>
+                        <div class="input-group">
+                            <input type="text" id="latitude" class="form-control" placeholder="Latitude" readonly>
+                            <input type="text" id="longitude" class="form-control" placeholder="Longitude" readonly>
+                            <div class="input-group-append">
+                                <button class="btn btn-secondary" onclick="getLocation()">
+                                    <i class="fas fa-location-crosshairs"></i> Get Location
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="generateBtn" class="btn btn-primary btn-block mt-3" disabled>
+                        <i class="fas fa-sync-alt mr-2"></i> Generate New QR Code
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+<script>
+let qrCode;
+let countdownInterval;
+const duration = 15 * 60; // 15 minutes in seconds
+
+// Generate QR code
+function generateQR(token, expiresAt) {
+    if (qrCode) qrCode.clear();
+    qrCode = new QRCode(document.getElementById("qrCode"), {
+        text: token,
+        width: 250,
+        height: 250,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+    startCountdown(expiresAt);
+}
+
+// Get current location
+function getLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                document.getElementById('latitude').value = position.coords.latitude.toFixed(6);
+                document.getElementById('longitude').value = position.coords.longitude.toFixed(6);
+                document.getElementById('generateBtn').disabled = false;
+            },
+            (error) => {
+                alert("Error getting location: " + error.message);
+            },
+            { enableHighAccuracy: true }
+        );
+    } else {
+        alert("Geolocation is not supported by this browser.");
+    }
+}
+
+// Start countdown timer
+function startCountdown(expiresAt) {
+    const endTime = new Date(expiresAt).getTime();
+    
+    clearInterval(countdownInterval);
+    countdownInterval = setInterval(() => {
+        const now = new Date().getTime();
+        const distance = endTime - now;
+        
+        if (distance < 0) {
+            clearInterval(countdownInterval);
+            document.getElementById("countdown").textContent = "EXPIRED";
+            return;
+        }
+        
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        document.getElementById("countdown").textContent = 
+            `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }, 1000);
+}
+
+// Generate new QR code
+document.getElementById('generateBtn').addEventListener('click', function() {
+    const lat = document.getElementById('latitude').value;
+    const lng = document.getElementById('longitude').value;
+    
+    if (!lat || !lng) {
+        alert("Please get your location first");
+        return;
+    }
+    
+    fetch(`/lecturer/units/{{ unit.id }}/qr/?lat=${lat}&lng=${lng}`)
+        .then(response => response.json())
+        .then(data => generateQR(data.qr_token, data.expires_at))
+        .catch(error => console.error('Error:', error));
+});
+
+// Initial load - attempt to get location automatically
+window.addEventListener('load', getLocation);
+</script>
+{% endblock %}
