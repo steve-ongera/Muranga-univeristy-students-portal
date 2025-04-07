@@ -2281,3 +2281,223 @@ def student_view_notes(request):
     }
     return render(request, 'notes/view_notes.html', context)
 
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.db.models import Count
+from .models import UnitAllocation, StudentEnrollment, Semester, AttendanceRecord
+
+@login_required
+def lecturer_attendance_view(request):
+    """Lecturer view of assigned units with attendance summary"""
+    if request.session.get('user_type') != 'lecturer':
+        return redirect('login')
+    
+    lecturer_id = request.session.get('lecturer_id')
+    current_semester = Semester.objects.filter(is_current=True).first()
+    
+    # Get current week from semester (default to 1 if not set)
+    current_week = current_semester.current_week if current_semester else 1
+    
+    # Get units with student counts and attendance weeks
+    units = UnitAllocation.objects.filter(
+        lecturer_id=lecturer_id,
+        semester=current_semester
+    ).annotate(
+        student_count=Count('programme_unit__enrollments',
+                          filter=Q(programme_unit__enrollments__semester=current_semester)),
+        weeks_with_attendance=Count('attendance_records', distinct=True)
+    ).select_related('programme_unit__unit')
+    
+    context = {
+        'units': units,
+        'current_semester': current_semester,
+        'current_week': current_week,
+        'total_weeks': 10  # Assuming 10-week semester
+    }
+    return render(request, 'attendance/lecturer_units.html', context)
+
+@login_required
+def lecturer_unit_attendance(request, unit_allocation_id):
+    """Detailed attendance for a specific unit"""
+    if request.session.get('user_type') != 'lecturer':
+        return redirect('login')
+    
+    lecturer_id = request.session.get('lecturer_id')
+    unit_allocation = get_object_or_404(
+        UnitAllocation,
+        id=unit_allocation_id,
+        lecturer_id=lecturer_id
+    )
+    
+    # Get all attendance records for this unit
+    attendance_records = AttendanceRecord.objects.filter(
+        unit_allocation=unit_allocation
+    ).order_by('week_number').prefetch_related('student_attendances')
+    
+    # Get enrolled students
+    students = StudentEnrollment.objects.filter(
+        programme_unit=unit_allocation.programme_unit,
+        semester=unit_allocation.semester
+    ).select_related('student')
+    
+    # Current week
+    current_semester = Semester.objects.filter(is_current=True).first()
+    current_week = current_semester.current_week if current_semester else 1
+    
+    context = {
+        'unit_allocation': unit_allocation,
+        'attendance_records': attendance_records,
+        'students': students,
+        'current_week': current_week,
+    }
+    return render(request, 'attendance/lecturer_unit_details.html', context)
+
+
+@login_required
+def update_attendance(request, unit_allocation_id, week):
+    """Update attendance for a specific week"""
+    if request.session.get('user_type') != 'lecturer':
+        return redirect('login')
+    
+    lecturer_id = request.session.get('lecturer_id')
+    unit_allocation = get_object_or_404(
+        UnitAllocation,
+        id=unit_allocation_id,
+        lecturer_id=lecturer_id
+    )
+    
+    # Get or create attendance record
+    record, created = AttendanceRecord.objects.get_or_create(
+        unit_allocation=unit_allocation,
+        week_number=week,
+        defaults={
+            'date': timezone.now().date(),
+            'topic': f"Week {week} Lecture"
+        }
+    )
+    
+    # Update attendance for each student
+    for student in StudentEnrollment.objects.filter(
+        programme_unit=unit_allocation.programme_unit,
+        semester=unit_allocation.semester
+    ).select_related('student'):
+        is_present = request.POST.get(f'student_{student.student.id}') == 'on'
+        remarks = request.POST.get(f'remarks_{student.student.id}', '')
+        
+        StudentAttendance.objects.update_or_create(
+            attendance_record=record,
+            student_id=student.student.id,
+            defaults={
+                'is_present': is_present,
+                'remarks': remarks
+            }
+        )
+    
+    messages.success(request, f"Week {week} attendance updated successfully!")
+    return redirect('lecturer_unit_attendance', unit_allocation_id=unit_allocation.id)
+
+
+@login_required
+def student_attendance_view(request):
+    """Student view of enrolled units with attendance"""
+    if request.session.get('user_type') != 'student':
+        return redirect('login')
+    
+    student_id = request.session.get('student_id')
+    current_semester = Semester.objects.filter(is_current=True).first()
+    
+    # Get enrolled units with attendance summary
+    enrollments = StudentEnrollment.objects.filter(
+        student_id=student_id,
+        semester=current_semester
+    ).select_related(
+        'programme_unit__unit',
+        'programme_unit__programme'
+    ).prefetch_related(
+        Prefetch(
+            'programme_unit__unit_allocations',
+            queryset=UnitAllocation.objects.select_related('lecturer').prefetch_related(
+                Prefetch(
+                    'attendance_records',
+                    queryset=AttendanceRecord.objects.order_by('week_number').prefetch_related(
+                        Prefetch(
+                            'student_attendances',
+                            queryset=StudentAttendance.objects.filter(student_id=student_id)
+                    )
+                )
+            )
+        )
+    )
+    )
+    
+    current_week = current_semester.current_week if current_semester else 1
+    
+    context = {
+        'enrollments': enrollments,
+        'current_week': current_week,
+    }
+    return render(request, 'attendance/student_units.html', context)
+
+
+
+@login_required
+def student_sign_attendance(request, unit_allocation_id):
+    """Student attendance signing for current week"""
+    if request.session.get('user_type') != 'student':
+        return redirect('login')
+    
+    student_id = request.session.get('student_id')
+    current_semester = Semester.objects.filter(is_current=True).first()
+    
+    # Verify enrollment
+    enrollment = get_object_or_404(
+        StudentEnrollment,
+        student_id=student_id,
+        programme_unit__unit_allocation__id=unit_allocation_id,
+        semester=current_semester
+    )
+    
+    unit_allocation = enrollment.programme_unit.unit_allocation
+    current_week = current_semester.get_current_week()
+    
+    # Handle POST request
+    if request.method == 'POST':
+        # Get or create attendance record
+        record, created = AttendanceRecord.objects.get_or_create(
+            unit_allocation=unit_allocation,
+            week_number=current_week,
+            defaults={
+                'date': timezone.now().date(),
+                'topic': f"Week {current_week} Lecture"
+            }
+        )
+        
+        # Create attendance if not exists
+        StudentAttendance.objects.get_or_create(
+            attendance_record=record,
+            student_id=student_id,
+            defaults={'is_present': True}
+        )
+        
+        return redirect('student_attendance_view')
+    
+    # Check if already signed
+    already_signed = False
+    current_week_record = AttendanceRecord.objects.filter(
+        unit_allocation=unit_allocation,
+        week_number=current_week
+    ).first()
+    
+    if current_week_record:
+        already_signed = StudentAttendance.objects.filter(
+            attendance_record=current_week_record,
+            student_id=student_id
+        ).exists()
+    
+    context = {
+        'unit_allocation': unit_allocation,
+        'current_week': current_week,
+        'already_signed': already_signed,
+    }
+    return render(request, 'attendance/student_sign.html', context)

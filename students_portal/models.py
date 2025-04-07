@@ -265,6 +265,11 @@ class Semester(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     is_current = models.BooleanField(default=False)
+
+    current_week = models.PositiveSmallIntegerField(
+        default=1,
+        
+    )
     
     class Meta:
         unique_together = ('academic_year', 'number')
@@ -393,6 +398,13 @@ class AttendanceRecord(models.Model):
     unit_allocation = models.ForeignKey(UnitAllocation, on_delete=models.CASCADE, related_name='attendance_records')
     date = models.DateField()
     topic = models.CharField(max_length=200, blank=True, null=True)
+
+    # ... existing fields ...
+    week_number = models.IntegerField(blank=True, null=True)  # Week 1 through 10
+    is_locked = models.BooleanField(default=False)  # To prevent changes after submission
+    
+    class Meta:
+        unique_together = ('unit_allocation', 'week_number')
     
     def __str__(self):
         return f"{self.unit_allocation.programme_unit.unit.code} - {self.date}"

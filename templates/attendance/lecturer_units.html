@@ -1,0 +1,29 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<h2>My Units Attendance - Week {{ current_week }}</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Unit Code</th>
+            <th>Unit Name</th>
+            <th>Students Enrolled</th>
+            <th>Attendance Records</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for unit in units %}
+        <tr>
+            <td>{{ unit.programme_unit.unit.code }}</td>
+            <td>{{ unit.programme_unit.unit.name }}</td>
+            <td>{{ unit.student_count }}</td>
+            <td>
+                <a href="{% url 'lecturer_unit_attendance' unit.id %}" class="btn btn-primary">
+                    View Attendance ({{ unit.weeks_with_attendance }}/10 weeks)
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

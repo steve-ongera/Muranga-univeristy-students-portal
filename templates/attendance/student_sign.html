@@ -1,0 +1,91 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-calendar-check mr-2"></i>
+                        Attendance Signing - Week {{ current_week }}
+                    </h4>
+                </div>
+                
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <h5>{{ unit_allocation.programme_unit.unit.code }} - {{ unit_allocation.programme_unit.unit.name }}</h5>
+                        <p class="text-muted">
+                            Lecturer: {{ unit_allocation.lecturer.get_full_name }}
+                        </p>
+                    </div>
+
+                    {% if already_signed %}
+                        <div class="alert alert-success text-center">
+                            <i class="fas fa-check-circle fa-2x mb-3"></i>
+                            <h5>You've already signed attendance for this week!</h5>
+                            <p class="mb-0">Signed on {{ current_week_record.date|date:"F j, Y" }}</p>
+                        </div>
+                    {% else %}
+                        <div class="text-center mb-4">
+                            <i class="fas fa-user-check fa-4x text-primary mb-3"></i>
+                            <h4>Confirm Your Attendance</h4>
+                            <p class="text-muted">
+                                You're signing attendance for Week {{ current_week }} of {{ current_semester.name }}
+                            </p>
+                        </div>
+
+                        <form method="post" class="needs-validation" novalidate>
+                            {% csrf_token %}
+                            <div class="form-group text-center">
+                                <div class="custom-control custom-checkbox mb-3">
+                                    <input type="checkbox" class="custom-control-input" id="confirmation" required>
+                                    <label class="custom-control-label" for="confirmation">
+                                        I confirm that I attended this class
+                                    </label>
+                                    <div class="invalid-feedback">
+                                        You must confirm your attendance
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-signature mr-2"></i>
+                                    Sign Attendance
+                                </button>
+                            </div>
+                        </form>
+                    {% endif %}
+                </div>
+
+                <div class="card-footer text-center">
+                    <a href="{% url 'student_attendance_view' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Back to My Courses
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+</script>
+{% endblock %}

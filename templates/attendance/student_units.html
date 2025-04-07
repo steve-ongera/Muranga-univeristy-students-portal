@@ -1,0 +1,78 @@
+{% extends 'base/base.html' %}
+{% load attendance_tags %}
+
+{% block content %}
+<div class="container">
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h4 class="m-0 font-weight-bold text-primary">My Units Attendance</h4>
+            <span class="badge badge-primary">Current Week: {{ current_week }}</span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Unit Code</th>
+                            <th>Unit Name</th>
+                            <th>Lecturer</th>
+                            <th>Attendance</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for enrollment in enrollments %}
+                        {% for unit in enrollment.programme_unit.unit_allocations.all %}
+                        <tr>
+                            <td>{{ enrollment.programme_unit.unit.code }}</td>
+                            <td>{{ enrollment.programme_unit.unit.name }}</td>
+                            <td>{{ unit.lecturer.get_full_name }}</td>
+                            <td>
+                                {% with records=unit.attendance_records.all %}
+                                <div class="progress">
+                                    <div class="progress-bar bg-success" 
+                                         role="progressbar" 
+                                         style="width: {{ records|length|multiply:10 }}%" 
+                                         aria-valuenow="{{ records|length }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="10">
+                                        {{ records|length }}/10 weeks
+                                    </div>
+                                </div>
+                                {% endwith %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'student_attendance_history' unit.id %}" 
+                                       class="btn btn-sm btn-info">
+                                        <i class="fas fa-history"></i> History
+                                    </a>
+                                    <a href="{% url 'student_sign_attendance' unit.id %}" 
+                                       class="btn btn-sm {% if enrollment|has_signed_current_week:current_week|add:','|add:unit.id %}btn-secondary{% else %}btn-success{% endif %}">
+                                        <i class="fas fa-{% if enrollment|has_signed_current_week:current_week|add:','|add:unit.id %}check{% else %}pen{% endif %}"></i>
+                                        {% if enrollment|has_signed_current_week:current_week|add:','|add:unit.id %}
+                                        Signed (Week {{ current_week }})
+                                        {% else %}
+                                        Sign Now
+                                        {% endif %}
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">No unit allocations found</td>
+                        </tr>
+                        {% endfor %}
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">No enrolled units found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
