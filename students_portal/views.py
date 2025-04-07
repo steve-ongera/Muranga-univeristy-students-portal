@@ -2280,3 +2280,4 @@ def student_view_notes(request):
         # 'current_semester': current_semester,
     }
     return render(request, 'notes/view_notes.html', context)
+

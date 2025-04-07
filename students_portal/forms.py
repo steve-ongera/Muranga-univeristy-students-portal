@@ -321,3 +321,5 @@ class LectureNotesForm(forms.ModelForm):
         widgets = {
             'description': forms.Textarea(attrs={'rows': 3}),
         }
+
+
