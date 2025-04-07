@@ -2250,27 +2250,33 @@ def student_view_notes(request):
     student_id = request.session.get('student_id')
     current_semester = Semester.objects.filter(is_current=True).first()
     
+    
     # Get all enrolled units for current semester
     enrollments = StudentEnrollment.objects.filter(
         student_id=student_id,
         semester=current_semester
-    ).select_related(
-        'programme_unit__unit',
-        'programme_unit__programme'
-    )
+    ).select_related('programme_unit__unit')
     
-    # Get notes for these units
-    notes = LectureNotes.objects.filter(
-        unit_allocation__programme_unit__in=[e.programme_unit for e in enrollments],
-        is_published=True
-    ).select_related(
-        'unit_allocation__programme_unit__unit',
-        'unit_allocation__lecturer'
-    ).order_by('-date_uploaded')
+    # Get notes for these units and group by unit
+    notes_by_unit = {}
+    for enrollment in enrollments:
+        unit = enrollment.programme_unit.unit
+        notes = LectureNotes.objects.filter(
+            unit_allocation__programme_unit=enrollment.programme_unit,
+            is_published=True
+        ).select_related(
+            'unit_allocation__lecturer'
+        ).order_by('-date_uploaded')
+        
+        if notes.exists():
+            notes_by_unit[unit] = notes
+    
     
     context = {
+        'notes_by_unit': notes_by_unit,
+        'current_semester': current_semester,
         'enrollments': enrollments,
         'notes': notes,
-        'current_semester': current_semester,
+        # 'current_semester': current_semester,
     }
     return render(request, 'notes/view_notes.html', context)
