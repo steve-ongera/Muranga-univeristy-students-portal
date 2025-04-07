@@ -29,7 +29,7 @@
                             <input type="text" id="latitude" class="form-control" placeholder="Latitude" readonly>
                             <input type="text" id="longitude" class="form-control" placeholder="Longitude" readonly>
                             <div class="input-group-append">
-                                <button class="btn btn-secondary" onclick="getLocation()">
+                                <button id="getLocationBtn" class="btn btn-secondary">
                                     <i class="fas fa-location-crosshairs"></i> Get Location
                                 </button>
                             </div>
@@ -43,54 +43,86 @@
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
 <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
 <script>
 let qrCode;
 let countdownInterval;
-const duration = 15 * 60; // 15 minutes in seconds
+const MAX_QR_LENGTH = 1000; // Safe threshold for QR codes
 
-// Generate QR code
-function generateQR(token, expiresAt) {
-    if (qrCode) qrCode.clear();
-    qrCode = new QRCode(document.getElementById("qrCode"), {
-        text: token,
-        width: 250,
-        height: 250,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
+// Optimized location fetching
+async function getLocation() {
+    return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+            reject(new Error("Geolocation not supported"));
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                const coords = {
+                    lat: position.coords.latitude.toFixed(6),
+                    lng: position.coords.longitude.toFixed(6)
+                };
+                document.getElementById('latitude').value = coords.lat;
+                document.getElementById('longitude').value = coords.lng;
+                document.getElementById('generateBtn').disabled = false;
+                resolve(coords);
+            },
+            error => {
+                const errorMsg = `Location error: ${error.message}`;
+                console.error(errorMsg);
+                alert(errorMsg);
+                reject(new Error(errorMsg));
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
     });
-    startCountdown(expiresAt);
 }
 
-// Get current location
-function getLocation() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                document.getElementById('latitude').value = position.coords.latitude.toFixed(6);
-                document.getElementById('longitude').value = position.coords.longitude.toFixed(6);
-                document.getElementById('generateBtn').disabled = false;
-            },
-            (error) => {
-                alert("Error getting location: " + error.message);
-            },
-            { enableHighAccuracy: true }
-        );
-    } else {
-        alert("Geolocation is not supported by this browser.");
+// Token validation and trimming
+function validateToken(token) {
+    if (token.length > MAX_QR_LENGTH) {
+        console.warn(`Token too long (${token.length} chars), trimming...`);
+        return token.substring(0, MAX_QR_LENGTH);
+    }
+    return token;
+}
+
+// Robust QR code generation
+function displayQRCode(token, expiresAt) {
+    try {
+        // Clear existing QR code if present
+        const container = document.getElementById("qrCode");
+        container.innerHTML = "";
+        
+        // Validate and adjust token if needed
+        const safeToken = validateToken(token);
+        
+        // Generate with higher version and error correction
+        qrCode = new QRCode(container, {
+            text: safeToken,
+            width: 250,
+            height: 250,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H,
+            version: 15 // Higher version supports more data
+        });
+
+        startCountdown(expiresAt);
+    } catch (error) {
+        console.error("QR generation failed:", error);
+        alert("Failed to generate QR code. The data might be too large.");
     }
 }
 
-// Start countdown timer
+// Countdown timer with better formatting
 function startCountdown(expiresAt) {
+    clearInterval(countdownInterval);
     const endTime = new Date(expiresAt).getTime();
     
-    clearInterval(countdownInterval);
-    countdownInterval = setInterval(() => {
+    const updateTimer = () => {
         const now = new Date().getTime();
         const distance = endTime - now;
         
@@ -104,11 +136,14 @@ function startCountdown(expiresAt) {
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
         document.getElementById("countdown").textContent = 
             `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    }, 1000);
+    };
+    
+    updateTimer(); // Immediate update
+    countdownInterval = setInterval(updateTimer, 1000);
 }
 
-// Generate new QR code
-document.getElementById('generateBtn').addEventListener('click', function() {
+// Improved QR code generation with error handling
+async function generateQRCode() {
     const lat = document.getElementById('latitude').value;
     const lng = document.getElementById('longitude').value;
     
@@ -117,13 +152,56 @@ document.getElementById('generateBtn').addEventListener('click', function() {
         return;
     }
     
-    fetch(`/lecturer/units/{{ unit.id }}/qr/?lat=${lat}&lng=${lng}`)
-        .then(response => response.json())
-        .then(data => generateQR(data.qr_token, data.expires_at))
-        .catch(error => console.error('Error:', error));
-});
+    try {
+        const response = await fetch(`/lecturer/units/{{ unit.id }}/qr/?lat=${lat}&lng=${lng}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Server responded with ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        if (!data.qr_token || !data.expires_at) {
+            throw new Error("Invalid response format");
+        }
+        
+        displayQRCode(data.qr_token, data.expires_at);
+    } catch (error) {
+        console.error("QR generation error:", error);
+        alert(`Failed to generate QR: ${error.message}`);
+    }
+}
 
-// Initial load - attempt to get location automatically
-window.addEventListener('load', getLocation);
+// Initialize with error handling
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        document.getElementById('getLocationBtn').addEventListener('click', async () => {
+            try {
+                await getLocation();
+            } catch (error) {
+                console.error("Location error:", error);
+            }
+        });
+        
+        document.getElementById('generateBtn').addEventListener('click', generateQRCode);
+        
+        // Attempt initial location
+        getLocation().catch(() => {});
+    } catch (error) {
+        console.error("Initialization error:", error);
+    }
+});
 </script>
+
+
 {% endblock %}
+

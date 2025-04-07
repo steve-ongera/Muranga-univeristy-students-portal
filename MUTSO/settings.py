@@ -15,7 +15,7 @@ SECRET_KEY = 'django-insecure-5yaf(dgr^9364+z89=x1(u6u(sab#p5n_dqp&mnykp67(3v7x@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*','https://43fd-2c0f-6300-d09-fd00-f126-c225-9052-8cce.ngrok-free.app']
 
 
 # Application definition
@@ -29,6 +29,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'students_portal',
    
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://43fd-2c0f-6300-d09-fd00-f126-c225-9052-8cce.ngrok-free.app"
 ]
 
 MIDDLEWARE = [

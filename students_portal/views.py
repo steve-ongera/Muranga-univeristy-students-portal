@@ -2579,11 +2579,11 @@ def lecturer_generate_qr(request, unit_allocation_id):
         except (TypeError, ValueError):
             return JsonResponse({'error': 'Invalid location'}, status=400)
         
+        # In views.py
         payload = {
-            'unit_id': unit_allocation_id,
-            'lecturer_id': request.session.get('lecturer_id'),
-            'latitude': lat,
-            'longitude': lng,
+            'u': unit_allocation_id,  # Shortened keys
+            'l': request.user.id,
+            'loc': f"{lat},{lng}",  # Combine coordinates
             'exp': datetime.utcnow() + timedelta(minutes=15)
         }
         qr_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
