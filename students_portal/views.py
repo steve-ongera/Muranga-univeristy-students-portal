@@ -2614,6 +2614,10 @@ def lecturer_generate_qr(request, unit_allocation_id):
 @login_required
 def student_scan_qr(request):
     """Handle QR code attendance scanning for students"""
+    """Render scan page for GET, handle POST scans"""
+    if request.method == 'GET':
+        return render(request, 'attendance/student_scan.html')
+    
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid method'}, status=405)
     

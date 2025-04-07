@@ -1,0 +1,246 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+                <i class="fas fa-qrcode mr-2"></i>
+                Scan Attendance QR Code
+            </h4>
+        </div>
+        
+        <div class="card-body text-center">
+            <!-- Camera Feed Container -->
+            <div class="mb-4" style="position: relative;">
+                <video id="qrScanner" width="100%" style="border: 3px solid #ddd; border-radius: 8px;"></video>
+                <canvas id="qrCanvas" style="display: none;"></canvas>
+                <div id="scannerOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
+            </div>
+            
+            <!-- Manual Entry Fallback -->
+            <div class="mb-3">
+                <button id="manualEntryBtn" class="btn btn-outline-secondary">
+                    <i class="fas fa-keyboard mr-2"></i> Enter Code Manually
+                </button>
+            </div>
+            
+            <!-- Status Messages -->
+            <div id="scanStatus" class="alert alert-info" style="display: none;"></div>
+            
+            <!-- Hidden Form for Submission -->
+            <form id="qrAttendanceForm" style="display: none;">
+                {% csrf_token %}
+                <input type="hidden" id="qrToken" name="qr_token">
+                <input type="hidden" id="latitude" name="lat">
+                <input type="hidden" id="longitude" name="lng">
+                <input type="hidden" id="deviceFp" name="device_fp">
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- QR Scanner Library -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+
+<script>
+// Device fingerprint (simplified version)
+function generateDeviceFingerprint() {
+    return 'fp-' + Math.random().toString(36).substr(2, 9) + 
+           '-' + new Date().getTime().toString(36);
+}
+
+// Camera QR Scanner
+// Replace your initializeQRScanner() function with this:
+
+function initializeQRScanner() {
+    const video = document.getElementById('qrScanner');
+    const canvas = document.getElementById('qrCanvas');
+    const ctx = canvas.getContext('2d');
+    const statusDiv = document.getElementById('scanStatus');
+    let scannerActive = true;
+    let stream = null;
+
+    // Check camera permissions
+    navigator.mediaDevices.getUserMedia({ 
+        video: { 
+            facingMode: 'environment',
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+        } 
+    }).then(function(s) {
+        stream = s;
+        video.srcObject = stream;
+        
+        // Wait for video metadata to load
+        video.onloadedmetadata = function() {
+            video.play().then(() => {
+                statusDiv.textContent = "Scanning for QR code...";
+                statusDiv.style.display = "block";
+                scanFrame(); // Start scanning
+            });
+        };
+        
+        video.onerror = function() {
+            statusDiv.textContent = "Failed to start video feed";
+            statusDiv.className = "alert alert-danger";
+            statusDiv.style.display = "block";
+        };
+    }).catch(function(err) {
+        console.error("Camera error:", err);
+        statusDiv.textContent = "Camera access denied. Please enable camera permissions.";
+        statusDiv.className = "alert alert-warning";
+        statusDiv.style.display = "block";
+    });
+
+    function scanFrame() {
+        if (!scannerActive || !video.videoWidth) {
+            return;
+        }
+
+        try {
+            // Ensure video has valid dimensions
+            if (video.videoWidth === 0 || video.videoHeight === 0) {
+                requestAnimationFrame(scanFrame);
+                return;
+            }
+
+            // Set canvas dimensions to match video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            // Draw video frame to canvas
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Only process if canvas has valid dimensions
+            if (canvas.width > 0 && canvas.height > 0) {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+                
+                if (code) {
+                    handleScannedQR(code.data);
+                    scannerActive = false;
+                    return;
+                }
+            }
+            
+            // Continue scanning
+            requestAnimationFrame(scanFrame);
+        } catch (e) {
+            console.error("Scan error:", e);
+            statusDiv.textContent = "Error scanning: " + e.message;
+            statusDiv.className = "alert alert-danger";
+            statusDiv.style.display = "block";
+            
+            // Restart scanner after error
+            setTimeout(() => {
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                initializeQRScanner();
+            }, 2000);
+        }
+    }
+
+    // Clean up when leaving page
+    window.addEventListener('beforeunload', function() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+    });
+}
+
+// Handle scanned QR code
+async function handleScannedQR(qrData) {
+    const statusDiv = document.getElementById('scanStatus');
+    statusDiv.textContent = "Processing QR code...";
+    statusDiv.className = "alert alert-info";
+    statusDiv.style.display = "block";
+    
+    try {
+        // Get current location
+        const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: true,
+                timeout: 10000
+            });
+        });
+        
+        // Prepare form data
+        document.getElementById('qrToken').value = qrData;
+        document.getElementById('latitude').value = position.coords.latitude;
+        document.getElementById('longitude').value = position.coords.longitude;
+        document.getElementById('deviceFp').value = generateDeviceFingerprint();
+        
+        // Submit via AJAX
+        const response = await fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: new FormData(document.getElementById('qrAttendanceForm'))
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            statusDiv.innerHTML = `
+                <i class="fas fa-check-circle mr-2"></i>
+                ${result.success}<br>
+                <small>Unit: ${result.unit} | Week: ${result.week}</small>
+            `;
+            statusDiv.className = "alert alert-success";
+            
+            // Stop camera after 3 seconds
+            setTimeout(() => {
+                const stream = document.getElementById('qrScanner').srcObject;
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+            }, 3000);
+        } else {
+            throw new Error(result.error || "Unknown error");
+        }
+    } catch (error) {
+        statusDiv.innerHTML = `
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            ${error.message}
+        `;
+        statusDiv.className = "alert alert-danger";
+        console.error("Submission error:", error);
+        
+        // Restart scanner after error
+        setTimeout(initializeQRScanner, 3000);
+    }
+}
+
+// Manual entry fallback
+document.getElementById('manualEntryBtn').addEventListener('click', function() {
+    const qrData = prompt("Enter the QR code manually:");
+    if (qrData) {
+        handleScannedQR(qrData);
+    }
+});
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initializeQRScanner();
+});
+</script>
+
+<style>
+#scannerOverlay {
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        transparent 35%,
+        rgba(0,0,0,0.5) 35%,
+        rgba(0,0,0,0.5) 65%,
+        transparent 65%,
+        transparent 100%
+    );
+    background-size: 100% 10px;
+}
+</style>
+{% endblock %}
