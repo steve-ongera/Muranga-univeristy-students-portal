@@ -2440,28 +2440,81 @@ def student_attendance_view(request):
     return render(request, 'attendance/student_units.html', context)
 
 
+@login_required
+def student_attendance_history(request, unit_allocation_id):
+    """View showing a student's attendance history for a specific unit"""
+    if request.session.get('user_type') != 'student':
+        return redirect('login')
+    
+    student_id = request.session.get('student_id')
+    
+    # Verify the student is enrolled in this unit
+    enrollment = get_object_or_404(
+        StudentEnrollment,
+        student_id=student_id,
+        programme_unit__unit_allocations__id=unit_allocation_id
+    )
+    
+    # Get the unit allocation and all attendance records
+    unit_allocation = get_object_or_404(
+        UnitAllocation,
+        id=unit_allocation_id,
+        programme_unit=enrollment.programme_unit
+    )
+    
+    # Get all attendance records with this student's attendance
+    attendance_records = AttendanceRecord.objects.filter(
+        unit_allocation=unit_allocation
+    ).order_by('week_number').prefetch_related(
+        Prefetch(
+            'student_attendances',
+            queryset=StudentAttendance.objects.filter(student_id=student_id)
+    )
+    )
+    
+    # Calculate attendance statistics
+    total_weeks = attendance_records.count()
+    present_count = sum(1 for r in attendance_records if r.student_attendances.all())
+    attendance_percentage = (present_count / total_weeks * 100) if total_weeks > 0 else 0
+    
+    context = {
+        'unit_allocation': unit_allocation,
+        'attendance_records': attendance_records,
+        'total_weeks': total_weeks,
+        'present_count': present_count,
+        'attendance_percentage': attendance_percentage,
+        'student': enrollment.student,
+    }
+    return render(request, 'attendance/student_history.html', context)
+
+
 
 @login_required
 def student_sign_attendance(request, unit_allocation_id):
-    """Student attendance signing for current week"""
+    """View for students to sign attendance for current week"""
     if request.session.get('user_type') != 'student':
         return redirect('login')
     
     student_id = request.session.get('student_id')
     current_semester = Semester.objects.filter(is_current=True).first()
     
-    # Verify enrollment
+    # Verify enrollment and get unit allocation
     enrollment = get_object_or_404(
         StudentEnrollment,
         student_id=student_id,
-        programme_unit__unit_allocation__id=unit_allocation_id,
+        programme_unit__unit_allocations__id=unit_allocation_id,
         semester=current_semester
     )
     
-    unit_allocation = enrollment.programme_unit.unit_allocation
-    current_week = current_semester.get_current_week()
+    unit_allocation = get_object_or_404(
+        UnitAllocation,
+        id=unit_allocation_id,
+        programme_unit=enrollment.programme_unit
+    )
     
-    # Handle POST request
+    current_week = current_semester.current_week if current_semester else 1
+    
+    # Handle form submission
     if request.method == 'POST':
         # Get or create attendance record
         record, created = AttendanceRecord.objects.get_or_create(
@@ -2473,31 +2526,30 @@ def student_sign_attendance(request, unit_allocation_id):
             }
         )
         
-        # Create attendance if not exists
-        StudentAttendance.objects.get_or_create(
+        # Create or update attendance
+        StudentAttendance.objects.update_or_create(
             attendance_record=record,
             student_id=student_id,
-            defaults={'is_present': True}
+            defaults={
+                'is_present': True,
+                'remarks': 'Signed by student'
+            }
         )
         
+        messages.success(request, "Attendance signed successfully!")
         return redirect('student_attendance_view')
     
     # Check if already signed
-    already_signed = False
-    current_week_record = AttendanceRecord.objects.filter(
+    already_signed = AttendanceRecord.objects.filter(
         unit_allocation=unit_allocation,
-        week_number=current_week
-    ).first()
-    
-    if current_week_record:
-        already_signed = StudentAttendance.objects.filter(
-            attendance_record=current_week_record,
-            student_id=student_id
-        ).exists()
+        week_number=current_week,
+        student_attendances__student_id=student_id
+    ).exists()
     
     context = {
         'unit_allocation': unit_allocation,
         'current_week': current_week,
         'already_signed': already_signed,
+        'student': enrollment.student,
     }
     return render(request, 'attendance/student_sign.html', context)

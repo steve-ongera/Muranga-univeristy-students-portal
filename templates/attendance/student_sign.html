@@ -1,67 +1,82 @@
 {% extends 'base/base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
-            <div class="card shadow">
+            <div class="card shadow-lg">
                 <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">
+                    <h4 class="mb-0 text-center">
                         <i class="fas fa-calendar-check mr-2"></i>
-                        Attendance Signing - Week {{ current_week }}
+                        Attendance Signing
                     </h4>
                 </div>
                 
                 <div class="card-body">
                     <div class="text-center mb-4">
-                        <h5>{{ unit_allocation.programme_unit.unit.code }} - {{ unit_allocation.programme_unit.unit.name }}</h5>
-                        <p class="text-muted">
+                        <h3>{{ unit_allocation.programme_unit.unit.code }}</h3>
+                        <h5>{{ unit_allocation.programme_unit.unit.name }}</h5>
+                        <p class="text-muted mb-1">
                             Lecturer: {{ unit_allocation.lecturer.get_full_name }}
                         </p>
+                        <p class="text-muted">
+                            Week {{ current_week }} • {{ unit_allocation.semester.name }}
+                        </p>
+                    </div>
+
+                    <div class="student-info mb-4 p-3 bg-light rounded">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <strong>Student:</strong> {{ student.get_full_name }}
+                            </div>
+                            <div>
+                                <strong>ID:</strong> {{ student.registration_number }}
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <strong>Date:</strong> {% now "F j, Y" %}
+                        </div>
                     </div>
 
                     {% if already_signed %}
                         <div class="alert alert-success text-center">
-                            <i class="fas fa-check-circle fa-2x mb-3"></i>
-                            <h5>You've already signed attendance for this week!</h5>
-                            <p class="mb-0">Signed on {{ current_week_record.date|date:"F j, Y" }}</p>
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <h4>Attendance Already Signed</h4>
+                            <p>You've already signed attendance for this week.</p>
+                            <a href="{% url 'student_attendance_view' %}" class="btn btn-primary">
+                                <i class="fas fa-arrow-left mr-2"></i> Back to My Units
+                            </a>
                         </div>
                     {% else %}
-                        <div class="text-center mb-4">
-                            <i class="fas fa-user-check fa-4x text-primary mb-3"></i>
-                            <h4>Confirm Your Attendance</h4>
-                            <p class="text-muted">
-                                You're signing attendance for Week {{ current_week }} of {{ current_semester.name }}
-                            </p>
-                        </div>
-
                         <form method="post" class="needs-validation" novalidate>
                             {% csrf_token %}
-                            <div class="form-group text-center">
-                                <div class="custom-control custom-checkbox mb-3">
-                                    <input type="checkbox" class="custom-control-input" id="confirmation" required>
-                                    <label class="custom-control-label" for="confirmation">
-                                        I confirm that I attended this class
-                                    </label>
-                                    <div class="invalid-feedback">
-                                        You must confirm your attendance
-                                    </div>
-                                </div>
-                                
+                            <div class="text-center mb-4">
+                                <img src="{% static 'img/sign-here.png' %}" alt="Sign Here" class="img-fluid mb-3" style="max-height: 150px;">
+                                <h4>Confirm Your Attendance</h4>
+                                <p class="text-muted">
+                                    By signing, you confirm your attendance for this class session.
+                                </p>
+                            </div>
+
+                            <div class="form-group form-check text-center">
+                                <input type="checkbox" class="form-check-input" id="attendanceConfirmation" required>
+                                <label class="form-check-label" for="attendanceConfirmation">
+                                    I confirm that I attended this class on {% now "F j, Y" %}
+                                </label>
+                            </div>
+
+                            <div class="text-center mt-4">
                                 <button type="submit" class="btn btn-primary btn-lg">
                                     <i class="fas fa-signature mr-2"></i>
                                     Sign Attendance
                                 </button>
+                                <a href="{% url 'student_attendance_view' %}" class="btn btn-outline-secondary ml-2">
+                                    Cancel
+                                </a>
                             </div>
                         </form>
                     {% endif %}
-                </div>
-
-                <div class="card-footer text-center">
-                    <a href="{% url 'student_attendance_view' %}" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left mr-2"></i>
-                        Back to My Courses
-                    </a>
                 </div>
             </div>
         </div>
@@ -75,16 +90,14 @@
 (function() {
     'use strict';
     window.addEventListener('load', function() {
-        var forms = document.getElementsByClassName('needs-validation');
-        Array.prototype.filter.call(forms, function(form) {
-            form.addEventListener('submit', function(event) {
-                if (form.checkValidity() === false) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
-                form.classList.add('was-validated');
-            }, false);
-        });
+        var form = document.querySelector('.needs-validation');
+        form.addEventListener('submit', function(event) {
+            if (form.checkValidity() === false) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
     }, false);
 })();
 </script>

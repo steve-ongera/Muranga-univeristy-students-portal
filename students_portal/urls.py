@@ -88,6 +88,10 @@ urlpatterns = [
           views.update_attendance,
           name='update_attendance'),
 
+     path('student/attendance/history/<int:unit_allocation_id>/',
+     views.student_attendance_history,
+     name='student_attendance_history'),
+
     
 
 ]
