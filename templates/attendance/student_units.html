@@ -1,22 +1,117 @@
 {% extends 'base/base.html' %}
 {% load attendance_tags %}
 
+{% block styles %}
+<style>
+    /* Custom Professional Styling */
+    .attendance-card {
+        border: none;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+    }
+    
+    .card-header-custom {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        color: white;
+        border-radius: 0.5rem 0.5rem 0 0 !important;
+        padding: 1.25rem 1.5rem;
+    }
+    
+    .table-custom {
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    .table-custom thead th {
+        background-color: #f8f9fc;
+        color: #4e73df;
+        font-weight: 600;
+        border: none;
+        padding: 1rem;
+    }
+    
+    .table-custom tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-top: 1px solid #f0f0f0;
+    }
+    
+    .table-custom tbody tr:hover {
+        background-color: rgba(78, 115, 223, 0.03);
+    }
+    
+    .progress-custom {
+        height: 1.5rem;
+        background-color: #f0f3f9;
+        border-radius: 1rem;
+    }
+    
+    .progress-bar-custom {
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1.5rem;
+    }
+    
+    .btn-action {
+        border-radius: 0.3rem;
+        font-size: 0.8rem;
+        padding: 0.35rem 0.75rem;
+        transition: all 0.2s;
+    }
+    
+    .btn-action:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .empty-state {
+        padding: 2rem;
+        text-align: center;
+        color: #6c757d;
+    }
+    
+    .empty-state i {
+        font-size: 2rem;
+        color: #e9ecef;
+        margin-bottom: 1rem;
+    }
+    
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50rem;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container">
-    <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex justify-content-between align-items-center">
-            <h4 class="m-0 font-weight-bold text-primary">My Units Attendance</h4>
-            <span class="badge badge-primary">Current Week: {{ current_week }}</span>
+<div class="container py-4">
+    <div class="card attendance-card">
+        <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="m-0 font-weight-bold">
+                    <i class="fas fa-calendar-check mr-2"></i>
+                    My Course Attendance
+                </h4>
+                <small class="font-weight-light">Overview of your attendance records</small>
+            </div>
+            <span class="badge badge-light">
+                <i class="fas fa-calendar-week mr-1"></i>
+                Week {{ current_week }}
+            </span>
         </div>
+        
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered table-hover">
-                    <thead class="thead-light">
+                <table class="table table-custom">
+                    <thead>
                         <tr>
                             <th>Unit Code</th>
-                            <th>Unit Name</th>
+                            <th>Course</th>
                             <th>Lecturer</th>
-                            <th>Attendance</th>
+                            <th>Attendance Progress</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -24,36 +119,48 @@
                         {% for enrollment in enrollments %}
                         {% for unit in enrollment.programme_unit.unit_allocations.all %}
                         <tr>
-                            <td>{{ enrollment.programme_unit.unit.code }}</td>
-                            <td>{{ enrollment.programme_unit.unit.name }}</td>
-                            <td>{{ unit.lecturer.get_full_name }}</td>
+                            <td class="font-weight-bold text-primary">
+                                {{ enrollment.programme_unit.unit.code }}
+                            </td>
                             <td>
+                                <div class="font-weight-bold">{{ enrollment.programme_unit.unit.name }}</div>
+                                <small class="text-muted">{{ unit.programme_unit.programme.name }}</small>
+                            </td>
+                            <td>
+                                <div>{{ unit.lecturer.get_full_name }}</div>
+                                <small class="text-muted">{{ unit.lecturer.department.name }}</small>
+                            </td>
+                            <td style="min-width: 200px;">
                                 {% with records=unit.attendance_records.all %}
-                                <div class="progress">
-                                    <div class="progress-bar bg-success" 
-                                         role="progressbar" 
-                                         style="width: {{ records|length|multiply:10 }}%" 
-                                         aria-valuenow="{{ records|length }}" 
-                                         aria-valuemin="0" 
-                                         aria-valuemax="10">
-                                        {{ records|length }}/10 weeks
+                                <div class="d-flex align-items-center">
+                                    <div class="progress progress-custom flex-grow-1 mr-2">
+                                        <div class="progress-bar progress-bar-custom bg-success" 
+                                             role="progressbar" 
+                                             style="width: {{ records|length|multiply:10 }}%" 
+                                             aria-valuenow="{{ records|length }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="10">
+                                        </div>
                                     </div>
+                                    <span class="font-weight-bold" style="min-width: 50px;">
+                                        {{ records|length }}/10
+                                    </span>
                                 </div>
                                 {% endwith %}
                             </td>
                             <td>
-                                <div class="btn-group" role="group">
+                                <div class="d-flex">
                                     <a href="{% url 'student_attendance_history' unit.id %}" 
-                                       class="btn btn-sm btn-info">
-                                        <i class="fas fa-history"></i> History
+                                       class="btn btn-action btn-info mr-2">
+                                        <i class="fas fa-history mr-1"></i> History
                                     </a>
                                     <a href="{% url 'student_sign_attendance' unit.id %}" 
-                                       class="btn btn-sm {% if enrollment|has_signed_current_week:current_week|add:','|add:unit.id %}btn-secondary{% else %}btn-success{% endif %}">
-                                        <i class="fas fa-{% if enrollment|has_signed_current_week:current_week|add:','|add:unit.id %}check{% else %}pen{% endif %}"></i>
+                                       class="btn btn-action {% if enrollment|has_signed_current_week:current_week|add:','|add:unit.id %}btn-outline-secondary{% else %}btn-success{% endif %}">
+                                        <i class="fas fa-{% if enrollment|has_signed_current_week:current_week|add:','|add:unit.id %}check{% else %}pen{% endif %} mr-1"></i>
                                         {% if enrollment|has_signed_current_week:current_week|add:','|add:unit.id %}
-                                        Signed (Week {{ current_week }})
+                                        Signed
                                         {% else %}
-                                        Sign Now
+                                        Sign In
                                         {% endif %}
                                     </a>
                                 </div>
@@ -61,12 +168,20 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="5" class="text-center">No unit allocations found</td>
+                            <td colspan="5" class="empty-state">
+                                <i class="fas fa-book-open"></i>
+                                <h5 class="mt-2">No unit allocations found</h5>
+                                <p class="text-muted">You haven't been assigned to any course sections yet</p>
+                            </td>
                         </tr>
                         {% endfor %}
                         {% empty %}
                         <tr>
-                            <td colspan="5" class="text-center">No enrolled units found</td>
+                            <td colspan="5" class="empty-state">
+                                <i class="fas fa-graduation-cap"></i>
+                                <h5 class="mt-2">No enrolled courses</h5>
+                                <p class="text-muted">You are not currently enrolled in any courses</p>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -75,4 +190,27 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Add animation to progress bars
+    $('.progress-bar').each(function() {
+        $(this).css('width', '0').animate({
+            width: $(this).attr('aria-valuenow') + '%'
+        }, 800);
+    });
+    
+    // Add hover effect to table rows
+    $('tbody tr').hover(
+        function() {
+            $(this).css('transform', 'translateX(5px)');
+        }, 
+        function() {
+            $(this).css('transform', 'translateX(0)');
+        }
+    );
+});
+</script>
 {% endblock %}
