@@ -491,55 +491,16 @@ def lecturer_dashboard(request):
         messages.error(request, "Lecturer profile not found. Please contact administration.")
         return redirect('login')
 
-def prepare_gender_data_by_academic_year(academic_year_id):
-    """Helper function to prepare gender distribution data for a specific academic year"""
-    try:
-        academic_year = AcademicYear.objects.get(id=academic_year_id)
-        
-        # Define gender mapping
-        GENDER_MAPPING = {
-            'M': 'Male',
-            'F': 'Female',
-            'O': 'Other'
-        }
-        
-        # Filter students admitted during this academic year
-        gender_counts = Student.objects.filter(
-            date_of_admission__gte=academic_year.start_date,
-            date_of_admission__lte=academic_year.end_date
-        ).values('gender').annotate(count=Count('id'))
-        
-        # Process results
-        if not gender_counts.exists():
-            gender_data = [
-                {'value': 0, 'name': 'Male'},
-                {'value': 0, 'name': 'Female'},
-                {'value': 0, 'name': 'Other'}
-            ]
-        else:
-            gender_data = []
-            for g in gender_counts:
-                gender_name = GENDER_MAPPING.get(g['gender'], 'Other')
-                gender_data.append({
-                    'value': g['count'],
-                    'name': gender_name
-                })
-        
-        # Ensure all gender categories are present
-        existing_genders = {g['name'] for g in gender_data}
-        for gender in ['Male', 'Female', 'Other']:
-            if gender not in existing_genders:
-                gender_data.append({'value': 0, 'name': gender})
-        
-        return gender_data
-        
-    except AcademicYear.DoesNotExist:
-        return [
-            {'value': 0, 'name': 'Male'},
-            {'value': 0, 'name': 'Female'},
-            {'value': 0, 'name': 'Other'}
-        ]
-
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+import json
+from datetime import datetime
+from .models import (
+    Student, Lecturer, Programme, AcademicYear,
+    StudentReporting, Department, Faculty
+)
 
 @require_GET
 def gender_distribution_api(request):
@@ -552,6 +513,28 @@ def gender_distribution_api(request):
         return JsonResponse({'error': 'Invalid academic year'}, status=400)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+def prepare_gender_data_by_academic_year(academic_year_id):
+    academic_year = AcademicYear.objects.get(id=academic_year_id)
+    
+    # Get students admitted during this academic year
+    students = Student.objects.filter(
+        date_of_admission__gte=academic_year.start_date,
+        date_of_admission__lte=academic_year.end_date
+    )
+    
+    # Count by gender
+    gender_counts = {
+        'M': students.filter(gender='M').count(),
+        'F': students.filter(gender='F').count(),
+        'O': students.filter(gender='O').count()
+    }
+    
+    return [
+        {'value': gender_counts['M'], 'name': 'Male'},
+        {'value': gender_counts['F'], 'name': 'Female'},
+        {'value': gender_counts['O'], 'name': 'Other'}
+    ]
 
 @login_required
 def admin_dashboard(request):
@@ -569,7 +552,7 @@ def admin_dashboard(request):
             date_of_admission__lte=academic_year.end_date
         ).count()
         
-        academic_year_labels.append(academic_year.name)  # e.g. "2021/2022"
+        academic_year_labels.append(academic_year.name)
         academic_year_data.append(count)
 
     # Student statistics
@@ -582,6 +565,8 @@ def admin_dashboard(request):
     
     # Programme statistics
     total_programmes = Programme.objects.count()
+    total_departments = Department.objects.count()
+    total_faculties = Faculty.objects.count()
     
     # Latest students and lecturers
     latest_students = Student.objects.order_by('-created_at')[:8]
@@ -599,11 +584,7 @@ def admin_dashboard(request):
     # Prepare gender data for current academic year
     gender_data = prepare_gender_data_by_academic_year(current_academic_year.id) if current_academic_year else []
     
-    # Prepare data for charts
-    admission_year_labels = []
-    admission_year_data = []
-    
-    # Student population trend (last 5 years)
+    # Prepare student population trend data
     current_year = datetime.now().year
     year_range = range(current_year - 4, current_year + 1)
     population_trend_labels = list(year_range)
@@ -614,6 +595,13 @@ def admin_dashboard(request):
             date_of_admission__year__lte=year
         ).count()
         population_trend_data.append(count)
+    
+    # Prepare reporting statistics
+    reporting_stats = {
+        'reported': StudentReporting.objects.filter(reporting_status='reported').count(),
+        'not_reported': StudentReporting.objects.filter(reporting_status='not_reported').count(),
+        'deferred': StudentReporting.objects.filter(reporting_status='deferred').count(),
+    }
     
     context = {
         'page_title': 'Admin Dashboard',
@@ -626,6 +614,8 @@ def admin_dashboard(request):
         'total_lecturers': total_lecturers,
         'active_lecturers': active_lecturers,
         'total_programmes': total_programmes,
+        'total_departments': total_departments,
+        'total_faculties': total_faculties,
         
         # Latest records
         'latest_students': latest_students,
@@ -634,11 +624,10 @@ def admin_dashboard(request):
         # Chart data
         'academic_year_labels': json.dumps(academic_year_labels),
         'academic_year_data': json.dumps(academic_year_data),
-        'admission_year_labels': json.dumps(admission_year_labels),
-        'admission_year_data': json.dumps(admission_year_data),
         'population_trend_labels': json.dumps(population_trend_labels),
         'population_trend_data': json.dumps(population_trend_data),
         'gender_data': json.dumps(gender_data),
+        'reporting_stats': json.dumps(reporting_stats),
         
         # Academic year filter
         'academic_year_choices': academic_year_choices,

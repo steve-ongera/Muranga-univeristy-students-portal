@@ -4,65 +4,119 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 
 <style>
+  /* Existing styles */
   .image-container {
     position: relative;
-}
+  }
 
-.icon-edit, .icon-delete {
-    font-size: 1.2rem;  /* Smaller size for both icons */
+  .icon-edit, .icon-delete {
+    font-size: 1.2rem;
     cursor: pointer;
-}
+  }
 
-.icon-edit {
+  .icon-edit {
     position: absolute;
-    top: 5px;    /* Adjusted top value to give space from the top */
-    right: 5px;  /* Adjusted right value to place it near the edge */
+    top: 5px;
+    right: 5px;
     padding: 5px;
-}
+  }
 
-.icon-delete {
+  .icon-delete {
     position: absolute;
-    top: 30px;   /* Move the trash icon below the pencil icon */
-    right: 5px;  /* Same right value for consistent alignment */
+    top: 30px;
+    right: 5px;
     padding: 5px;
-}
+  }
 
-.activity-wrapper {
-  overflow-x: auto; /* Allow horizontal scrolling */
-  -webkit-overflow-scrolling: touch; /* For smoother scrolling on mobile */
-  width: 100%; /* Ensure full width */
-}
+  .activity-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
 
-.activity {
-  display: flex; /* Align activity items horizontally */
-  flex-direction: column; /* Arrange the items in a column */
-  min-width: 100%; /* Ensure the content fits within the width */
-}
+  .activity {
+    display: flex;
+    flex-direction: column;
+    min-width: 100%;
+  }
 
-.activity-item {
-  display: flex;
-  align-items: center;
-  margin: 5px 0; /* Space between activity items */
-  min-width: 300px; /* Set minimum width for items */
-  white-space: nowrap; /* Prevent text from wrapping */
-  overflow: hidden; /* Hide overflowing text */
-}
+  .activity-item {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+    min-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+  }
 
-.activity-item .activity-content {
-  text-overflow: ellipsis; /* Ensure overflowing text is truncated */
-  max-width: calc(100% - 50px); /* Adjust based on content width */
-}
+  .activity-item .activity-content {
+    text-overflow: ellipsis;
+    max-width: calc(100% - 50px);
+  }
 
-.activity-item .activite-label {
-  width: 100px; /* Set a fixed width for the label */
-}
+  .activity-item .activite-label {
+    width: 100px;
+  }
 
-.activity-item .activity-badge {
-  margin-left: 10px; /* Add space between the badge and content */
-}
+  .activity-item .activity-badge {
+    margin-left: 10px;
+  }
 
+  /* Muranga University Theme */
+  :root {
+    --muranga-primary: #4CAF50;
+    --muranga-secondary: #2E7D32;
+    --muranga-accent: #8BC34A;
+    --muranga-light: #E8F5E9;
+    --muranga-dark: #1B5E20;
+  }
 
+  .card {
+    border-left: 4px solid var(--muranga-primary);
+    transition: transform 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
 
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+  }
+
+  .info-card .card-icon {
+    background-color: var(--muranga-primary);
+  }
+
+  .info-card h6 {
+    color: var(--muranga-dark);
+    font-size: 1.4rem;
+  }
+
+  .chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+  }
+
+  .bg-warning {
+    background-color: var(--muranga-accent) !important;
+  }
+
+  .text-success {
+    color: var(--muranga-primary) !important;
+  }
+
+  .table th {
+    background-color: var(--muranga-light);
+    color: var(--muranga-dark);
+  }
+
+  .dropdown-menu {
+    border: 1px solid var(--muranga-primary);
+  }
+
+  .dropdown-item:hover {
+    background-color: var(--muranga-light);
+  }
 </style>
 
 <div class="message-container" id="system-messages">
@@ -74,7 +128,6 @@
   {% endfor %}
 </div>
 
-
 <div class="pagetitle">
     <h1>Dashboard</h1>
     <nav>
@@ -84,25 +137,18 @@
         <li class="breadcrumb-item"> {{ request.user.username }}</li>
       </ol>
     </nav>
-  </div><!-- End Page Title -->
+</div><!-- End Page Title -->
 
-  <section class="section dashboard">
+<section class="section dashboard">
     <div class="row">
-
-
       <!-- Left side columns -->
       <div class="col-lg-8">
         <div class="row">
-
           <!-- Sales Card -->
           <div class="col-xxl-4 col-md-6">
             <div class="card info-card sales-card">
-
-
-
               <div class="card-body">
-                <h5 class="card-title">Students </h5>
-
+                <h5 class="card-title">Students</h5>
                 <div class="d-flex align-items-center">
                   <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
                     <i class="bi bi-mortarboard"></i>
@@ -110,96 +156,68 @@
                   <div class="ps-3">
                     <h6>{{ total_students }}</h6>
                     <span class="text-success small pt-1 fw-bold"></span> <span class="text-muted small pt-2 ps-1"></span>
-
                   </div>
                 </div>
               </div>
-
             </div>
           </div><!-- End Sales Card -->
 
           <!-- Revenue Card -->
           <div class="col-xxl-4 col-md-6">
             <div class="card info-card revenue-card">
-
-             
               <div class="card-body">
-                <h5 class="card-title">Active Students </h5>
-
+                <h5 class="card-title">Active Students</h5>
                 <div class="d-flex align-items-center">
                   <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
                     <i class="bi bi-person"></i>
                   </div>
                   <div class="ps-3">
                     <h6>{{ active_students }}</h6>
-                    
-                  
-                   
                   </div>
                 </div>
               </div>
-
             </div>
           </div><!-- End Revenue Card -->
 
-         <!-- Randomized Patients -->
+          <!-- Randomized Patients -->
           <div class="col-xxl-4 col-md-6">
             <div class="card info-card revenue-card">
-
-              
               <div class="card-body">
                 <h5 class="card-title">Lecturers</h5>
-
                 <div class="d-flex align-items-center">
                   <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
                     <i class="bi bi-person-check text-white"></i>
                   </div>
                   <div class="ps-3">
                     <h6>{{ total_lecturers }}</h6>
-                    
-
                   </div>
                 </div>
               </div>
-
             </div>
           </div><!-- End Revenue Card -->
-
 
           <!-- UnRandomized Patients -->
           <div class="col-xxl-6 col-md-6">
             <div class="card info-card revenue-card">
-
-              
-
               <div class="card-body">
                 <h5 class="card-title">Programmes</h5>
-
                 <div class="d-flex align-items-center">
-                  <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-warning" >
+                  <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-warning">
                     <i class="bi bi-person-dash text-white"></i>
                   </div>
                   <div class="ps-3">
                     <h6>{{ total_programmes }}</h6>
-                    
                   </div>
                 </div>
               </div>
-
             </div>
           </div><!-- End Unrandomized Card -->
 
-         
           <!-- Customers Card -->
           <div class="col-xxl-6 col-xl-12">
-
             <div class="card info-card customers-card">
-
-              
-
               <div class="card-body">
-                <h5 class="card-title">Employyes </h5>
-
+                <h5 class="card-title">Employees</h5>
                 <div class="d-flex align-items-center">
                   <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
                     <i class="bi bi-people"></i>
@@ -207,14 +225,11 @@
                   <div class="ps-3">
                     <h6>89</h6>
                     <span class="text-danger small pt-1 fw-bold"></span> <span class="text-muted small pt-2 ps-1"></span>
-
                   </div>
                 </div>
-
               </div>
             </div>
-
-          </div><!-- End summary  Card -->
+          </div><!-- End summary Card -->
 
           <div class="col-12">
             <div class="card">
@@ -231,126 +246,30 @@
         
                 <div class="card-body">
                     <h5 class="card-title">Student Admission by Academic Year</h5>
-                    
                     <div class="chart-container" style="position: relative; height:300px; width:100%">
                         <canvas id="academicYearChart"></canvas>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            // Get the chart data from Django template
-            const academicYearLabels = JSON.parse('{{ academic_year_labels|escapejs }}');
-            const academicYearData = JSON.parse('{{ academic_year_data|escapejs }}');
-            
-            // Initialize chart
-            const ctx = document.getElementById('academicYearChart').getContext('2d');
-            const academicYearChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: academicYearLabels,
-                    datasets: [{
-                        label: 'Number of Students',
-                        data: academicYearData,
-                        backgroundColor: 'rgba(75, 192, 192, 0.7)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Number of Students'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Academic Year'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.dataset.label}: ${context.raw}`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        
-            // Set up filter click handlers
-            document.querySelectorAll('.filter-admission').forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    // Remove active class from all filters
-                    document.querySelectorAll('.filter-admission').forEach(el => {
-                        el.classList.remove('active');
-                    });
-                    // Add active class to clicked filter
-                    this.classList.add('active');
-                    
-                    const filterType = this.getAttribute('data-filter');
-                    
-                    if (filterType === 'recent') {
-                        // Show only last 3 academic years
-                        const recentLabels = academicYearLabels.slice(-3);
-                        const recentData = academicYearData.slice(-3);
-                        academicYearChart.data.labels = recentLabels;
-                        academicYearChart.data.datasets[0].data = recentData;
-                    } else {
-                        // Show all academic years
-                        academicYearChart.data.labels = academicYearLabels;
-                        academicYearChart.data.datasets[0].data = academicYearData;
-                    }
-                    
-                    academicYearChart.update();
-                });
-            });
-        });
-        </script>
-            
-
-         
-          
-             
+          </div>
 
           <!-- Recent Sales -->
           <div class="col-12">
             <div class="card recent-sales overflow-auto">
-
               <div class="filter">
                 <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
                 <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                   <li class="dropdown-header text-start">
                     <h6>Filter</h6>
                   </li>
-
                   <li><a class="dropdown-item" href="#">Today</a></li>
                   <li><a class="dropdown-item" href="#">This Month</a></li>
                   <li><a class="dropdown-item" href="#">This Year</a></li>
                 </ul>
               </div>
               
-            
               <div class="card-body">
                 <h5 class="card-title">Latest Students Added<span>| Today</span></h5>
-
                 <table class="table table-bordered">
                   <thead>
                     <tr>
@@ -362,36 +281,28 @@
                   </thead>
                   <tbody>
                     {% for student in latest_students %}
-                                <tr>
-                                    <td>{{ student.registration_number }}</td>
-                                    <td>{{ student.get_full_name }}</td>
-                                    <td>{{ student.programme.code }}</td>
-                                    <td>{{ student.created_at|date:"Y-m-d" }}</td>
-                                </tr>
-                      {% endfor %}
-                            
+                      <tr>
+                          <td>{{ student.registration_number }}</td>
+                          <td>{{ student.get_full_name }}</td>
+                          <td>{{ student.programme.code }}</td>
+                          <td>{{ student.created_at|date:"Y-m-d" }}</td>
+                      </tr>
+                    {% endfor %}
                   </tbody>
                 </table>
-
               </div>
-
             </div>
           </div>
           
-        
-          <!-- End county ranking-->
-
           <!-- Top 10 Students -->
           <div class="col-12">
             <div class="card top-selling overflow-auto">
-
               <div class="filter">
                 <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
                 <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                   <li class="dropdown-header text-start">
                     <h6>Filter</h6>
                   </li>
-
                   <li><a class="dropdown-item" href="#">Today</a></li>
                   <li><a class="dropdown-item" href="#">This Month</a></li>
                   <li><a class="dropdown-item" href="#">This Year</a></li>
@@ -400,7 +311,6 @@
 
               <div class="card-body pb-0">
                 <h5 class="card-title">Latest Lecturers Added <span>| Today</span></h5>
-
                 <table class="table table-bordered">
                   <thead>
                     <tr>
@@ -411,29 +321,24 @@
                     </tr>
                   </thead>
                   <tbody>
-                    
                     {% for lecturer in latest_lecturers %}
-                                <tr>
-                                    <td>{{ lecturer.staff_id }}</td>
-                                    <td>{{ lecturer.get_full_name }}</td>
-                                    <td>{{ lecturer.department.code }}</td>
-                                    <td>{{ lecturer.created_at|date:"Y-m-d" }}</td>
-                                </tr>
-                     {% endfor %}
+                      <tr>
+                          <td>{{ lecturer.staff_id }}</td>
+                          <td>{{ lecturer.get_full_name }}</td>
+                          <td>{{ lecturer.department.code }}</td>
+                          <td>{{ lecturer.created_at|date:"Y-m-d" }}</td>
+                      </tr>
+                    {% endfor %}
                   </tbody>
                 </table>
-
               </div>
-
             </div>
           </div><!-- End Top Selling -->
-
         </div>
       </div><!-- End Left side columns -->
 
       <!-- Right side columns -->
       <div class="col-lg-4">
-
         <!-- Recent Activity -->
         <div class="card">
           <div class="filter">
@@ -442,7 +347,6 @@
               <li class="dropdown-header text-start">
                 <h6>Filter</h6>
               </li>
-
               <li><a class="dropdown-item" href="#">Today</a></li>
               <li><a class="dropdown-item" href="#">This Month</a></li>
               <li><a class="dropdown-item" href="#">This Year</a></li>
@@ -451,7 +355,6 @@
 
           <div class="card-body">
             <h5 class="card-title">Recent Activity <span>| Today</span></h5>
-
             <div class="activity-wrapper">
               <div class="activity">
                 {% for activity in recent_activities %}
@@ -465,16 +368,10 @@
                 {% endfor %}
               </div>
             </div>
-            
-
-            
           </div>
         </div><!-- End Recent Activity -->
 
-        
-
         <!-- Gender Population Analysis -->
-         
         <div class="card-body">
             <div class="card">
                 <div class="filter">
@@ -494,119 +391,12 @@
                     </ul>
                 </div>
 
-                 <div class="card-body pb-0">
-                        <h5 class="card-title">Gender Distribution <span>| {{ current_academic_year_display }}</span></h5>
-                        <div id="genderDonutChart" style="min-height: 400px; width: 100%;"></div>
-                        
-                        <script>
-                            document.addEventListener("DOMContentLoaded", () => {
-                                // Initialize the chart container
-                                const chartDom = document.getElementById('genderDonutChart');
-                                
-                                // Check if ECharts is loaded
-                                if (typeof echarts === 'undefined') {
-                                    chartDom.innerHTML = '<div class="alert alert-danger">ECharts library not loaded</div>';
-                                    return;
-                                }
-                                
-                                let genderChart = echarts.init(chartDom);
-                                
-                                // Load initial data
-                                try {
-                                    const initialData = JSON.parse('{{ gender_data|escapejs }}');
-                                    renderGenderChart(genderChart, initialData);
-                                } catch (e) {
-                                    console.error('Error parsing initial data:', e);
-                                    chartDom.innerHTML = '<div class="alert alert-danger">Error loading initial data</div>';
-                                    return;
-                                }
-                                
-                                // Set up year filter click handlers
-                                document.querySelectorAll('.filter-year').forEach(item => {
-                                    item.addEventListener('click', function(e) {
-                                        e.preventDefault();
-                                        const yearId = this.getAttribute('data-year');
-                                        updateGenderChart(yearId);
-                                    });
-                                });
-                                
-                                // Handle window resize
-                                window.addEventListener('resize', function() {
-                                    genderChart.resize();
-                                });
-                                
-                                // Function to update chart with new data
-                                function updateGenderChart(yearId) {
-                                    fetch(`/api/gender-distribution/?academic_year=${yearId}`)
-                                        .then(response => {
-                                            if (!response.ok) throw new Error('Network response was not ok');
-                                            return response.json();
-                                        })
-                                        .then(data => {
-                                            if (data && data.length > 0) {
-                                                renderGenderChart(genderChart, data);
-                                                // Update the title
-                                                const selectedYear = document.querySelector(`.filter-year[data-year="${yearId}"]`).textContent;
-                                                document.querySelector('.card-title span').textContent = `| ${selectedYear}`;
-                                            } else {
-                                                throw new Error('No data available');
-                                            }
-                                        })
-                                        .catch(error => {
-                                            console.error('Error:', error);
-                                            renderGenderChart(genderChart, [
-                                                {value: 0, name: 'Male'},
-                                                {value: 0, name: 'Female'},
-                                                {value: 0, name: 'Other'}
-                                            ]);
-                                        });
-                                }
-                                
-                                // Function to render the chart
-                                function renderGenderChart(chart, data) {
-                                    const option = {
-                                        tooltip: {
-                                            trigger: 'item',
-                                            formatter: '{a} <br/>{b}: {c} ({d}%)'
-                                        },
-                                        legend: {
-                                            orient: 'vertical',
-                                            left: 10,
-                                            data: data.map(item => item.name)
-                                        },
-                                        series: [{
-                                            name: 'Gender Distribution',
-                                            type: 'pie',
-                                            radius: ['50%', '70%'],
-                                            center: ['50%', '50%'],
-                                            data: data,
-                                            emphasis: {
-                                                itemStyle: {
-                                                    shadowBlur: 10,
-                                                    shadowOffsetX: 0,
-                                                    shadowColor: 'rgba(0, 0, 0, 0.5)'
-                                                }
-                                            },
-                                            itemStyle: {
-                                                borderRadius: 10,
-                                                borderColor: '#fff',
-                                                borderWidth: 2
-                                            },
-                                            label: {
-                                                show: true,
-                                                formatter: '{b}: {c} ({d}%)'
-                                            }
-                                        }]
-                                    };
-                                    
-                                    chart.setOption(option);
-                                }
-                            });
-                        </script>
-                    </div>
+                <div class="card-body pb-0">
+                    <h5 class="card-title">Gender Distribution <span>| {{ current_academic_year_display }}</span></h5>
+                    <div id="genderDonutChart" style="min-height: 400px; width: 100%;"></div>
                 </div>
+            </div>
         </div>
-
 
         <div class="card">
           <div class="filter">
@@ -623,49 +413,11 @@
         
           <div class="card-body pb-0">
             <h5 class="card-title">Student Admission by Year <span>| All Time</span></h5>
-        
             <div id="studentYearlyDonutChart" style="min-height: 400px;" class="echart"></div>
-        
-            <script>
-                document.addEventListener("DOMContentLoaded", () => {
-                    const yearlyData = JSON.parse('{{ student_yearly_data|safe }}');
-                    
-                    echarts.init(document.querySelector("#studentYearlyDonutChart")).setOption({
-                        tooltip: {
-                            trigger: 'item'
-                        },
-                        legend: {
-                            top: '5%',
-                            left: 'center'
-                        },
-                        series: [{
-                            name: 'Students by Year',
-                            type: 'pie',
-                            radius: ['40%', '70%'],
-                            avoidLabelOverlap: false,
-                            label: {
-                                show: false,
-                                position: 'center'
-                            },
-                            emphasis: {
-                                label: {
-                                    show: true,
-                                    fontSize: '18',
-                                    fontWeight: 'bold'
-                                }
-                            },
-                            labelLine: {
-                                show: false
-                            },
-                            data: yearlyData
-                        }]
-                    });
-                });
-            </script>
+          </div>
         </div>
-      </div>
 
-        <!-- News & Updates  -->
+        <!-- News & Updates -->
         <div class="card">
           <div class="filter">
             <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
@@ -673,7 +425,6 @@
               <li class="dropdown-header text-start">
                 <h6>Filter</h6>
               </li>
-
               <li><a class="dropdown-item" href="#">Today</a></li>
               <li><a class="dropdown-item" href="#">This Month</a></li>
               <li><a class="dropdown-item" href="#">This Year</a></li>
@@ -682,20 +433,14 @@
 
           <div class="card-body pb-0">
             <h5 class="card-title">News &amp; Updates <span>| Today</span></h5>
-            
             <div class="news">
-              
-              
               {% for news in news_updates %}
               <div class="post-item clearfix">
                 {% if news.image %}
                   <div class="image-container position-relative">
                     <img src="{{ news.image.url }}" alt="" class="img-fluid">
-                    
-                    <!-- Edit and Delete Icons -->
                     {% if news.created_by == request.user %}
-                      
-                      <a href="{% url 'news_delete' news.pk %}" class="icon-delete " style="font-size: 1.1rem;">
+                      <a href="{% url 'news_delete' news.pk %}" class="icon-delete" style="font-size: 1.1rem;">
                         <i class="bi bi-trash"></i>
                       </a>
                     {% endif %}
@@ -709,50 +454,272 @@
                 {% endif %}
                 <p>{{ news.description|truncatechars:100 }}</p>
               </div>
-            {% endfor %}
-            
-
-
-            </div><!-- End sidebar recent posts-->
-
+              {% endfor %}
+            </div>
           </div>
         </div><!-- End News & Updates -->
-
       </div><!-- End Right side columns -->
-
     </div>
-  </section>
-
-</div>
+</section>
 
 <!-- Chart.js Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+
 <script>
-    // Admission by Year Chart
-    const admissionCtx = document.getElementById('admissionYearChart').getContext('2d');
-    new Chart(admissionCtx, {
+// Academic Year Chart
+document.addEventListener("DOMContentLoaded", () => {
+    const academicYearLabels = JSON.parse('{{ academic_year_labels|escapejs }}');
+    const academicYearData = JSON.parse('{{ academic_year_data|escapejs }}');
+    
+    const ctx = document.getElementById('academicYearChart').getContext('2d');
+    const academicYearChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: JSON.parse('{{ admission_year_labels|escapejs }}'),
+            labels: academicYearLabels,
             datasets: [{
-                label: 'Students Admitted',
-                data: JSON.parse('{{ admission_year_data|escapejs }}'),
-                backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                borderColor: 'rgba(54, 162, 235, 1)',
+                label: 'Number of Students',
+                data: academicYearData,
+                backgroundColor: 'rgba(76, 175, 80, 0.7)',
+                borderColor: 'rgba(76, 175, 80, 1)',
                 borderWidth: 1
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             scales: {
                 y: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Number of Students',
+                        color: '#666'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Academic Year',
+                        color: '#666'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: 'rgba(76, 175, 80, 1)',
+                    borderWidth: 1,
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.dataset.label}: ${context.raw}`;
+                        }
+                    }
                 }
             }
         }
     });
 
-    // Population Trend Chart
+    // Filter handlers
+    document.querySelectorAll('.filter-admission').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelectorAll('.filter-admission').forEach(el => {
+                el.classList.remove('active');
+            });
+            this.classList.add('active');
+            
+            const filterType = this.getAttribute('data-filter');
+            if (filterType === 'recent') {
+                academicYearChart.data.labels = academicYearLabels.slice(-3);
+                academicYearChart.data.datasets[0].data = academicYearData.slice(-3);
+            } else {
+                academicYearChart.data.labels = academicYearLabels;
+                academicYearChart.data.datasets[0].data = academicYearData;
+            }
+            academicYearChart.update();
+        });
+    });
+});
+
+// Gender Distribution Chart
+document.addEventListener("DOMContentLoaded", () => {
+    const chartDom = document.getElementById('genderDonutChart');
+    let genderChart = echarts.init(chartDom);
+    
+    try {
+        const initialData = JSON.parse('{{ gender_data|escapejs }}');
+        renderGenderChart(genderChart, initialData);
+    } catch (e) {
+        console.error('Error parsing initial data:', e);
+        chartDom.innerHTML = '<div class="alert alert-danger">Error loading initial data</div>';
+        return;
+    }
+    
+    document.querySelectorAll('.filter-year').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const yearId = this.getAttribute('data-year');
+            updateGenderChart(yearId);
+        });
+    });
+    
+    window.addEventListener('resize', function() {
+        genderChart.resize();
+    });
+    
+    function updateGenderChart(yearId) {
+        fetch(`/api/gender-distribution/?academic_year=${yearId}`)
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.length > 0) {
+                    renderGenderChart(genderChart, data);
+                    const selectedYear = document.querySelector(`.filter-year[data-year="${yearId}"]`).textContent;
+                    document.querySelector('.card-title span').textContent = `| ${selectedYear}`;
+                } else {
+                    throw new Error('No data available');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                renderGenderChart(genderChart, [
+                    {value: 0, name: 'Male'},
+                    {value: 0, name: 'Female'},
+                    {value: 0, name: 'Other'}
+                ]);
+            });
+    }
+    
+    function renderGenderChart(chart, data) {
+        const option = {
+            tooltip: {
+                trigger: 'item',
+                formatter: '{a} <br/>{b}: {c} ({d}%)',
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                borderColor: 'rgba(76, 175, 80, 1)',
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            legend: {
+                orient: 'vertical',
+                left: 10,
+                textStyle: {
+                    color: '#666'
+                }
+            },
+            series: [{
+                name: 'Gender Distribution',
+                type: 'pie',
+                radius: ['50%', '70%'],
+                center: ['50%', '50%'],
+                data: data,
+                emphasis: {
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
+                },
+                itemStyle: {
+                    borderRadius: 10,
+                    borderColor: '#fff',
+                    borderWidth: 2,
+                    color: function(params) {
+                        const colorList = [
+                            'rgba(76, 175, 80, 0.8)',
+                            'rgba(139, 195, 74, 0.8)',
+                            'rgba(205, 220, 57, 0.8)'
+                        ];
+                        return colorList[params.dataIndex];
+                    }
+                },
+                label: {
+                    show: true,
+                    formatter: '{b}: {c} ({d}%)',
+                    color: '#333'
+                }
+            }]
+        };
+        chart.setOption(option);
+    }
+});
+
+// Student Yearly Donut Chart
+document.addEventListener("DOMContentLoaded", () => {
+    const yearlyData = JSON.parse('{{ student_yearly_data|safe }}');
+    echarts.init(document.querySelector("#studentYearlyDonutChart")).setOption({
+        tooltip: {
+            trigger: 'item',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            borderColor: 'rgba(76, 175, 80, 1)',
+            textStyle: {
+                color: '#fff'
+            }
+        },
+        legend: {
+            top: '5%',
+            left: 'center',
+            textStyle: {
+                color: '#666'
+            }
+        },
+        series: [{
+            name: 'Students by Year',
+            type: 'pie',
+            radius: ['40%', '70%'],
+            avoidLabelOverlap: false,
+            itemStyle: {
+                borderRadius: 10,
+                borderColor: '#fff',
+                borderWidth: 2,
+                color: function(params) {
+                    const colors = [
+                        'rgba(46, 125, 50, 0.8)',
+                        'rgba(76, 175, 80, 0.8)',
+                        'rgba(139, 195, 74, 0.8)',
+                        'rgba(205, 220, 57, 0.8)',
+                        'rgba(67, 160, 71, 0.8)'
+                    ];
+                    return colors[params.dataIndex % colors.length];
+                }
+            },
+            label: {
+                show: false,
+                position: 'center'
+            },
+            emphasis: {
+                label: {
+                    show: true,
+                    fontSize: '18',
+                    fontWeight: 'bold',
+                    color: '#333'
+                }
+            },
+            labelLine: {
+                show: false
+            },
+            data: yearlyData
+        }]
+    });
+});
+
+// Population Trend Chart
+document.addEventListener("DOMContentLoaded", () => {
     const trendCtx = document.getElementById('populationTrendChart').getContext('2d');
     new Chart(trendCtx, {
         type: 'line',
@@ -761,23 +728,55 @@
             datasets: [{
                 label: 'Total Students',
                 data: JSON.parse('{{ population_trend_data|escapejs }}'),
-                fill: false,
-                backgroundColor: 'rgba(75, 192, 192, 0.7)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                tension: 0.1
+                fill: true,
+                backgroundColor: 'rgba(139, 195, 74, 0.2)',
+                borderColor: 'rgba(76, 175, 80, 1)',
+                borderWidth: 2,
+                tension: 0.3,
+                pointBackgroundColor: 'rgba(46, 125, 50, 1)',
+                pointRadius: 4,
+                pointHoverRadius: 6
             }]
         },
         options: {
             responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: 'rgba(76, 175, 80, 1)',
+                    borderWidth: 1
+                }
+            },
             scales: {
                 y: {
-                    beginAtZero: true
+                    beginAtZero: false,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Total Students',
+                        color: '#666'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Year',
+                        color: '#666'
+                    }
                 }
             }
         }
     });
+});
 </script>
-
-<!-- In your base template's head section -->
-<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 {% endblock %}

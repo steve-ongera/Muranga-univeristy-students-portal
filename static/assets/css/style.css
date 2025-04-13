@@ -3,48 +3,26 @@
 /*--------------------------------------------------------------
 # General
 --------------------------------------------------------------*/
-/* 01: root */
-:root {
-  --color-primary: #213373;
-  --color-secondary: #1B85FB;
-  --color-tab: #ED1E24;
-  --color-white: #fff;
-  --color-light: #D3D3D3;
-  --color-light-green: rgba(65, 191, 115, .16);
-  --color-light-blue: rgba(64, 142, 239, .16);
-  --color-light-gray: #D6D6D6;
-  --color-black: #000000;
-  --color-dark: rgba(0,0,0,.6);
-  --color-light-header: #F8F9FA;
-  --color-border: #dee2e6;
-  --color-link-dark: #707070;
-  --color-border-dropdown: rgb(0 0 0 / 18%);
-  --color-notify-purple: #6D65F8;
-  --color-notify-aqua: #23C4F9;
-  --color-notify-green: #1EAD95;
-  --color-notify-pink: #EB86ED;
-  --box-shadow-btn: 0 1rem 2rem rgba(0,0,0,.175);
-  --transition: all 400ms ease;
-  --color-primary-rgba: rgb(13 110 253 / 25%);
-}
 
 :root {
   scroll-behavior: smooth;
 }
 
 body {
-  font-family: "Open Sans", sans-serif;
-  background: #f6f9ff;
-  color: #444444;
+  font-family: "Poppins", sans-serif; /* More modern font */
+  background: #f8fafc; /* Lighter background */
+  color: #1e293b; /* Darker text for better contrast */
+  line-height: 1.6;
 }
 
 a {
-  color: #4154f1;
+  color: #4CAF50; /* Muranga primary green */
   text-decoration: none;
+  transition: color 0.2s ease;
 }
 
 a:hover {
-  color: #717ff5;
+  color: #8BC34A; /* Muranga accent light green */
   text-decoration: none;
 }
 
@@ -83,7 +61,7 @@ h6 {
   font-size: 24px;
   margin-bottom: 0;
   font-weight: 600;
-  color: #012970;
+  color: #2E7D32; /* Muranga University dark green */
 }
 
 /*--------------------------------------------------------------
@@ -96,7 +74,7 @@ h6 {
   right: 15px;
   bottom: 15px;
   z-index: 99999;
-  background: #4154f1;
+  background: #4CAF50; /* Muranga primary green */
   width: 40px;
   height: 40px;
   border-radius: 4px;
@@ -110,7 +88,7 @@ h6 {
 }
 
 .back-to-top:hover {
-  background: #6776f4;
+  background: #8BC34A; /* Muranga accent light green */
   color: #fff;
 }
 
@@ -129,8 +107,8 @@ h6 {
   animation-name: dropdown-animate;
   animation-duration: 0.2s;
   animation-fill-mode: both;
-  border: 0;
-  box-shadow: 0 5px 30px 0 rgba(82, 63, 105, 0.2);
+  border: 1px solid #E8F5E9; /* Muranga light green border */
+  box-shadow: 0 5px 30px 0 rgba(46, 125, 50, 0.1); /* Green tinted shadow */
 }
 
 .dropdown-menu .dropdown-header,
@@ -138,19 +116,21 @@ h6 {
   text-align: center;
   font-size: 15px;
   padding: 10px 25px;
+  background-color: #E8F5E9; /* Muranga light green */
 }
 
 .dropdown-menu .dropdown-footer a {
-  color: #444444;
+  color: #2E7D32; /* Muranga dark green */
   text-decoration: underline;
 }
 
 .dropdown-menu .dropdown-footer a:hover {
   text-decoration: none;
+  color: #4CAF50; /* Muranga primary green */
 }
 
 .dropdown-menu .dropdown-divider {
-  color: #a5c5fe;
+  border-color: #A5D6A7; /* Muranga light green divider */
   margin: 0;
 }
 
@@ -158,16 +138,19 @@ h6 {
   font-size: 14px;
   padding: 10px 15px;
   transition: 0.3s;
+  color: #1B5E20; /* Dark green text */
 }
 
 .dropdown-menu .dropdown-item i {
   margin-right: 10px;
   font-size: 18px;
   line-height: 0;
+  color: #4CAF50; /* Primary green icons */
 }
 
 .dropdown-menu .dropdown-item:hover {
-  background-color: #f6f9ff;
+  background-color: #E8F5E9; /* Light green background */
+  color: #2E7D32; /* Dark green text */
 }
 
 @media (min-width: 768px) {
@@ -180,8 +163,8 @@ h6 {
     top: -7px;
     right: 20px;
     transform: rotate(45deg);
-    border-top: 1px solid #eaedf1;
-    border-left: 1px solid #eaedf1;
+    border-top: 1px solid #E8F5E9; /* Light green border */
+    border-left: 1px solid #E8F5E9; /* Light green border */
   }
 }
 
@@ -189,11 +172,9 @@ h6 {
   0% {
     opacity: 0;
   }
-
   100% {
     opacity: 1;
   }
-
   0% {
     opacity: 0;
   }
@@ -201,38 +182,38 @@ h6 {
 
 /* Light Backgrounds */
 .bg-primary-light {
-  background-color: #cfe2ff;
-  border-color: #cfe2ff;
+  background-color: #E8F5E9; /* Muranga light green */
+  border-color: #C8E6C9; /* Slightly darker light green */
 }
 
 .bg-secondary-light {
-  background-color: #e2e3e5;
-  border-color: #e2e3e5;
+  background-color: #E8F5E9; /* Consistent light green */
+  border-color: #C8E6C9;
 }
 
 .bg-success-light {
-  background-color: #d1e7dd;
-  border-color: #d1e7dd;
+  background-color: #A5D6A7; /* Medium green */
+  border-color: #81C784; /* Slightly darker green */
 }
 
 .bg-danger-light {
-  background-color: #f8d7da;
-  border-color: #f8d7da;
+  background-color: #EF9A9A; /* Complementary red tone */
+  border-color: #E57373;
 }
 
 .bg-warning-light {
-  background-color: #fff3cd;
-  border-color: #fff3cd;
+  background-color: #FFF9C4; /* Light yellow */
+  border-color: #FFF59D;
 }
 
 .bg-info-light {
-  background-color: #cff4fc;
-  border-color: #cff4fc;
+  background-color: #B3E5FC; /* Light blue */
+  border-color: #81D4FA;
 }
 
 .bg-dark-light {
-  background-color: #d3d3d4;
-  border-color: #d3d3d4;
+  background-color: #CFD8DC; /* Neutral gray */
+  border-color: #B0BEC5;
 }
 
 /* Card */
@@ -487,13 +468,13 @@ h6 {
 
 .header-nav .nav-icon {
   font-size: 22px;
-  color: #012970;
+  color: #2E7D32; /* Dark green */
   margin-right: 25px;
   position: relative;
 }
 
 .header-nav .nav-profile {
-  color: #012970;
+  color: #2E7D32; /* Dark green */
 }
 
 .header-nav .nav-profile img {
@@ -511,6 +492,8 @@ h6 {
   font-weight: normal;
   font-size: 12px;
   padding: 3px 6px;
+  background-color: #4CAF50; /* Primary green */
+  color: white;
 }
 
 .header-nav .notifications {
@@ -527,22 +510,24 @@ h6 {
 .header-nav .notifications .notification-item i {
   margin: 0 20px 0 10px;
   font-size: 24px;
+  color: #4CAF50; /* Primary green */
 }
 
 .header-nav .notifications .notification-item h4 {
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 5px;
+  color: #2E7D32; /* Dark green */
 }
 
 .header-nav .notifications .notification-item p {
   font-size: 13px;
   margin-bottom: 3px;
-  color: #919191;
+  color: #81C784; /* Medium green */
 }
 
 .header-nav .notifications .notification-item:hover {
-  background-color: #f6f9ff;
+  background-color: #E8F5E9; /* Light green */
 }
 
 .header-nav .messages {
@@ -567,17 +552,17 @@ h6 {
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 5px;
-  color: #444444;
+  color: #2E7D32; /* Dark green */
 }
 
 .header-nav .messages .message-item p {
   font-size: 13px;
   margin-bottom: 3px;
-  color: #919191;
+  color: #81C784; /* Medium green */
 }
 
 .header-nav .messages .message-item:hover {
-  background-color: #f6f9ff;
+  background-color: #E8F5E9; /* Light green */
 }
 
 .header-nav .profile {
@@ -590,29 +575,32 @@ h6 {
   font-size: 18px;
   margin-bottom: 0;
   font-weight: 600;
-  color: #444444;
+  color: #2E7D32; /* Dark green */
 }
 
 .header-nav .profile .dropdown-header span {
   font-size: 14px;
+  color: #4CAF50; /* Primary green */
 }
 
 .header-nav .profile .dropdown-item {
   font-size: 14px;
   padding: 10px 15px;
   transition: 0.3s;
+  color: #1B5E20; /* Darker green */
 }
 
 .header-nav .profile .dropdown-item i {
   margin-right: 10px;
   font-size: 18px;
   line-height: 0;
+  color: #4CAF50; /* Primary green */
 }
 
 .header-nav .profile .dropdown-item:hover {
-  background-color: #f6f9ff;
+  background-color: #E8F5E9; /* Light green */
+  color: #2E7D32; /* Dark green */
 }
-
 /*--------------------------------------------------------------
 # Sidebar
 --------------------------------------------------------------*/
@@ -627,8 +615,8 @@ h6 {
   padding: 20px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: #aab7cf transparent;
-  box-shadow: 0px 0px 20px rgba(1, 41, 112, 0.1);
+  scrollbar-color: #A5D6A7 transparent; /* Green scrollbar */
+  box-shadow: 0px 0px 20px rgba(46, 125, 50, 0.1); /* Green tinted shadow */
   background-color: #fff;
 }
 
@@ -645,11 +633,10 @@ h6 {
 }
 
 .sidebar::-webkit-scrollbar-thumb {
-  background-color: #aab7cf;
+  background-color: #A5D6A7; /* Green scrollbar thumb */
 }
 
 @media (min-width: 1200px) {
-
   #main,
   #footer {
     margin-left: 300px;
@@ -663,7 +650,6 @@ h6 {
 }
 
 @media (min-width: 1200px) {
-
   .toggle-sidebar #main,
   .toggle-sidebar #footer {
     margin-left: 0;
@@ -693,7 +679,7 @@ h6 {
 .sidebar-nav .nav-heading {
   font-size: 11px;
   text-transform: uppercase;
-  color: #899bbd;
+  color: #81C784; /* Medium green text */
   font-weight: 600;
   margin: 10px 0 5px 15px;
 }
@@ -703,9 +689,9 @@ h6 {
   align-items: center;
   font-size: 15px;
   font-weight: 600;
-  color: #4154f1;
-  transition: 0.3;
-  background: #f6f9ff;
+  color: #2E7D32; /* Dark green text */
+  transition: 0.3s;
+  background: #E8F5E9; /* Light green background */
   padding: 10px 15px;
   border-radius: 4px;
 }
@@ -713,25 +699,25 @@ h6 {
 .sidebar-nav .nav-link i {
   font-size: 16px;
   margin-right: 10px;
-  color: #4154f1;
+  color: #4CAF50; /* Primary green icons */
 }
 
 .sidebar-nav .nav-link.collapsed {
-  color: #012970;
+  color: #1B5E20; /* Darker green text */
   background: #fff;
 }
 
 .sidebar-nav .nav-link.collapsed i {
-  color: #899bbd;
+  color: #81C784; /* Medium green icons */
 }
 
 .sidebar-nav .nav-link:hover {
-  color: #4154f1;
-  background: #f6f9ff;
+  color: #2E7D32; /* Dark green text */
+  background: #C8E6C9; /* Slightly darker green background */
 }
 
 .sidebar-nav .nav-link:hover i {
-  color: #4154f1;
+  color: #4CAF50; /* Primary green icons */
 }
 
 .sidebar-nav .nav-link .bi-chevron-down {
@@ -754,10 +740,9 @@ h6 {
   align-items: center;
   font-size: 14px;
   font-weight: 600;
-  color: #012970;
-  transition: 0.3;
-  padding: 10px 0 10px 40px;
+  color: #1B5E20; /* Dark green text */
   transition: 0.3s;
+  padding: 10px 0 10px 40px;
 }
 
 .sidebar-nav .nav-content a i {
@@ -769,13 +754,12 @@ h6 {
 
 .sidebar-nav .nav-content a:hover,
 .sidebar-nav .nav-content a.active {
-  color: #4154f1;
+  color: #4CAF50; /* Primary green text */
 }
 
 .sidebar-nav .nav-content a.active i {
-  background-color: #4154f1;
+  background-color: #4CAF50; /* Primary green dot */
 }
-
 /*--------------------------------------------------------------
 # Dashboard
 --------------------------------------------------------------*/
@@ -1201,7 +1185,7 @@ h6 {
 .error-404 h1 {
   font-size: 180px;
   font-weight: 700;
-  color: #4154f1;
+  color: #4CAF50; /* Muranga primary green */
   margin-bottom: 0;
   line-height: 150px;
 }
@@ -1209,18 +1193,22 @@ h6 {
 .error-404 h2 {
   font-size: 24px;
   font-weight: 700;
-  color: #012970;
+  color: #2E7D32; /* Muranga dark green */
   margin-bottom: 30px;
 }
 
 .error-404 .btn {
-  background: #51678f;
+  background: #4CAF50; /* Primary green */
   color: #fff;
   padding: 8px 30px;
+  border: none;
+  transition: all 0.3s ease;
 }
 
 .error-404 .btn:hover {
-  background: #3e4f6f;
+  background: #388E3C; /* Darker green on hover */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 @media (min-width: 992px) {
@@ -1236,19 +1224,28 @@ h6 {
   padding: 20px 0;
   font-size: 14px;
   transition: all 0.3s;
-  border-top: 1px solid #cddfff;
+  border-top: 1px solid #C8E6C9; /* Light green border */
+  background-color: #f8fafc; /* Light background */
 }
 
 .footer .copyright {
   text-align: center;
-  color: #012970;
+  color: #2E7D32; /* Dark green text */
 }
 
 .footer .credits {
   padding-top: 5px;
   text-align: center;
   font-size: 13px;
-  color: #012970;
+  color: #4CAF50; /* Primary green text */
 }
 
+.footer .credits a {
+  color: #1B5E20; /* Darker green for links */
+  font-weight: 600;
+}
 
+.footer .credits a:hover {
+  color: #2E7D32; /* Slightly lighter green on hover */
+  text-decoration: underline;
+}
