@@ -1,17 +1,17 @@
 /* student_dashboard.css */
 
 :root {
-    --primary-color: #1976D2;  /* Blue */
-    --primary-dark: #0D47A1;   /* Darker blue */
-    --primary-light: #64B5F6;  /* Lighter blue */
-    --secondary-color: #2196F3;
+    --primary-color: #4CAF50;       /* Muranga primary green */
+    --primary-dark: #2E7D32;        /* Darker green */
+    --primary-light: #8BC34A;       /* Lighter green */
+    --secondary-color: #81C784;     /* Medium green */
     --pending-color: #757575;
     --text-dark: #333333;
     --text-light: #FFFFFF;
     --border-color: #E0E0E0;
     --bg-light: #F5F5F5;
     --bg-white: #FFFFFF;
-    --accent-color: #03A9F4;   /* Blue accent */
+    --accent-color: #A5D6A7;        /* Soft green accent */
 }
 
 /* Global Styles */
@@ -45,6 +45,7 @@ a {
 .tab {
     padding: 10px 20px;
     cursor: pointer;
+    color: #666;
 }
 
 .tab.active {
@@ -62,6 +63,7 @@ a {
     display: flex;
     justify-content: space-between;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid var(--primary-color);
 }
 
 .welcome-text h2 {
@@ -99,6 +101,7 @@ a {
 .fee-icon {
     font-size: 3rem;
     margin-bottom: 10px;
+    color: #E8F5E9;
 }
 
 .fee-balance {
@@ -114,10 +117,12 @@ a {
     border-radius: 4px;
     cursor: pointer;
     font-weight: bold;
+    transition: all 0.3s ease;
 }
 
 .pay-btn:hover {
-    background-color: #f0f0f0;
+    background-color: #E8F5E9;
+    transform: translateY(-2px);
 }
 
 /* Semester Progress Card */
@@ -133,6 +138,7 @@ a {
 .semester-icon {
     font-size: 2rem;
     margin-bottom: 10px;
+    color: #C8E6C9;
 }
 
 .progress-bar {
@@ -156,6 +162,7 @@ a {
     padding: 20px;
     margin-bottom: 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid var(--primary-color);
 }
 
 .section-header {
@@ -173,6 +180,7 @@ a {
 .view-all {
     color: var(--primary-color);
     font-size: 0.9rem;
+    font-weight: 600;
 }
 
 .units-table {
@@ -181,10 +189,11 @@ a {
 }
 
 .units-table th {
-    background-color: #f5f5f5;
+    background-color: #E8F5E9;
     text-align: left;
     padding: 12px 15px;
     border-bottom: 1px solid var(--border-color);
+    color: var(--primary-dark);
 }
 
 .units-table td {
@@ -202,6 +211,7 @@ a {
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid var(--primary-color);
 }
 
 .hostel-title {
