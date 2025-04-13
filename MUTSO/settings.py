@@ -32,7 +32,7 @@ INSTALLED_APPS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://43fd-2c0f-6300-d09-fd00-f126-c225-9052-8cce.ngrok-free.app"
+    "https://1b3d-2c0f-6300-d09-fd00-f126-c225-9052-8cce.ngrok-free.app"
 ]
 
 MIDDLEWARE = [

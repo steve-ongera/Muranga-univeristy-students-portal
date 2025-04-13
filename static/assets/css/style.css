@@ -3,6 +3,31 @@
 /*--------------------------------------------------------------
 # General
 --------------------------------------------------------------*/
+/* 01: root */
+:root {
+  --color-primary: #213373;
+  --color-secondary: #1B85FB;
+  --color-tab: #ED1E24;
+  --color-white: #fff;
+  --color-light: #D3D3D3;
+  --color-light-green: rgba(65, 191, 115, .16);
+  --color-light-blue: rgba(64, 142, 239, .16);
+  --color-light-gray: #D6D6D6;
+  --color-black: #000000;
+  --color-dark: rgba(0,0,0,.6);
+  --color-light-header: #F8F9FA;
+  --color-border: #dee2e6;
+  --color-link-dark: #707070;
+  --color-border-dropdown: rgb(0 0 0 / 18%);
+  --color-notify-purple: #6D65F8;
+  --color-notify-aqua: #23C4F9;
+  --color-notify-green: #1EAD95;
+  --color-notify-pink: #EB86ED;
+  --box-shadow-btn: 0 1rem 2rem rgba(0,0,0,.175);
+  --transition: all 400ms ease;
+  --color-primary-rgba: rgb(13 110 253 / 25%);
+}
+
 :root {
   scroll-behavior: smooth;
 }

@@ -51,31 +51,36 @@ let countdownInterval;
 const MAX_QR_LENGTH = 1000; // Safe threshold for QR codes
 
 // Optimized location fetching
-async function getLocation() {
+function getLocation() {
     return new Promise((resolve, reject) => {
-        if (!navigator.geolocation) {
-            reject(new Error("Geolocation not supported"));
-            return;
-        }
+        const options = {
+            enableHighAccuracy: true,  // Use GPS if available
+            timeout: 10000,           // 10 second timeout
+            maximumAge: 0             // Force fresh reading
+        };
 
         navigator.geolocation.getCurrentPosition(
             position => {
                 const coords = {
-                    lat: position.coords.latitude.toFixed(6),
-                    lng: position.coords.longitude.toFixed(6)
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude,
+                    accuracy: position.coords.accuracy
                 };
-                document.getElementById('latitude').value = coords.lat;
-                document.getElementById('longitude').value = coords.lng;
-                document.getElementById('generateBtn').disabled = false;
+                console.log("Raw coordinates:", coords);
+                
+                // If accuracy is poor (>10m), warn user
+                if (position.coords.accuracy > 10) {
+                    alert(`Warning: Your location accuracy is low (${Math.round(position.coords.accuracy)}m). 
+                           Move to an area with better GPS signal.`);
+                }
+                
                 resolve(coords);
             },
             error => {
-                const errorMsg = `Location error: ${error.message}`;
-                console.error(errorMsg);
-                alert(errorMsg);
-                reject(new Error(errorMsg));
+                console.error("Geolocation error:", error);
+                reject(error);
             },
-            { enableHighAccuracy: true, timeout: 10000 }
+            options
         );
     });
 }
