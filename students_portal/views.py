@@ -146,27 +146,34 @@ def forgot_password(request):
 
 def reset_password(request, uidb64, token):
     try:
-        uid = force_str(urlsafe_base64_decode(uidb64))  # Replace force_text with force_str
-        user = Account.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, Account.DoesNotExist):
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
 
     if user is not None and default_token_generator.check_token(user, token):
         if request.method == 'POST':
-            password = request.POST.get('password')
+            password = request.POST.get('new_password')
             confirm_password = request.POST.get('confirm_password')
 
             if password == confirm_password:
+                if len(password) < 6:
+                    messages.error(request, 'Password must be at least 6 characters.')
+                    return redirect('reset_password', uidb64=uidb64, token=token)
+
                 user.set_password(password)
+                user.last_password_change = timezone.now()
                 user.save()
                 messages.success(request, 'Password reset successful. You can now login with your new password.')
                 return redirect('login')
             else:
                 messages.error(request, 'Passwords do not match.')
                 return redirect('reset_password', uidb64=uidb64, token=token)
+
+        # GET request – render the form
         return render(request, 'auth/reset_password.html')
     else:
-        messages.error(request, 'Invalid reset link. Please try again.')
+        messages.error(request, 'Invalid or expired reset link. Please try again.')
         return redirect('login')
     
 
