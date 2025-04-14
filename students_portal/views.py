@@ -972,6 +972,13 @@ from .models import (
     AcademicYear, 
     Semester
 )
+
+"""
+Displays academic results for logged-in students, fetching only years since admission date.
+Organizes results hierarchically by academic years and semesters with detailed unit grades.
+Shows complete grade information when available or marks courses as "Pending" when grades aren't finalized.
+"""
+
 @login_required
 def student_results_view(request):
     """
@@ -987,11 +994,14 @@ def student_results_view(request):
         return render(request, 'students/no_profile.html')
 
     # **Fetch only academic years where the student has enrollments**
+    enrolled_semester_ids = StudentEnrollment.objects.filter(
+        student=student
+    ).values_list('semester_id', flat=True).distinct()
+    
+    # Get academic years that contain these semesters
     academic_years = AcademicYear.objects.filter(
-        start_date__gte=student.date_of_admission,
-        semesters__id__isnull=False  # ✅ Ensures there's at least one linked semester
-    ).distinct().order_by('-start_date')  # Order by latest year first (descending)
-
+        semesters__id__in=enrolled_semester_ids
+    ).distinct().order_by('-start_date')
     # Initialize data structure to hold results
     results_by_year = {}
 

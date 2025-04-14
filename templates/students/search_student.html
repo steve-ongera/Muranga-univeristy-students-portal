@@ -100,7 +100,7 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <p><strong><i class="bi bi-mortarboard-fill text-primary"></i> Programme:</strong> {{ student.programme.name }}</p>
-                                        <p><strong><i class="bi bi-123 text-primary"></i> Year:</strong> {{ student.current_year }}</p>
+                                        <p><strong><i class="bi bi-123 text-primary"></i> Year:</strong> {{ student.current_year }}.{{ student.current_semester}}</p>
                                         <p><strong><i class="bi bi-calendar-date text-primary"></i> Date of Birth:</strong> {{ student.date_of_birth|default:"Not provided" }}</p>
                                         <p><strong><i class="bi bi-gender-ambiguous text-primary"></i> Gender:</strong> {{ student.get_gender_display }}</p>
                                         <p><strong><i class="bi bi-calendar-check text-primary"></i> Admission Date:</strong> {{ student.date_of_admission }}</p>

@@ -382,7 +382,7 @@ class StudentUnitGrade(models.Model):
 
         if grade:
             self.grade = grade
-            self.is_pass = total_score >= 50  # You can set the pass mark as per the university's rule (e.g., >= 50%)
+            self.is_pass = total_score >= 40  # You can set the pass mark as per the university's rule (e.g., >= 50%)
         else:
             self.grade = None
             self.is_pass = False
