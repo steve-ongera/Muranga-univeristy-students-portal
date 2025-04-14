@@ -4,8 +4,8 @@
 {% block content %}
 <div class="container-fluid py-4">
     <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
-            <h5 class="card-title mb-0">
+        <div class="card-header text-white" style="background-color: #2E7D32;">
+            <h5 style="color:white" class="card-title mb-0">
                 <i class="bi bi-journal-text me-2"></i>
                 My Lecture Notes ({{ current_semester }})
             </h5>
@@ -16,17 +16,17 @@
                 {% for unit, notes in notes_by_unit.items %}
                 <div class="unit-notes mb-5">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="mb-0">
+                        <h4  class="mb-0">
                             <strong>{{ unit.code }}</strong> - {{ unit.name }}
                         </h4>
-                        <span class="badge bg-info">
+                        <span class="badge" style="background-color: #81C784;">
                             {{ notes|length }} note{{ notes|pluralize }}
                         </span>
                     </div>
                     
                     <div class="table-responsive">
                         <table class="table table-hover">
-                            <thead>
+                            <thead style="background-color: #E8F5E9;">
                                 <tr>
                                     <th>Topic</th>
                                     <th>Lecturer</th>
@@ -42,7 +42,8 @@
                                     <td>{{ note.date_uploaded|date:"M d, Y" }}</td>
                                     <td>
                                         <a href="{{ note.pdf_file.url }}" 
-                                           class="btn btn-sm btn-outline-primary"
+                                           class="btn btn-sm"
+                                           style="background-color: #2E7D32; color: white;"
                                            download="{{ unit.code }}_{{ note.topic|slugify }}.pdf">
                                             <i class="bi bi-download me-1"></i> Download
                                         </a>

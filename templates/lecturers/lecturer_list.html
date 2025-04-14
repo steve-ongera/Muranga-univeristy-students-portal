@@ -4,20 +4,20 @@
 
 <div class="message-container" id="system-messages">
     {% for message in messages %}
-    <div class="alert-message alert-{{ message.tags }}">
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
         {{ message }}
-        <span class="close-message">&times;</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     {% endfor %}
 </div>
 
 <div class="pagetitle">
-    <h1>lecturers</h1>
+    <h1><i class="bi bi-person-badge me-2"></i>Lecturer Management</h1>
     <nav>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Home</a></li>
-            <li class="breadcrumb-item">lecturer records</li>
-            <li class="breadcrumb-item active"><a href="{% url 'lecturer_create' %}">Add lecturer</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}"><i class="bi bi-house-door"></i> Home</a></li>
+            <li class="breadcrumb-item">Academic Records</li>
+            <li class="breadcrumb-item active">Lecturers</li>
         </ol>
     </nav>
 </div><!-- End Page Title -->
@@ -25,59 +25,128 @@
 <section class="section">
     <div class="row">
         <div class="col-lg-12">
-
-            <div class="card">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-university-primary text-white">
+                    <h5 class="card-title mb-0"><i class="bi bi-table me-2"></i>Lecturer Records</h5>
+                </div>
+                <br>
                 <div class="card-body">
-                    <h5 class="card-title">lecturer Data Records List</h5>
-
-                    <a href="#" class="btn btn-success mb-3">Add lectuer</a>
+                    <div class="d-flex justify-content-between mb-4">
+                        <a href="{% url 'lecturer_create' %}" class="btn btn-university">
+                            <i class="bi bi-plus-circle me-2"></i>Add New Lecturer
+                        </a>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-university">
+                                <i class="bi bi-printer me-2"></i>Print
+                            </button>
+                            <button class="btn btn-outline-university">
+                                <i class="bi bi-download me-2"></i>Export
+                            </button>
+                        </div>
+                    </div>
 
                     <div class="table-responsive">
-                        <table class="table table-striped datatable">
-                            <thead>
+                        <table class="table table-hover table-striped datatable">
+                            <thead class="bg-university-light">
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Staff ID</th>
-                                    <th>Rank</th>
-                                    <th>dpt</th>
-                                    <th>Phone</th>
-                                    <th>Type</th>
-                                  
-                                    <th>Edit</th>
-                                    <th>Delete</th>
+                                    <th><i class="bi bi-person me-1"></i> Name</th>
+                                    <th><i class="bi bi-id-card me-1"></i> Staff ID</th>
+                                    <th><i class="bi bi-award me-1"></i> Rank</th>
+                                    <th><i class="bi bi-building me-1"></i> Department</th>
+                                    <th><i class="bi bi-telephone me-1"></i> Phone</th>
+                                    <th><i class="bi bi-briefcase me-1"></i> Type</th>
+                                    <th class="text-center"><i class="bi bi-gear me-1"></i> Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for lecturer in lecturers %}
                                 <tr>
                                     <td>
-                                        <a href="{% url 'lecturer_detail' lecturer.id %}">
-                                            {{ lecturer.first_name}}  {{ lecturer.last_name}}
+                                        <a href="{% url 'lecturer_detail' lecturer.id %}" class="text-university">
+                                            <strong>{{ lecturer.first_name }} {{ lecturer.last_name }}</strong>
                                         </a>
                                     </td>
-                                    <td>{{ lecturer.staff_id}}</td>
-                                    <td>{{ lecturer.academic_rank }}</td>
+                                    <td>{{ lecturer.staff_id }}</td>
                                     <td>
-                                        
-                                            {{ lecturer.department }}
-                                       
+                                        <span class="badge bg-university-secondary">
+                                            {{ lecturer.academic_rank }}
+                                        </span>
                                     </td>
-                                    <td> {{ lecturer.phone_number }} </td>
-                                    <td>{{ lecturer.employment_type }}</td>
-                                    
-                                    <td><a href="{% url 'lecturer_update' lecturer.pk %}">Edit</a></td>
-                                    <td><a href="{% url 'lecturer_delete' lecturer.pk %}">Delete</a></td>
+                                    <td>{{ lecturer.department }}</td>
+                                    <td>{{ lecturer.phone_number }}</td>
+                                    <td>
+                                        <span class="badge bg-university-light text-dark">
+                                            {{ lecturer.employment_type }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex gap-2 justify-content-center">
+                                            <a href="{% url 'lecturer_update' lecturer.pk %}" class="btn btn-sm btn-outline-university" title="Edit">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                            <a href="{% url 'lecturer_delete' lecturer.pk %}" class="btn btn-sm btn-outline-danger" title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
-                        <!-- End Table with stripped rows -->
                     </div>
-
+                </div>
+                <div class="card-footer bg-university-light">
+                    <small class="text-muted">Showing {{ lecturers.count }} lecturer records</small>
                 </div>
             </div>
         </div>
     </div>
 </section>
+
+<style>
+    :root {
+        --university-primary: #2E7D32; /* Dark green */
+        --university-secondary: #81C784; /* Light green */
+        --university-light: #E8F5E9; /* Very light green */
+    }
+    .bg-university-primary {
+        background-color: var(--university-primary) !important;
+    }
+    .bg-university-secondary {
+        background-color: var(--university-secondary) !important;
+    }
+    .bg-university-light {
+        background-color: var(--university-light) !important;
+    }
+    .btn-university {
+        background-color: var(--university-primary);
+        color: white;
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university {
+        color: var(--university-primary);
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university:hover {
+        background-color: var(--university-primary);
+        color: white;
+    }
+    .text-university {
+        color: var(--university-primary);
+    }
+    .card {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .card-header {
+        border-bottom: none;
+    }
+    .table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+    }
+</style>
 
 {% endblock %}

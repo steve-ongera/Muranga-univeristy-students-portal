@@ -2,23 +2,23 @@
 
 {% block content %}
 <div class="container py-5">
-    <div class="card">
-        <div class="card-header bg-primary text-white">
-            <h3>Semester Reporting</h3>
+    <div class="card border-0 shadow">
+        <div class="card-header text-white" style="background-color: #2E7D32;">
+            <h3><i class="fas fa-calendar-check me-2"></i>Semester Reporting</h3>
         </div>
         <div class="card-body">
             {% if already_reported %}
                 <div class="alert alert-success">
-                    <i class="fas fa-check-circle"></i>
+                    <i class="fas fa-check-circle me-2"></i>
                     You have already reported for {{ current_semester.academic_year.name }} - Semester {{ current_semester.number }}
                     on {{ reporting_record.reporting_date|date:"F d, Y" }}.
                 </div>
-                <a href="{% url 'student_dashboard' %}" class="btn btn-primary">
-                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                <a href="{% url 'student_dashboard' %}" class="btn" style="background-color: #2E7D32; color: white;">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
                 </a>
             {% else %}
                 <div class="reporting-details mb-4">
-                    <h5>Reporting Details:</h5>
+                    <h5 class="mb-3" style="color: #2E7D32;">Reporting Details:</h5>
                     <ul class="list-group">
                         <li class="list-group-item">
                             <strong>Student:</strong> {{ student.get_full_name }} ({{ student.registration_number }})
@@ -42,20 +42,20 @@
                 <form method="post">
                     {% csrf_token %}
                     <div class="form-group form-check mb-4">
-                        <input type="checkbox" class="form-check-input" id="fees_cleared" name="fees_cleared">
+                        <input type="checkbox" class="form-check-input" id="fees_cleared" name="fees_cleared" style="border-color: #2E7D32;">
                         <label class="form-check-label" for="fees_cleared">
                             I confirm that my fees are cleared for this semester
                         </label>
                     </div>
                     
                     <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle"></i>
+                        <i class="fas fa-exclamation-triangle me-2"></i>
                         By submitting this form, you confirm that you are physically present on campus
                         and ready to begin the semester.
                     </div>
                     
-                    <button type="submit" class="btn btn-success btn-lg">
-                        <i class="fas fa-check"></i> Confirm Reporting
+                    <button type="submit" class="btn btn-lg" style="background-color: #2E7D32; color: white;">
+                        <i class="fas fa-check me-2"></i> Confirm Reporting
                     </button>
                     <a href="{% url 'student_dashboard' %}" class="btn btn-secondary">
                         Cancel
@@ -63,18 +63,16 @@
                 </form>
             {% endif %}
         </div>
-
-        
     </div>
 
-    <hr>
+    <hr style="border-color: #2E7D32;">
 
     <!-- Table for past reportings -->
-    <h4 class="mt-4">Past Semester Reportings</h4>
+    <h4 class="mt-4" style="color: #2E7D32;"><i class="fas fa-history me-2"></i>Past Semester Reportings</h4>
     {% if past_reportings %}
         <div class="table-responsive">
-            <table class="table table-bordered border-primary">
-                <thead>
+            <table class="table table-bordered">
+                <thead style="background-color: #2E7D32; color: white;">
                     <tr>
                         <th>Academic Year</th>
                         <th>Semester</th>
@@ -95,7 +93,9 @@
             </table>
         </div>
     {% else %}
-        <div class="alert alert-warning">No past reporting records found.</div>
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-circle me-2"></i>No past reporting records found.
+        </div>
     {% endif %}
 </div>
 {% endblock %}

@@ -1,23 +1,24 @@
 {% extends "base/base.html" %}
+{% load static %}
 
 {% block content %}
-
 <div class="message-container" id="system-messages">
     {% for message in messages %}
-    <div class="alert-message alert-{{ message.tags }}">
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        <i class="bi {% if message.tags == 'success' %}bi-check-circle{% else %}bi-exclamation-triangle{% endif %} me-2"></i>
         {{ message }}
-        <span class="close-message">&times;</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     {% endfor %}
 </div>
 
 <div class="pagetitle">
-    <h1>Students</h1>
+    <h1><i class="bi bi-people-fill me-2"></i>Student Records</h1>
     <nav>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Home</a></li>
-            <li class="breadcrumb-item">Students records</li>
-            <li class="breadcrumb-item active"><a href="{% url 'student_create' %}">Add Student</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}"><i class="bi bi-house-door"></i> Home</a></li>
+            <li class="breadcrumb-item">Academic Records</li>
+            <li class="breadcrumb-item active">Students</li>
         </ol>
     </nav>
 </div><!-- End Page Title -->
@@ -25,57 +26,177 @@
 <section class="section">
     <div class="row">
         <div class="col-lg-12">
-
-            <div class="card">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-university-primary text-white">
+                    <h5 class="card-title mb-0"><i class="bi bi-table me-2"></i>Student Records Management</h5>
+                </div>
+                <br>
                 <div class="card-body">
-                    <h5 class="card-title">Student Data Records List</h5>
-
-                    <a href="#" class="btn btn-success mb-3">Promote Students</a>
+                    <div class="d-flex justify-content-between mb-4">
+                        <a href="{% url 'student_create' %}" class="btn btn-university">
+                            <i class="bi bi-plus-circle me-2"></i>Add New Student
+                        </a>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-university" data-bs-toggle="modal" data-bs-target="#promoteModal">
+                                <i class="bi bi-arrow-up-circle me-2"></i>Promote Students
+                            </button>
+                            <button class="btn btn-outline-university">
+                                <i class="bi bi-funnel me-2"></i>Filter
+                            </button>
+                            <button class="btn btn-outline-university">
+                                <i class="bi bi-download me-2"></i>Export
+                            </button>
+                        </div>
+                    </div>
 
                     <div class="table-responsive">
-                        <table class="table table-striped datatable">
-                            <thead>
+                        <table class="table table-hover datatable">
+                            <thead class="bg-university-light">
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Registration </th>
-                                    <th>Programme</th>
-                                    <th>Phone</th>
-                                    <th>Year</th>
-                                    <th>Gender</th>
-                                    <th>Edit</th>
-                                    <th>Delete</th>
+                                    <th><i class="bi bi-person me-1"></i> Student Name</th>
+                                    <th><i class="bi bi-id-card me-1"></i> Registration No.</th>
+                                    <th><i class="bi bi-book me-1"></i> Programme</th>
+                                    <th><i class="bi bi-telephone me-1"></i> Phone</th>
+                                    <th><i class="bi bi-calendar me-1"></i> Year/Sem</th>
+                                    <th><i class="bi bi-gender-ambiguous me-1"></i> Gender</th>
+                                    <th class="text-center"><i class="bi bi-gear me-1"></i> Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for student in students %}
                                 <tr>
                                     <td>
-                                        <a href="{% url 'student_progress' student.id %}">
-                                            {{ student.first_name}}  {{ student.last_name}}
+                                        <a href="{% url 'student_progress' student.id %}" class="text-university">
+                                            <strong>{{ student.first_name }} {{ student.last_name }}</strong>
                                         </a>
                                     </td>
-                                    <td><a href="{% url 'student_detail' student.id %}">{{ student.registration_number }}</a></td>
                                     <td>
-                                        
-                                            {{ student.programme }}
-                                       
+                                        <a href="{% url 'student_detail' student.id %}" class="text-university">
+                                            {{ student.registration_number }}
+                                        </a>
                                     </td>
-                                    <td> {{ student.phone_number }} </td>
-                                    <td>{{ student.current_year }}.{{ student.current_semester }}</td>
-                                    <td>{{ student.gender }}</td>
-                                    <td><a href="{% url 'student_update' student.pk %}">Edit</a></td>
-                                    <td><a href="{% url 'student_delete' student.pk %}">Delete</a></td>
+                                    <td>{{ student.programme }}</td>
+                                    <td>{{ student.phone_number|default:"-" }}</td>
+                                    <td>
+                                        <span class="badge bg-university-secondary">
+                                            Y{{ student.current_year }}.S{{ student.current_semester }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if student.gender == 'M' %}bg-primary{% else %}bg-pink{% endif %}">
+                                            {{ student.get_gender_display }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex gap-2 justify-content-center">
+                                            <a href="{% url 'student_update' student.pk %}" class="btn btn-sm btn-outline-university" title="Edit">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                            <a href="{% url 'student_delete' student.pk %}" class="btn btn-sm btn-outline-danger" title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
-                        <!-- End Table with stripped rows -->
                     </div>
-
+                </div>
+                <div class="card-footer bg-university-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">Showing {{ students.count }} student records</small>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-university">
+                                <i class="bi bi-printer me-1"></i> Print List
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
+<!-- Promote Students Modal -->
+<div class="modal fade" id="promoteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-university-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-arrow-up-circle me-2"></i>Promote Students</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="promoteForm">
+                    <div class="mb-3">
+                        <label class="form-label">Select Students to Promote</label>
+                        <select class="form-select" multiple>
+                            {% for student in students %}
+                            <option value="{{ student.id }}">{{ student.registration_number }} - {{ student.get_full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Target Academic Year</label>
+                        <input type="text" class="form-control" placeholder="Enter target year (e.g. 2023/2024)">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-university">Confirm Promotion</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --university-primary: #2E7D32; /* Dark green */
+        --university-secondary: #81C784; /* Light green */
+        --university-light: #E8F5E9; /* Very light green */
+    }
+    .bg-university-primary {
+        background-color: var(--university-primary) !important;
+    }
+    .bg-university-secondary {
+        background-color: var(--university-secondary) !important;
+    }
+    .bg-university-light {
+        background-color: var(--university-light) !important;
+    }
+    .btn-university {
+        background-color: var(--university-primary);
+        color: white;
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university {
+        color: var(--university-primary);
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university:hover {
+        background-color: var(--university-primary);
+        color: white;
+    }
+    .text-university {
+        color: var(--university-primary);
+    }
+    .card {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .card-header {
+        border-bottom: none;
+    }
+    .table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+    }
+    .badge.bg-pink {
+        background-color: #ff6b94;
+        color: white;
+    }
+</style>
 {% endblock %}

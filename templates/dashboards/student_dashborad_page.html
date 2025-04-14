@@ -1,13 +1,299 @@
 {% extends 'base/base.html' %}
 
 {% load static %}
+{% block content %}
 
-{% block extra_css %}
 <link rel="stylesheet" href="{% static 'assets/css/student_dashboard.css' %}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-{% endblock %}
+<style>
+    :root {
+        --muranga-primary: #4CAF50;
+        --muranga-dark: #2E7D32;
+        --muranga-light: #E8F5E9;
+        --muranga-accent: #8BC34A;
+        --text-dark: #333333;
+        --text-light: #FFFFFF;
+    }
+    
+    /* Message Container */
+    .message-container {
+        margin: 15px 0;
+    }
+    
+    .alert-message {
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+        position: relative;
+    }
+    
+    .alert-success {
+        background-color: #E8F5E9;
+        color: #2E7D32;
+        border-left: 4px solid #4CAF50;
+    }
+    
+    .close-message {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        cursor: pointer;
+    }
+    
+    /* Main Content */
+    .main-content {
+        padding: 20px;
+        background-color: #F5F5F5;
+    }
+    
+    /* Dashboard Tabs */
+    .dashboard-tabs {
+        display: flex;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #E0E0E0;
+    }
+    
+    .tab {
+        padding: 12px 24px;
+        cursor: pointer;
+        font-weight: 500;
+        color: #666;
+        border-bottom: 2px solid transparent;
+    }
+    
+    .tab.active {
+        color: var(--muranga-primary);
+        border-bottom: 2px solid var(--muranga-primary);
+        font-weight: 600;
+    }
+    
+    /* Welcome Card */
+    .welcome-card {
+        background-color: white;
+        border-radius: 8px;
+        padding: 25px;
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        border-left: 4px solid var(--muranga-primary);
+    }
+    
+    .welcome-text h2 {
+        color: var(--muranga-dark);
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-size: 24px;
+    }
+    
+    .welcome-text p {
+        color: #666;
+        margin-bottom: 0;
+    }
+    
+    .welcome-image img {
+        max-width: 180px;
+        height: auto;
+    }
+    
+    /* Dashboard Grid */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    
+    .dashboard-full-width {
+        grid-column: 1 / span 2;
+    }
+    
+    /* Fee Card */
+    .fee-card {
+        background-color: var(--muranga-primary);
+        color: white;
+        border-radius: 8px;
+        padding: 25px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        transition: transform 0.3s ease;
+    }
+    
+    .fee-card:hover {
+        transform: translateY(-3px);
+    }
+    
+    .fee-icon {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+    }
+    
+    .fee-balance {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin: 15px 0;
+    }
+    
+    .pay-btn {
+        background-color: white;
+        color: var(--muranga-primary);
+        border: none;
+        padding: 10px 25px;
+        border-radius: 4px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .pay-btn:hover {
+        background-color: #f0f0f0;
+    }
+    
+    /* Semester Card */
+    .semester-card {
+        background-color: var(--muranga-dark);
+        color: white;
+        border-radius: 8px;
+        padding: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        transition: transform 0.3s ease;
+    }
+    
+    .semester-card:hover {
+        transform: translateY(-3px);
+    }
+    
+    .semester-icon {
+        font-size: 2rem;
+        margin-bottom: 15px;
+    }
+    
+    .semester-card h3 {
+        font-size: 1.2rem;
+        margin-bottom: 5px;
+    }
+    
+    .semester-card p {
+        margin-bottom: 20px;
+        opacity: 0.9;
+    }
+    
+    .semester-card h4 {
+        margin: 15px 0 10px 0;
+    }
+    
+    .progress-bar {
+        background-color: rgba(255,255,255,0.2);
+        border-radius: 4px;
+        height: 10px;
+        margin: 10px 0;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        background-color: var(--muranga-accent);
+        height: 100%;
+    }
+    
+    /* Units Section */
+    .units-section {
+        background-color: white;
+        border-radius: 8px;
+        padding: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        border-left: 4px solid var(--muranga-primary);
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .section-title {
+        color: var(--muranga-dark);
+        margin: 0;
+        font-size: 1.2rem;
+    }
+    
+    .view-all {
+        color: var(--muranga-primary);
+        font-weight: 500;
+        text-decoration: none;
+    }
+    
+    .view-all:hover {
+        text-decoration: underline;
+    }
+    
+    .units-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .units-table th {
+        background-color: #F5F5F5;
+        text-align: left;
+        padding: 12px 15px;
+        color: var(--muranga-dark);
+        font-weight: 600;
+    }
+    
+    .units-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #EEE;
+    }
+    
+    .status-pending {
+        color: #757575;
+    }
+    
+    /* Hostel Card */
+    .hostel-card {
+        background-color: white;
+        border-radius: 8px;
+        padding: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        text-align: center;
+        border-left: 4px solid var(--muranga-primary);
+    }
+    
+    .hostel-title {
+        color: var(--muranga-dark);
+        margin-top: 0;
+        margin-bottom: 20px;
+    }
+    
+    .hostel-icon {
+        font-size: 3rem;
+        color: var(--muranga-primary);
+        margin: 15px 0;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .dashboard-full-width {
+            grid-column: 1;
+        }
+        
+        .welcome-card {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .welcome-image {
+            margin-top: 20px;
+        }
+    }
+</style>
 
-{% block content %}
+
+
 <div class="message-container" id="system-messages">
     {% for message in messages %}
     <div class="alert-message alert-{{ message.tags }}">
@@ -17,7 +303,6 @@
     {% endfor %}
 </div>
 
-<link rel="stylesheet" href="{% static 'assets/css/student_dashboard.css' %}">
 <!-- Main Content Area -->
 <div class="main-content">
     <!-- Dashboard Header Tabs -->
@@ -55,7 +340,7 @@
             <div class="semester-icon">
                 <i class="fas fa-book-reader"></i>
             </div>
-            <h3>SEMESTER {{ student.current_semester }} {{ current_semester.academic_year.name  }}</h3>
+            <h3>SEMESTER {{ student.current_semester }} {{ current_semester.academic_year.name }}</h3>
             <p>{{ programme.name|upper }}</p>
 
             <h4>Current Session Progress</h4>
@@ -65,7 +350,6 @@
             <p>{{ session_progress }}%</p>
         </div>
 
-        
         <!-- Course Units Table - Full Width -->
         <div class="units-section dashboard-full-width">
             <div class="section-header">
@@ -112,7 +396,23 @@
             <div class="hostel-icon">
                 <i class="fas fa-building"></i>
             </div>
+            <p>You are currently assigned to: <strong>{% if student.hostel %}{{ student.hostel.name }}{% else %}No hostel assigned{% endif %}</strong></p>
+            {% if student.hostel %}
+            <div class="hostel-details">
+                <p><i class="fas fa-map-marker-alt"></i> {{ student.hostel.location }}</p>
+                <p><i class="fas fa-door-open"></i> Room: {{ student.hostel_room|default:"Not assigned" }}</p>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
+
+<script>
+    // Close message functionality
+    document.querySelectorAll('.close-message').forEach(button => {
+        button.addEventListener('click', function() {
+            this.parentElement.style.display = 'none';
+        });
+    });
+</script>
 {% endblock %}

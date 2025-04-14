@@ -8,26 +8,26 @@
     <div class="row mb-4">
         <div class="col-lg-8 col-md-12">
             <div class="d-flex flex-column">
-                <h1 class="h2 mb-2">Academic Results</h1>
+                <h1 class="h2 mb-2" style="color: #2E7D32;">Academic Results</h1>
                 <h2 class="h4 text-muted mb-3">{{ student.get_full_name }}</h2>
                 <div class="d-flex flex-wrap gap-4">
                     <div>
                         <span class="text-muted">Registration Number:</span>
-                        <span class="fw-bold ms-2">{{ student.registration_number }}</span>
+                        <span class="fw-bold ms-2" style="color: #2E7D32;">{{ student.registration_number }}</span>
                     </div>
                     <div>
                         <span class="text-muted">Programme:</span>
-                        <span class="fw-bold ms-2">{{ student.programme.name }}</span>
+                        <span class="fw-bold ms-2" style="color: #2E7D32;">{{ student.programme.name }}</span>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-lg-4 col-md-12 d-flex align-items-start justify-content-lg-end justify-content-md-start mt-lg-0 mt-3">
             <div class="d-flex flex-wrap gap-2">
-                <button class="btn btn-outline-secondary" id="expandAllBtn">
+                <button class="btn btn-outline-secondary" id="expandAllBtn" style="border-color: #2E7D32; color: #2E7D32;">
                     <i class="bi bi-arrows-expand me-2"></i>Expand All
                 </button>
-                <button class="btn btn-primary" id="generateTranscriptBtn">
+                <button class="btn" id="generateTranscriptBtn" style="background-color: #2E7D32; color: white;">
                     <i class="bi bi-file-earmark-text me-2"></i>Generate Transcript
                 </button>
             </div>
@@ -48,7 +48,8 @@
                             type="button" 
                             role="tab" 
                             aria-controls="tab-{{ forloop.counter }}"
-                            aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
+                            aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+                            style="{% if forloop.first %}background-color: #2E7D32; color: white;{% else %}color: #2E7D32;{% endif %}">
                         {{ year_name }}
                     </button>
                 </li>
@@ -77,7 +78,8 @@
                                         data-bs-toggle="collapse" 
                                         data-bs-target="#collapse-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"
                                         aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
-                                        aria-controls="collapse-{{ forloop.parentloop.counter }}-{{ forloop.counter }}">
+                                        aria-controls="collapse-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"
+                                        style="background-color: #f8f9fa; color: #2E7D32;">
                                     <h3 class="h5 mb-0">Semester {{ semester_number }}</h3>
                                 </button>
                             </div>
@@ -88,7 +90,7 @@
                                     {% if semester_data.units %}
                                     <div class="table-responsive">
                                         <table class="table table-hover table-bordered align-middle mb-0">
-                                            <thead class="table-light">
+                                            <thead class="table-light" style="background-color: #2E7D32; color: white;">
                                                 <tr>
                                                     <th class="text-nowrap">Unit Code</th>
                                                     <th class="w-100">Unit Name</th>
@@ -102,7 +104,7 @@
                                             <tbody>
                                                 {% for unit in semester_data.units %}
                                                 <tr>
-                                                    <td class="fw-bold">{{ unit.unit_code }}</td>
+                                                    <td class="fw-bold" style="color: #2E7D32;">{{ unit.unit_code }}</td>
                                                     <td>{{ unit.unit_name }}</td>
                                                     <td class="text-center">
                                                         {% if unit.cat_score == 0 %}
@@ -112,17 +114,17 @@
                                                         {% endif %}
                                                     </td>
                                                     <td class="text-center">{{ unit.exam_score }}</td>
-                                                    <td class="text-center fw-bold">{{ unit.total_score }}</td>
-                                                    <td class="text-center fw-bold">{{ unit.grade }}</td>
+                                                    <td class="text-center fw-bold" style="color: #2E7D32;">{{ unit.total_score }}</td>
+                                                    <td class="text-center fw-bold" style="color: #2E7D32;">{{ unit.grade }}</td>
                                                     <td class="text-center">
                                                         {% if unit.exam_score %}
                                                             {% if unit.is_pass %}
-                                                                <span class="badge bg-success bg-opacity-10 text-success">Pass</span>
+                                                                <span class="badge" style="background-color: #2E7D32; color: white;">Pass</span>
                                                             {% else %}
-                                                                <span class="badge bg-danger bg-opacity-10 text-danger">Fail</span>
+                                                                <span class="badge bg-danger">Fail</span>
                                                             {% endif %}
                                                         {% else %}
-                                                            <span class="badge bg-secondary bg-opacity-10 text-secondary">N/A</span>
+                                                            <span class="badge bg-secondary">N/A</span>
                                                         {% endif %}
                                                     </td>
                                                 </tr>
@@ -214,20 +216,19 @@
 <div class="modal fade" id="transcriptModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header" style="background-color: #2E7D32; color: white;">
                 <h5 class="modal-title">Transcript Generated</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <p>Your official transcript has been generated successfully.</p>
                 <div class="d-flex gap-2 mt-4">
-                    <button type="button" class="btn btn-outline-secondary flex-grow-1" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-outline-secondary flex-grow-1" data-bs-dismiss="modal" style="border-color: #2E7D32; color: #2E7D32;">
                         Close
                     </button>
-                    <a href="{% url 'download_transcript' %}" class="btn btn-primary flex-grow-1 d-flex align-items-center justify-content-center" role="button">
+                    <a href="{% url 'download_transcript' %}" class="btn flex-grow-1 d-flex align-items-center justify-content-center" role="button" style="background-color: #2E7D32; color: white;">
                         <i class="bi bi-download me-2"></i>Download
                     </a>
-                    
                 </div>
             </div>
         </div>

@@ -1,15 +1,17 @@
 {% extends "base/base.html" %}
+{% load programme_tags %}
+{% load static %}
 
 {% block title %}{{ programme.name }} - Units{% endblock %}
 
 {% block content %}
 <div class="pagetitle">
-    <h1>{{ programme.name }} Units</h1>
+    <h1><i class="bi bi-journal-bookmark me-2"></i>{{ programme.name }} Units</h1>
     <nav>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'programme_list' %}">Programmes</a></li>
-            <li class="breadcrumb-item active">{{ programme.code }}</li>
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}"><i class="bi bi-house-door me-1"></i>Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'programme_list' %}"><i class="bi bi-book me-1"></i>Programmes</a></li>
+            <li class="breadcrumb-item active"><i class="bi bi-list-check me-1"></i>{{ programme.code }}</li>
         </ol>
     </nav>
 </div>
@@ -17,77 +19,142 @@
 <section class="section">
     <div class="row">
         <div class="col-lg-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Programme Information</h5>
-                    <div>
-                        <span class="badge bg-primary me-2">
-                            Duration: {{ programme.duration_years }} year(s)
+            <!-- Programme Overview Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-university-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0"><i class="bi bi-info-circle me-2"></i>Programme Information</h5>
+                    <div class="d-flex gap-2">
+                        <span class="badge bg-university-secondary">
+                            <i class="bi bi-calendar me-1"></i> {{ programme.duration_years }} year(s)
                         </span>
-                        <span class="badge bg-info">
-                            Semesters per year: {{ programme.semesters_per_year }}
+                        <span class="badge bg-university-secondary">
+                            <i class="bi bi-collection me-1"></i> {{ programme.semesters_per_year }} semesters/year
                         </span>
                     </div>
                 </div>
                 <div class="card-body">
-                    <p>{{ programme.description|default:"No description available" }}</p>
+                    <div class="programme-description border-start border-3 border-university-primary ps-3 py-2">
+                        <h6 class="text-university mb-2"><i class="bi bi-card-text me-2"></i>Description</h6>
+                        <p class="mb-0">{{ programme.description|default:"No description available" }}</p>
+                    </div>
+                </div>
+                <div class="card-footer bg-university-light">
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="#" class="btn btn-sm btn-outline-university">
+                            <i class="bi bi-pencil me-1"></i> Edit Programme
+                        </a>
+                        <a href="#" class="btn btn-sm btn-university">
+                            <i class="bi bi-plus-circle me-1"></i> Assign Units
+                        </a>
+                    </div>
                 </div>
             </div>
             
-            <!-- Units by Year and Semester -->
-            {% for year in years %}
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Year {{ year }}</h5>
-                </div>
-                <div class="card-body">
-                    <div class="accordion" id="year{{ year }}Accordion">
+            <!-- Year Navigation Tabs -->
+            <ul class="nav nav-tabs nav-tabs-bordered mb-4" id="yearTabs" role="tablist">
+                {% for year in years %}
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link {% if forloop.first %}active{% endif %}" 
+                           id="year-{{ year }}-tab" 
+                           data-bs-toggle="tab" 
+                           data-bs-target="#year-{{ year }}" 
+                           type="button" role="tab">
+                        <i class="bi bi-calendar3 me-1"></i> Year {{ year }}
+                    </button>
+                </li>
+                {% endfor %}
+            </ul>
+            
+            <!-- Year Content -->
+            <div class="tab-content" id="yearTabsContent">
+                {% for year in years %}
+                <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
+                     id="year-{{ year }}" 
+                     role="tabpanel">
+                     
+                    <!-- Semester Navigation Pills -->
+                    <ul class="nav nav-pills mb-4" id="year-{{ year }}-semesters" role="tablist">
                         {% for semester in semesters %}
-                        <div class="accordion-item">
-                            <h2 class="accordion-header" id="headingYear{{ year }}Sem{{ semester }}">
-                                <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" 
-                                        type="button" 
-                                        data-bs-toggle="collapse" 
-                                        data-bs-target="#collapseYear{{ year }}Sem{{ semester }}" 
-                                        aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" 
-                                        aria-controls="collapseYear{{ year }}Sem{{ semester }}">
-                                    Semester {{ semester }}
-                                </button>
-                            </h2>
-                            <div id="collapseYear{{ year }}Sem{{ semester }}" 
-                                 class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" 
-                                 aria-labelledby="headingYear{{ year }}Sem{{ semester }}" 
-                                 data-bs-parent="#year{{ year }}Accordion">
-                                <div class="accordion-body p-0">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {% if forloop.first %}active{% endif %}" 
+                                   id="year-{{ year }}-semester-{{ semester }}-tab" 
+                                   data-bs-toggle="pill" 
+                                   data-bs-target="#year-{{ year }}-semester-{{ semester }}" 
+                                   type="button" role="tab">
+                                <i class="bi bi-journal me-1"></i> Semester {{ semester }}
+                            </button>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    
+                    <!-- Semester Content -->
+                    <div class="tab-content">
+                        {% for semester in semesters %}
+                        <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
+                             id="year-{{ year }}-semester-{{ semester }}" 
+                             role="tabpanel">
+                             
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-university-light d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-0 text-university">
+                                        <i class="bi bi-journal-text me-2"></i> Year {{ year }} - Semester {{ semester }}
+                                    </h5>
+                                    <span class="badge bg-university-secondary">
+                                        {% with units_in_semester=programme_units|filter_year_semester:year|add:"-"|add:semester %}
+                                            {{ units_in_semester|length }} unit(s)
+                                        {% endwith %}
+                                    </span>
+                                </div>
+                                <div class="card-body">
                                     <div class="table-responsive">
-                                        <table class="table table-hover mb-0">
-                                            <thead class="table-light">
+                                        <table class="table table-hover">
+                                            <thead class="bg-university-light">
                                                 <tr>
-                                                    <th>Code</th>
-                                                    <th>Unit Name</th>
-                                                    <th>Credit Hours</th>
-                                                    <th>Type</th>
-                                                    <th>Description</th>
+                                                    <th><i class="bi bi-hash me-1"></i>Code</th>
+                                                    <th><i class="bi bi-book me-1"></i>Unit Name</th>
+                                                    <th class="text-center"><i class="bi bi-clock me-1"></i>Credits</th>
+                                                    <th class="text-center"><i class="bi bi-tag me-1"></i>Type</th>
+                                                    <th><i class="bi bi-card-text me-1"></i>Description</th>
+                                                    <th class="text-center"><i class="bi bi-gear me-1"></i>Actions</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {% for unit in programme_units %}
                                                     {% if unit.year_of_study == year and unit.semester == semester %}
                                                     <tr>
-                                                        <td>{{ unit.unit.code }}</td>
+                                                        <td class="fw-bold text-university">{{ unit.unit.code }}</td>
                                                         <td>{{ unit.unit.name }}</td>
-                                                        <td>{{ unit.unit.credit_hours }}</td>
-                                                        <td>
-                                                            <span class="badge {% if unit.unit.is_core %}bg-primary{% else %}bg-secondary{% endif %}">
+                                                        <td class="text-center">{{ unit.unit.credit_hours }}</td>
+                                                        <td class="text-center">
+                                                            <span class="badge {% if unit.unit.is_core %}bg-university-primary{% else %}bg-secondary{% endif %}">
                                                                 {% if unit.unit.is_core %}Core{% else %}Elective{% endif %}
                                                             </span>
                                                         </td>
                                                         <td>{{ unit.unit.description|default:"-"|truncatewords:10 }}</td>
+                                                        <td class="text-center">
+                                                            <div class="d-flex gap-2 justify-content-center">
+                                                                <a href="#" class="btn btn-sm btn-outline-university" title="View">
+                                                                    <i class="bi bi-eye"></i>
+                                                                </a>
+                                                                <form method="post" action="#" class="d-inline">
+                                                                    {% csrf_token %}
+                                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Remove">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                        </td>
                                                     </tr>
                                                     {% endif %}
                                                 {% empty %}
                                                     <tr>
-                                                        <td colspan="5" class="text-center">No units in this semester</td>
+                                                        <td colspan="6" class="text-center py-4">
+                                                            <i class="bi bi-journal-x text-muted" style="font-size: 1.5rem;"></i>
+                                                            <p class="text-muted mt-2">No units in this semester</p>
+                                                            <a href="#" class="btn btn-sm btn-university">
+                                                                <i class="bi bi-plus-circle me-1"></i> Assign Units
+                                                            </a>
+                                                        </td>
                                                     </tr>
                                                 {% endfor %}
                                             </tbody>
@@ -99,19 +166,77 @@
                         {% endfor %}
                     </div>
                 </div>
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
     </div>
 </section>
 
 <style>
-    .accordion-button:not(.collapsed) {
-        background-color: rgba(13, 110, 253, 0.05);
-        color: #0d6efd;
+    :root {
+        --university-primary: #2E7D32; /* Dark green */
+        --university-secondary: #81C784; /* Light green */
+        --university-light: #E8F5E9; /* Very light green */
+    }
+    .bg-university-primary {
+        background-color: var(--university-primary) !important;
+    }
+    .bg-university-secondary {
+        background-color: var(--university-secondary) !important;
+    }
+    .bg-university-light {
+        background-color: var(--university-light) !important;
+    }
+    .text-university {
+        color: var(--university-primary);
+    }
+    .btn-university {
+        background-color: var(--university-primary);
+        color: white;
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university {
+        color: var(--university-primary);
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university:hover {
+        background-color: var(--university-primary);
+        color: white;
+    }
+    .nav-tabs-bordered {
+        border-bottom: 2px solid var(--university-light);
+    }
+    .nav-tabs-bordered .nav-link {
+        margin-bottom: -2px;
+        border: none;
+        color: #495057;
+        font-weight: 500;
+    }
+    .nav-tabs-bordered .nav-link.active {
+        border-bottom: 2px solid var(--university-primary);
+        color: var(--university-primary);
+        background-color: transparent;
+    }
+    .nav-pills .nav-link {
+        color: #495057;
+        font-weight: 500;
+        border-radius: 20px;
+    }
+    .nav-pills .nav-link.active {
+        background-color: var(--university-primary);
+        color: white;
+    }
+    .programme-description {
+        background-color: rgba(46, 125, 50, 0.05);
+    }
+    .card {
+        border-radius: 8px;
     }
     .table th {
-        white-space: nowrap;
+        font-weight: 500;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
     }
 </style>
 {% endblock %}

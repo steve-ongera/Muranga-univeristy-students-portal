@@ -3,11 +3,11 @@
 
 {% block content %}
 <div class="pagetitle">
-    <h1>Student Details</h1>
+    <h1><i class="bi bi-person-vcard me-2"></i>Student Profile</h1>
     <nav>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'database_students_list' %}">Students</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}"><i class="bi bi-house-door me-1"></i>Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'database_students_list' %}"><i class="bi bi-people me-1"></i>Students</a></li>
             <li class="breadcrumb-item active">{{ student.first_name }} {{ student.last_name }}</li>
         </ol>
     </nav>
@@ -16,165 +16,200 @@
 <section class="section">
     <div class="row">
         <div class="col-lg-12">
-            <div class="card">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-university-primary text-white">
+                    <h5 class="card-title mb-0"><i class="bi bi-person-lines-fill me-2"></i>Student Details</h5>
+                </div>
+                <br>
                 <div class="card-body">
                     <div class="row">
                         <!-- Profile Column -->
                         <div class="col-md-4 text-center">
-                            <div class="profile-img-container mb-4">
-                                <br>
+                            <div class="profile-img-container mb-4 position-relative">
                                 {% if student.profile_picture %}
                                     <img src="{{ student.profile_picture.url }}" alt="Profile Picture" 
-                                         class="img-fluid rounded-circle border" style="width: 200px; height: 200px; object-fit: cover;">
+                                         class="img-fluid rounded-circle border border-4 border-university-light" 
+                                         style="width: 200px; height: 200px; object-fit: cover;">
                                 {% else %}
                                     <img src="{% static 'assets/img/profile.png' %}" alt="Profile Picture" 
-                                         class="img-fluid rounded-circle border" style="width: 200px; height: 200px; object-fit: cover;">
+                                         class="img-fluid rounded-circle border border-4 border-university-light" 
+                                         style="width: 200px; height: 200px; object-fit: cover;">
                                 {% endif %}
+                                <span class="position-absolute bottom-0 end-0 bg-university-secondary text-white rounded-circle p-2">
+                                    <i class="bi bi-patch-check-fill"></i>
+                                </span>
                             </div>
                             
-                            <h3 class="card-title">{{ student.first_name }} {{ student.last_name }}</h3>
-                            <p class="text-muted">{{ student.programme }}</p>
+                            <h3 class="card-title text-university">{{ student.first_name }} {{ student.last_name }}</h3>
+                            <p class="badge bg-university-secondary fs-6">{{ student.programme }}</p>
                             
-                            <div class="d-grid gap-2 mt-3">
-                                <a href="{% url 'student_update' student.pk %}" class="btn btn-primary">
-                                    <i class="bi bi-pencil"></i> Edit Profile
+                            <div class="d-grid gap-2 mt-4">
+                                <a href="{% url 'student_update' student.pk %}" class="btn btn-university">
+                                    <i class="bi bi-pencil-square me-2"></i> Edit Profile
                                 </a>
-                                <a href="{% url 'student_progress' student_id=student.id %}" class="btn btn-outline-primary">
-                                    <i class="bi bi-journal-bookmark"></i> Academic Records
+                                <a href="{% url 'student_progress' student_id=student.id %}" class="btn btn-outline-university">
+                                    <i class="bi bi-journal-bookmark me-2"></i> Academic Records
                                 </a>
+                            </div>
+
+                            <!-- Quick Stats -->
+                            <div class="card mt-4 border-university-light">
+                                <div class="card-body text-start">
+                                    <h6 class="card-subtitle mb-3 text-university"><i class="bi bi-speedometer2 me-2"></i>Academic Summary</h6>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Current GPA:</span>
+                                        <span class="fw-bold">3.75</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Credits Earned:</span>
+                                        <span class="fw-bold">48</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted">Attendance:</span>
+                                        <span class="fw-bold">92%</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
                         <!-- Details Column -->
                         <div class="col-md-8">
-                            <div class="row">
-                                <!-- Personal Information -->
-                                <div class="col-12">
-                                    <div class="card mb-4">
-                                        <div class="card-header bg-light">
-                                            <h5 class="card-title mb-0">Personal Information</h5>
+                            <!-- Personal Information -->
+                            <div class="card mb-4 border-university-light">
+                                <div class="card-header bg-university-light">
+                                    <h5 class="card-title mb-0 text-university">
+                                        <i class="bi bi-person-badge me-2"></i>Personal Information
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Registration Number</h6>
+                                            <p class="fw-bold">{{ student.registration_number }}</p>
                                         </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <h6 class="text-muted small">Registration Number</h6>
-                                                    <p>{{ student.registration_number }}</p>
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <h6 class="text-muted small">ID Number</h6>
-                                                    <p>{{ student.id_number|default:"Not provided" }}</p>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <h6 class="text-muted small">Date of Birth</h6>
-                                                    <p>{{ student.date_of_birth|date:"d M Y"|default:"Not provided" }}</p>
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <h6 class="text-muted small">Gender</h6>
-                                                    <p>{{ student.get_gender_display }}</p>
-                                                </div>
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-muted small text-uppercase">ID Number</h6>
+                                            <p class="fw-bold">{{ student.id_number|default:"Not provided" }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Date of Birth</h6>
+                                            <p class="fw-bold">{{ student.date_of_birth|date:"d M Y"|default:"Not provided" }}</p>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Gender</h6>
+                                            <span class="badge {% if student.gender == 'M' %}bg-primary{% else %}bg-pink{% endif %}">
+                                                {{ student.get_gender_display }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Contact Information -->
+                            <div class="card mb-4 border-university-light">
+                                <div class="card-header bg-university-light">
+                                    <h5 class="card-title mb-0 text-university">
+                                        <i class="bi bi-geo-alt me-2"></i>Contact Information
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Email</h6>
+                                            <p class="fw-bold">{{ student.email|default:"Not provided" }}</p>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Phone Number</h6>
+                                            <p class="fw-bold">{{ student.phone_number|default:"Not provided" }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-muted small text-uppercase">County</h6>
+                                            <p class="fw-bold">{{ student.county|default:"Not provided" }}</p>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Town</h6>
+                                            <p class="fw-bold">{{ student.town|default:"Not provided" }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-12 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Postal Address</h6>
+                                            <div class="border rounded p-3 bg-light">
+                                                {{ student.postal_address|default:"Not provided" }}
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <!-- Contact Information -->
-                                <div class="col-12">
-                                    <div class="card mb-4">
-                                        <div class="card-header bg-light">
-                                            <h5 class="card-title mb-0">Contact Information</h5>
+                            </div>
+                            
+                            <!-- Academic Information -->
+                            <div class="card mb-4 border-university-light">
+                                <div class="card-header bg-university-light">
+                                    <h5 class="card-title mb-0 text-university">
+                                        <i class="bi bi-book me-2"></i>Academic Information
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Current Year</h6>
+                                            <span class="badge bg-university-secondary">
+                                                Year {{ student.current_year }}
+                                            </span>
                                         </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <h6 class="text-muted small">Email</h6>
-                                                    <p>{{ student.email|default:"Not provided" }}</p>
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <h6 class="text-muted small">Phone Number</h6>
-                                                    <p>{{ student.phone_number|default:"Not provided" }}</p>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <h6 class="text-muted small">County</h6>
-                                                    <p>{{ student.county|default:"Not provided" }}</p>
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <h6 class="text-muted small">Town</h6>
-                                                    <p>{{ student.town|default:"Not provided" }}</p>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="row">
-                                                <div class="col-12 mb-3">
-                                                    <h6 class="text-muted small">Postal Address</h6>
-                                                    <p>{{ student.postal_address|default:"Not provided" }}</p>
-                                                </div>
-                                            </div>
+                                        <div class="col-md-4 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Current Semester</h6>
+                                            <span class="badge bg-university-secondary">
+                                                Semester {{ student.current_semester }}
+                                            </span>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Status</h6>
+                                            <span class="badge {% if student.status == 'active' %}bg-success{% else %}bg-warning{% endif %}">
+                                                {{ student.get_status_display }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Date of Admission</h6>
+                                            <p class="fw-bold">{{ student.date_of_admission|date:"d M Y" }}</p>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Expected Graduation</h6>
+                                            <p class="fw-bold">{{ student.expected_graduation_date|date:"d M Y"|default:"Not set" }}</p>
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <!-- Academic Information -->
-                                <div class="col-12">
-                                    <div class="card mb-4">
-                                        <div class="card-header bg-light">
-                                            <h5 class="card-title mb-0">Academic Information</h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-4 mb-3">
-                                                    <h6 class="text-muted small">Current Year</h6>
-                                                    <p>{{ student.current_year }}</p>
-                                                </div>
-                                                <div class="col-md-4 mb-3">
-                                                    <h6 class="text-muted small">Current Semester</h6>
-                                                    <p>{{ student.current_semester }}</p>
-                                                </div>
-                                                <div class="col-md-4 mb-3">
-                                                    <h6 class="text-muted small">Status</h6>
-                                                    <p>{{ student.get_status_display }}</p>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <h6 class="text-muted small">Date of Admission</h6>
-                                                    <p>{{ student.date_of_admission|date:"d M Y" }}</p>
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <h6 class="text-muted small">Expected Graduation</h6>
-                                                    <p>{{ student.expected_graduation_date|date:"d M Y"|default:"Not set" }}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                            </div>
+                            
+                            <!-- Emergency Contacts -->
+                            <div class="card mb-4 border-university-light">
+                                <div class="card-header bg-university-light">
+                                    <h5 class="card-title mb-0 text-university">
+                                        <i class="bi bi-telephone-plus me-2"></i>Emergency Contacts
+                                    </h5>
                                 </div>
-                                
-                                <!-- Emergency Contacts -->
-                                <div class="col-12">
-                                    <div class="card mb-4">
-                                        <div class="card-header bg-light">
-                                            <h5 class="card-title mb-0">Emergency Contacts</h5>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Parent/Guardian</h6>
+                                            <p class="fw-bold">{{ student.parent_name|default:"Not provided" }}</p>
+                                            <p class="text-muted small">{{ student.parent_phone|default:"" }}</p>
                                         </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <h6 class="text-muted small">Parent/Guardian</h6>
-                                                    <p>{{ student.parent_name|default:"Not provided" }}</p>
-                                                    <p class="text-muted small">{{ student.parent_phone|default:"" }}</p>
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <h6 class="text-muted small">Emergency Contact</h6>
-                                                    <p>{{ student.emergency_contact_name|default:"Not provided" }}</p>
-                                                    <p class="text-muted small">{{ student.emergency_contact_phone|default:"" }}</p>
-                                                    <p class="text-muted small">{{ student.emergency_contact_relationship|default:"" }}</p>
-                                                </div>
-                                            </div>
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Emergency Contact</h6>
+                                            <p class="fw-bold">{{ student.emergency_contact_name|default:"Not provided" }}</p>
+                                            <p class="text-muted small">{{ student.emergency_contact_phone|default:"" }}</p>
+                                            <p class="text-muted small">{{ student.emergency_contact_relationship|default:"" }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -183,12 +218,15 @@
                     </div>
                     
                     <!-- Bottom Action Buttons -->
-                    <div class="text-center mt-4">
-                        <a href="{% url 'database_students_list' %}" class="btn btn-outline-secondary me-2">
-                            <i class="bi bi-arrow-left"></i> Back to List
+                    <div class="text-center mt-4 pt-3 border-top">
+                        <a href="{% url 'database_students_list' %}" class="btn btn-outline-university me-3">
+                            <i class="bi bi-arrow-left me-2"></i> Back to Students
                         </a>
-                        <a href="{% url 'student_progress' student_id=student.id %}" class="btn btn-primary">
-                            <i class="bi bi-journal-bookmark"></i> View Academic Progress
+                        <a href="{% url 'student_progress' student_id=student.id %}" class="btn btn-university">
+                            <i class="bi bi-journal-bookmark me-2"></i> View Academic Progress
+                        </a>
+                        <a href="#" class="btn btn-university ms-3">
+                            <i class="bi bi-printer me-2"></i> Print Profile
                         </a>
                     </div>
                 </div>
@@ -198,21 +236,65 @@
 </section>
 
 <style>
+    :root {
+        --university-primary: #2E7D32; /* Dark green */
+        --university-secondary: #81C784; /* Light green */
+        --university-light: #E8F5E9; /* Very light green */
+    }
+    .bg-university-primary {
+        background-color: var(--university-primary) !important;
+    }
+    .bg-university-secondary {
+        background-color: var(--university-secondary) !important;
+    }
+    .bg-university-light {
+        background-color: var(--university-light) !important;
+    }
+    .border-university-light {
+        border-color: var(--university-light) !important;
+    }
+    .btn-university {
+        background-color: var(--university-primary);
+        color: white;
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university {
+        color: var(--university-primary);
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university:hover {
+        background-color: var(--university-primary);
+        color: white;
+    }
+    .text-university {
+        color: var(--university-primary);
+    }
     .profile-img-container {
         position: relative;
         margin: 0 auto;
         width: 200px;
     }
+    .profile-img-container img {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .card {
+        border-radius: 8px;
+        overflow: hidden;
+    }
     .card-header {
-        padding: 0.75rem 1.25rem;
-        background-color: #f8f9fa;
+        padding: 1rem 1.5rem;
     }
     h6.text-muted.small {
-        font-size: 0.8rem;
-        margin-bottom: 0.3rem;
+        font-size: 0.75rem;
+        margin-bottom: 0.25rem;
+        letter-spacing: 0.5px;
     }
     .rounded-circle {
         border-radius: 50%!important;
+    }
+    .badge.bg-pink {
+        background-color: #ff6b94;
+        color: white;
     }
 </style>
 {% endblock %}

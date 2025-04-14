@@ -1,16 +1,17 @@
 {% extends "base/base.html" %}
+{% load static %}
 
 {% block title %}{{ student.get_full_name }} - Academic Progress{% endblock %}
 
 {% block content %}
 <div class="pagetitle">
-    <h1>Academic Progress Report</h1>
+    <h1><i class="bi bi-journal-text me-2"></i>Academic Progress Report</h1>
     <nav>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'database_students_list' %}">Students</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'student_detail' student.id %}">{{ student.get_full_name }}</a></li>
-            <li class="breadcrumb-item active">Academic Progress</li>
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}"><i class="bi bi-house-door me-1"></i>Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'database_students_list' %}"><i class="bi bi-people me-1"></i>Students</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'student_detail' student.id %}"><i class="bi bi-person me-1"></i>{{ student.get_full_name }}</a></li>
+            <li class="breadcrumb-item active"><i class="bi bi-graph-up me-1"></i>Academic Progress</li>
         </ol>
     </nav>
 </div>
@@ -18,16 +19,16 @@
 <section class="section">
     <div class="row">
         <div class="col-lg-12">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-university-primary text-white">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h2 class="card-title mb-0">Academic Progress Report</h2>
+                        <h2 class="card-title mb-0"><i class="bi bi-journal-bookmark me-2"></i>Academic Progress Report</h2>
                         <div>
-                            <button class="btn btn-light btn-sm" onclick="window.print()">
-                                <i class="bi bi-printer"></i> Print
+                            <button class="btn btn-university-light btn-sm" onclick="window.print()">
+                                <i class="bi bi-printer me-1"></i> Print Report
                             </button>
-                            <a href="{% url 'student_transcript' student.id %}" class="btn btn-outline-light btn-sm ms-2">
-                                <i class="bi bi-file-text"></i> Full Transcript
+                            <a href="{% url 'student_transcript' student.id %}" class="btn btn-outline-university-light btn-sm ms-2">
+                                <i class="bi bi-file-earmark-text me-1"></i> Full Transcript
                             </a>
                         </div>
                     </div>
@@ -35,18 +36,29 @@
                 
                 <div class="card-body">
                     <!-- Student Header Info -->
-                    <div class="student-header mb-4 p-3 bg-light rounded">
-                        <div class="row">
+                    <div class="student-header mb-4 p-3 bg-university-light rounded">
+                        <div class="row align-items-center">
                             <div class="col-md-6">
-                                <h3 class="mb-1">{{ student.get_full_name }}</h3>
-                                <div class="d-flex flex-wrap">
-                                    <div class="me-4">
-                                        <span class="text-muted small">Reg No:</span>
-                                        <span class="fw-bold">{{ student.registration_number }}</span>
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        {% if student.profile_picture %}
+                                        <img src="{{ student.profile_picture.url }}" alt="Profile" class="rounded-circle" width="60" height="60">
+                                        {% else %}
+                                        <img src="{% static 'assets/img/profile.png' %}" alt="Profile" class="rounded-circle" width="60" height="60">
+                                        {% endif %}
                                     </div>
                                     <div>
-                                        <span class="text-muted small">Programme:</span>
-                                        <span class="fw-bold">{{ student.programme.name }}</span>
+                                        <h3 class="mb-1 text-university">{{ student.get_full_name }}</h3>
+                                        <div class="d-flex flex-wrap">
+                                            <div class="me-3">
+                                                <span class="text-muted small">Reg No:</span>
+                                                <span class="fw-bold">{{ student.registration_number }}</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-muted small">Programme:</span>
+                                                <span class="fw-bold">{{ student.programme.name }}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -57,8 +69,10 @@
                                         <span class="fw-bold">{{ student.date_of_admission|date:"F j, Y" }}</span>
                                     </div>
                                     <div>
-                                        <span class="text-muted small">Current:</span>
-                                        <span class="fw-bold">Year {{ student.current_year }} Semester {{ student.current_semester }}</span>
+                                        <span class="text-muted small">Current Status:</span>
+                                        <span class="badge {% if student.status == 'active' %}bg-success{% else %}bg-warning{% endif %}">
+                                            Year {{ student.current_year }} Semester {{ student.current_semester }}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -68,29 +82,31 @@
                     <!-- Academic Years -->
                     {% for year_id, year_data in progress_data.academic_years.items %}
                     <div class="academic-year mb-5">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h4 class="mb-0">{{ year_data.name }}</h4>
-                            <div class="text-muted small">Academic Year</div>
+                        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                            <h4 class="mb-0 text-university">{{ year_data.name }}</h4>
+                            <div class="text-muted small"><i class="bi bi-calendar me-1"></i>Academic Year</div>
                         </div>
                         
                         {% for semester_num, semester_data in year_data.semesters.items %}
-                        <div class="card semester-card mb-4">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0">Semester {{ semester_num }}</h5>
+                        <div class="card semester-card mb-4 border-university-light">
+                            <div class="card-header bg-university-light d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0 text-university">
+                                    <i class="bi bi-journal me-1"></i>Semester {{ semester_num }}
+                                </h5>
                                 <div class="d-flex">
                                     <div class="me-3">
-                                        <span class="badge bg-info">
-                                            <i class="bi bi-graph-up"></i> GPA: {{ semester_data.summary.gpa|floatformat:2 }}
+                                        <span class="badge bg-university-secondary">
+                                            <i class="bi bi-graph-up me-1"></i> GPA: {{ semester_data.summary.gpa|floatformat:2 }}
                                         </span>
                                     </div>
                                     <div class="me-3">
                                         <span class="badge bg-success">
-                                            <i class="bi bi-check-circle"></i> {{ semester_data.summary.units_passed }}/{{ semester_data.summary.units_attempted }} Passed
+                                            <i class="bi bi-check-circle me-1"></i> {{ semester_data.summary.units_passed }}/{{ semester_data.summary.units_attempted }} Passed
                                         </span>
                                     </div>
                                     <div>
                                         <span class="badge bg-primary">
-                                            <i class="bi bi-award"></i> {{ semester_data.summary.earned_credits }} Credits
+                                            <i class="bi bi-award me-1"></i> {{ semester_data.summary.earned_credits }} Credits
                                         </span>
                                     </div>
                                 </div>
@@ -99,22 +115,22 @@
                             <div class="card-body p-0">
                                 <div class="table-responsive">
                                     <table class="table table-hover mb-0">
-                                        <thead class="table-light">
+                                        <thead class="bg-university-light">
                                             <tr>
-                                                <th class="text-nowrap">Unit Code</th>
-                                                <th>Unit Name</th>
-                                                <th class="text-center">Credits</th>
-                                                <th class="text-center">CAT</th>
-                                                <th class="text-center">Exam</th>
-                                                <th class="text-center">Total</th>
-                                                <th class="text-center">Grade</th>
-                                                <th class="text-center">Status</th>
+                                                <th class="text-nowrap"><i class="bi bi-hash me-1"></i>Unit Code</th>
+                                                <th><i class="bi bi-book me-1"></i>Unit Name</th>
+                                                <th class="text-center"><i class="bi bi-clock me-1"></i>Credits</th>
+                                                <th class="text-center"><i class="bi bi-pencil me-1"></i>CAT</th>
+                                                <th class="text-center"><i class="bi bi-file-text me-1"></i>Exam</th>
+                                                <th class="text-center"><i class="bi bi-calculator me-1"></i>Total</th>
+                                                <th class="text-center"><i class="bi bi-flag me-1"></i>Grade</th>
+                                                <th class="text-center"><i class="bi bi-check-circle me-1"></i>Status</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {% for unit in semester_data.units %}
                                             <tr>
-                                                <td class="fw-bold">{{ unit.code }}</td>
+                                                <td class="fw-bold text-university">{{ unit.code }}</td>
                                                 <td>{{ unit.name }}</td>
                                                 <td class="text-center">{{ unit.credit_hours }}</td>
                                                 <td class="text-center">{{ unit.cat_average|floatformat:1|default:"-" }}</td>
@@ -135,11 +151,11 @@
                                                 <td class="text-center">
                                                     {% if unit.is_pass %}
                                                         <span class="badge bg-success-light text-success">
-                                                            <i class="bi bi-check-circle-fill"></i> Pass
+                                                            <i class="bi bi-check-circle-fill me-1"></i> Pass
                                                         </span>
                                                     {% else %}
                                                         <span class="badge bg-danger-light text-danger">
-                                                            <i class="bi bi-x-circle-fill"></i> Fail
+                                                            <i class="bi bi-x-circle-fill me-1"></i> Fail
                                                         </span>
                                                     {% endif %}
                                                 </td>
@@ -155,14 +171,14 @@
                     {% endfor %}
                 </div>
                 
-                <div class="card-footer bg-light">
+                <div class="card-footer bg-university-light">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="text-muted small">
-                            <i class="bi bi-clock"></i> Generated on {% now "F j, Y H:i" %}
+                            <i class="bi bi-clock me-1"></i> Generated on {% now "F j, Y H:i" %}
                         </div>
                         <div>
-                            <a href="{% url 'student_detail' student.id %}" class="btn btn-outline-secondary btn-sm">
-                                <i class="bi bi-arrow-left"></i> Back to Profile
+                            <a href="{% url 'student_detail' student.id %}" class="btn btn-outline-university btn-sm">
+                                <i class="bi bi-arrow-left me-1"></i> Back to Profile
                             </a>
                         </div>
                     </div>
@@ -173,20 +189,51 @@
 </section>
 
 <style>
+    :root {
+        --university-primary: #2E7D32; /* Dark green */
+        --university-secondary: #81C784; /* Light green */
+        --university-light: #E8F5E9; /* Very light green */
+    }
+    .bg-university-primary {
+        background-color: var(--university-primary) !important;
+    }
+    .bg-university-secondary {
+        background-color: var(--university-secondary) !important;
+    }
+    .bg-university-light {
+        background-color: var(--university-light) !important;
+    }
+    .border-university-light {
+        border-color: var(--university-light) !important;
+    }
+    .btn-university-light {
+        background-color: white;
+        color: var(--university-primary);
+        border-color: white;
+    }
+    .btn-outline-university-light {
+        color: white;
+        border-color: white;
+    }
+    .btn-outline-university-light:hover {
+        background-color: rgba(255,255,255,0.2);
+    }
+    .text-university {
+        color: var(--university-primary);
+    }
     .student-header {
-        border-left: 4px solid var(--bs-primary);
+        border-left: 4px solid var(--university-primary);
     }
     .semester-card {
-        border: 1px solid rgba(0,0,0,.125);
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    }
-    .semester-card .card-header {
-        background-color: rgba(13,110,253,.05);
-        border-bottom: 1px solid rgba(0,0,0,.125);
+        border-radius: 8px;
+        overflow: hidden;
     }
     .table th {
         white-space: nowrap;
         font-weight: 500;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
     }
     .badge.bg-success-light {
         background-color: rgba(25, 135, 84, 0.1);
@@ -200,6 +247,10 @@
         }
         .card {
             border: none;
+        }
+        .student-header {
+            background-color: transparent !important;
+            border: none !important;
         }
     }
 </style>

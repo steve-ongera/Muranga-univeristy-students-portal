@@ -1,14 +1,15 @@
 {% extends "base/base.html" %}
+{% load static %}
 
 {% block title %}Academic Programmes{% endblock %}
 
 {% block content %}
 <div class="pagetitle">
-    <h1>Academic Programmes</h1>
+    <h1><i class="bi bi-book me-2"></i>Academic Programmes</h1>
     <nav>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
-            <li class="breadcrumb-item active">Programmes</li>
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}"><i class="bi bi-house-door me-1"></i>Dashboard</a></li>
+            <li class="breadcrumb-item active"><i class="bi bi-book me-1"></i>Programmes</li>
         </ol>
     </nav>
 </div>
@@ -16,45 +17,132 @@
 <section class="section">
     <div class="row">
         <div class="col-lg-12">
-            <div class="card">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-university-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0"><i class="bi bi-list-check me-2"></i>All Academic Programmes</h5>
+                        <a href="#" class="btn btn-university-light btn-sm">
+                            <i class="bi bi-plus-circle me-1"></i> Add Programme
+                        </a>
+                    </div>
+                </div>
+                
                 <div class="card-body">
-                    <h5 class="card-title">All Programmes</h5>
-                    
                     <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="table-light">
+                        <table class="table table-hover datatable">
+                            <thead class="bg-university-light">
                                 <tr>
-                                    <th>Code</th>
-                                    <th>Programme Name</th>
-                                    <th>Department</th>
-                                    <th>Duration</th>
-                                    <th>Actions</th>
+                                    <th><i class="bi bi-hash me-1"></i>Code</th>
+                                    <th><i class="bi bi-book me-1"></i>Programme Name</th>
+                                    <th><i class="bi bi-building me-1"></i>Department</th>
+                                    <th><i class="bi bi-calendar me-1"></i>Duration</th>
+                                    <th><i class="bi bi-gear me-1"></i>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for programme in programmes %}
                                 <tr>
-                                    <td>{{ programme.code }}</td>
+                                    <td class="fw-bold text-university">{{ programme.code }}</td>
                                     <td>{{ programme.name }}</td>
                                     <td>{{ programme.department.name }}</td>
                                     <td>{{ programme.duration_years }} year(s)</td>
                                     <td>
-                                        <a href="{% url 'programme_detail' programme.id %}" class="btn btn-sm btn-primary">
-                                            <i class="bi bi-eye"></i> View Units
-                                        </a>
+                                        <div class="d-flex gap-2">
+                                            <a href="{% url 'programme_detail' programme.id %}" class="btn btn-sm btn-outline-university" title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="#" class="btn btn-sm btn-outline-secondary" title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="#" class="btn btn-sm btn-outline-danger" title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="5" class="text-center">No programmes found</td>
+                                    <td colspan="5" class="text-center py-4">
+                                        <i class="bi bi-book text-muted" style="font-size: 2rem;"></i>
+                                        <p class="text-muted mt-2">No academic programmes found</p>
+                                        <a href="{% url 'programme_create' %}" class="btn btn-university btn-sm">
+                                            <i class="bi bi-plus-circle me-1"></i> Add New Programme
+                                        </a>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
                 </div>
+                
+                <div class="card-footer bg-university-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-muted small">
+                            <i class="bi bi-info-circle me-1"></i> Showing {{ programmes.count }} programme(s)
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-outline-university">
+                                <i class="bi bi-printer me-1"></i> Print List
+                            </button>
+                            <button class="btn btn-sm btn-outline-university ms-2">
+                                <i class="bi bi-download me-1"></i> Export
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
+
+<style>
+    :root {
+        --university-primary: #2E7D32; /* Dark green */
+        --university-secondary: #81C784; /* Light green */
+        --university-light: #E8F5E9; /* Very light green */
+    }
+    .bg-university-primary {
+        background-color: var(--university-primary) !important;
+    }
+    .bg-university-secondary {
+        background-color: var(--university-secondary) !important;
+    }
+    .bg-university-light {
+        background-color: var(--university-light) !important;
+    }
+    .text-university {
+        color: var(--university-primary);
+    }
+    .btn-university {
+        background-color: var(--university-primary);
+        color: white;
+        border-color: var(--university-primary);
+    }
+    .btn-university-light {
+        background-color: white;
+        color: var(--university-primary);
+        border-color: white;
+    }
+    .btn-outline-university {
+        color: var(--university-primary);
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university:hover {
+        background-color: var(--university-primary);
+        color: white;
+    }
+    .card {
+        border-radius: 8px;
+    }
+    .table th {
+        font-weight: 500;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+    }
+    .datatable tbody tr:hover {
+        background-color: rgba(0,0,0,0.02);
+    }
+</style>
 {% endblock %}

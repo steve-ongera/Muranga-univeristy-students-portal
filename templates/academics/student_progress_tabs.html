@@ -5,13 +5,13 @@
 
 {% block content %}
 <div class="pagetitle">
-    <h1>Academic Progress</h1>
+    <h1><i class="bi bi-journal-bookmark me-2"></i>Academic Progress</h1>
     <nav>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'database_students_list' %}">Students</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'student_detail' student.id %}">{{ student.get_full_name }}</a></li>
-            <li class="breadcrumb-item active">Academic Progress</li>
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}"><i class="bi bi-house-door me-1"></i>Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'database_students_list' %}"><i class="bi bi-people me-1"></i>Students</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'student_detail' student.id %}"><i class="bi bi-person me-1"></i>{{ student.get_full_name }}</a></li>
+            <li class="breadcrumb-item active"><i class="bi bi-graph-up me-1"></i>Academic Progress</li>
         </ol>
     </nav>
 </div>
@@ -19,18 +19,18 @@
 <section class="section">
     <div class="row">
         <div class="col-lg-12">
-            <div class="card">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-university-primary text-white d-flex justify-content-between align-items-center">
                     <div>
-                        <h2 class="card-title mb-1">{{ student.get_full_name }}</h2>
+                        <h2 class="card-title mb-1"><i class="bi bi-person-vcard me-2"></i>{{ student.get_full_name }}</h2>
                         <p class="card-subtitle mb-0 opacity-75">
-                            <i class="bi bi-person-badge"></i> {{ student.registration_number }} | 
-                            <i class="bi bi-book"></i> {{ student.programme.name }}
+                            <i class="bi bi-person-badge me-1"></i> {{ student.registration_number }} | 
+                            <i class="bi bi-book me-1"></i> {{ student.programme.name }}
                         </p>
                     </div>
                     <div>
-                        <button class="btn btn-light btn-sm" onclick="window.print()">
-                            <i class="bi bi-printer"></i> Print
+                        <button class="btn btn-university-light btn-sm" onclick="window.print()">
+                            <i class="bi bi-printer me-1"></i> Print Report
                         </button>
                     </div>
                 </div>
@@ -45,7 +45,7 @@
                                    data-bs-toggle="tab" 
                                    data-bs-target="#year-{{ year_id }}" 
                                    type="button" role="tab">
-                                <i class="bi bi-calendar-range"></i> {{ year_data.name }}
+                                <i class="bi bi-calendar-range me-1"></i> {{ year_data.name }}
                             </button>
                         </li>
                         {% endfor %}
@@ -67,7 +67,7 @@
                                            data-bs-toggle="pill" 
                                            data-bs-target="#year-{{ year_id }}-semester-{{ semester_num }}" 
                                            type="button" role="tab">
-                                        <i class="bi bi-collection"></i> Semester {{ semester_num }}
+                                        <i class="bi bi-collection me-1"></i> Semester {{ semester_num }}
                                     </button>
                                 </li>
                                 {% endfor %}
@@ -80,41 +80,41 @@
                                      id="year-{{ year_id }}-semester-{{ semester_num }}" 
                                      role="tabpanel">
                                      
-                                    <div class="card border-0 shadow-sm">
-                                        <div class="card-header bg-light d-flex justify-content-between align-items-center flex-wrap">
-                                            <h5 class="mb-0">
-                                                <i class="bi bi-journal-text"></i> Semester {{ semester_num }} Performance
+                                    <div class="card border-university-light shadow-sm">
+                                        <div class="card-header bg-university-light d-flex justify-content-between align-items-center flex-wrap">
+                                            <h5 class="mb-0 text-university">
+                                                <i class="bi bi-journal-text me-2"></i> Semester {{ semester_num }} Performance
                                             </h5>
                                             <div class="d-flex gap-2 mt-2 mt-md-0">
-                                                <span class="badge bg-info">
-                                                    <i class="bi bi-graph-up"></i> GPA: {{ semester_data.summary.gpa|floatformat:2 }}
+                                                <span class="badge bg-university-secondary">
+                                                    <i class="bi bi-graph-up me-1"></i> GPA: {{ semester_data.summary.gpa|floatformat:2 }}
                                                 </span>
                                                 <span class="badge bg-success">
-                                                    <i class="bi bi-award"></i> Credits: {{ semester_data.summary.earned_credits }}
+                                                    <i class="bi bi-award me-1"></i> Credits: {{ semester_data.summary.earned_credits }}
                                                 </span>
                                                 <span class="badge bg-primary">
-                                                    <i class="bi bi-calendar3"></i> Year {{ semester_data.units.0.year_of_study|default:1 }}
+                                                    <i class="bi bi-calendar3 me-1"></i> Year {{ semester_data.units.0.year_of_study|default:1 }}
                                                 </span>
                                             </div>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table class="table table-hover align-middle">
-                                                    <thead class="table-light">
+                                                    <thead class="bg-university-light">
                                                         <tr>
-                                                            <th class="text-nowrap">Code</th>
-                                                            <th>Unit Name</th>
-                                                            <th class="text-center">Credits</th>
-                                                            <th class="text-center">CAT</th>
-                                                            <th class="text-center">Exam</th>
-                                                            <th class="text-center">Total</th>
-                                                            <th class="text-center">Grade</th>
+                                                            <th class="text-nowrap"><i class="bi bi-hash me-1"></i>Code</th>
+                                                            <th><i class="bi bi-book me-1"></i>Unit Name</th>
+                                                            <th class="text-center"><i class="bi bi-clock me-1"></i>Credits</th>
+                                                            <th class="text-center"><i class="bi bi-pencil me-1"></i>CAT</th>
+                                                            <th class="text-center"><i class="bi bi-file-text me-1"></i>Exam</th>
+                                                            <th class="text-center"><i class="bi bi-calculator me-1"></i>Total</th>
+                                                            <th class="text-center"><i class="bi bi-flag me-1"></i>Grade</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         {% for unit in semester_data.units %}
                                                         <tr>
-                                                            <td class="fw-bold">{{ unit.code }}</td>
+                                                            <td class="fw-bold text-university">{{ unit.code }}</td>
                                                             <td>{{ unit.name }}</td>
                                                             <td class="text-center">{{ unit.credit_hours }}</td>
                                                             <td class="text-center">{{ unit.cat_average|floatformat:1|default:"-" }}</td>
@@ -147,14 +147,14 @@
                     </div>
                 </div>
                 
-                <div class="card-footer bg-light">
+                <div class="card-footer bg-university-light">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="text-muted small">
-                            <i class="bi bi-clock"></i> Generated on {% now "F j, Y H:i" %}
+                            <i class="bi bi-clock me-1"></i> Generated on {% now "F j, Y H:i" %}
                         </div>
                         <div>
-                            <a href="{% url 'student_detail' student.id %}" class="btn btn-outline-secondary btn-sm">
-                                <i class="bi bi-arrow-left"></i> Back to Profile
+                            <a href="{% url 'student_detail' student.id %}" class="btn btn-outline-university btn-sm">
+                                <i class="bi bi-arrow-left me-1"></i> Back to Profile
                             </a>
                         </div>
                     </div>
@@ -165,8 +165,42 @@
 </section>
 
 <style>
+    :root {
+        --university-primary: #2E7D32; /* Dark green */
+        --university-secondary: #81C784; /* Light green */
+        --university-light: #E8F5E9; /* Very light green */
+    }
+    .bg-university-primary {
+        background-color: var(--university-primary) !important;
+    }
+    .bg-university-secondary {
+        background-color: var(--university-secondary) !important;
+    }
+    .bg-university-light {
+        background-color: var(--university-light) !important;
+    }
+    .text-university {
+        color: var(--university-primary);
+    }
+    .btn-university-light {
+        background-color: white;
+        color: var(--university-primary);
+        border-color: white;
+    }
+    .btn-outline-university {
+        color: var(--university-primary);
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university:hover {
+        background-color: var(--university-primary);
+        color: white;
+    }
+    .border-university-light {
+        border-color: var(--university-light) !important;
+    }
+    
     .nav-tabs-bordered {
-        border-bottom: 2px solid #dee2e6;
+        border-bottom: 2px solid var(--university-light);
     }
     
     .nav-tabs-bordered .nav-link {
@@ -177,28 +211,49 @@
     }
     
     .nav-tabs-bordered .nav-link.active {
-        border-bottom: 2px solid #0d6efd;
-        color: #0d6efd;
+        border-bottom: 2px solid var(--university-primary);
+        color: var(--university-primary);
         background-color: transparent;
     }
     
     .nav-pills .nav-link {
         color: #495057;
         font-weight: 500;
+        border-radius: 20px;
+    }
+    
+    .nav-pills .nav-link.active {
+        background-color: var(--university-primary);
+        color: white;
     }
     
     .table th {
         white-space: nowrap;
         font-weight: 500;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
     }
     
-    .card-header h5 {
-        font-size: 1.1rem;
+    .card {
+        border-radius: 8px;
     }
     
     @media print {
         .breadcrumb, .card-header button, .card-footer {
             display: none !important;
+        }
+        body {
+            background-color: white !important;
+            color: black !important;
+        }
+        .card {
+            box-shadow: none !important;
+            border: none !important;
+        }
+        .bg-university-primary, .bg-university-light {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
     }
 </style>

@@ -5,11 +5,11 @@
 
 {% block content %}
 <div class="pagetitle">
-    <h1>Lecturer Profile</h1>
+    <h1><i class="bi bi-person-badge me-2"></i>Lecturer Profile</h1>
     <nav>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'lecturer_list' %}">Lecturers</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}"><i class="bi bi-house-door"></i> Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'lecturer_list' %}"><i class="bi bi-people"></i> Lecturers</a></li>
             <li class="breadcrumb-item active">{{ lecturer.get_full_name }}</li>
         </ol>
     </nav>
@@ -18,125 +18,164 @@
 <section class="section">
     <div class="row">
         <div class="col-lg-12">
-            <div class="card">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-university-primary text-white">
+                    <h5 class="card-title mb-0"><i class="bi bi-person-lines-fill me-2"></i>Lecturer Details</h5>
+                </div>
                 <div class="card-body">
                     <div class="row">
                         <!-- Profile Column -->
                         <div class="col-md-4 text-center">
-                            <div class="profile-img-container mb-4">
+                            <div class="profile-img-container mb-4 position-relative">
                                 {% if lecturer.profile_picture %}
                                     <img src="{{ lecturer.profile_picture.url }}" alt="Profile Picture" 
-                                         class="img-fluid rounded-circle border" style="width: 200px; height: 200px; object-fit: cover;">
+                                         class="img-fluid rounded-circle border border-4 border-university-light" 
+                                         style="width: 200px; height: 200px; object-fit: cover;">
                                 {% else %}
                                     <img src="{% static 'assets/img/profile.png' %}" alt="Profile Picture" 
-                                         class="img-fluid rounded-circle border" style="width: 200px; height: 200px; object-fit: cover;">
+                                         class="img-fluid rounded-circle border border-4 border-university-light" 
+                                         style="width: 200px; height: 200px; object-fit: cover;">
                                 {% endif %}
+                                <span class="position-absolute bottom-0 end-0 bg-university-secondary text-white rounded-circle p-2">
+                                    <i class="bi bi-patch-check-fill"></i>
+                                </span>
                             </div>
                             
-                            <h3 class="card-title">{{ lecturer.get_full_name }}</h3>
-                            <p class="text-muted">{{ lecturer.get_academic_rank_display }}</p>
+                            <h3 class="card-title text-university">{{ lecturer.get_full_name }}</h3>
+                            <p class="badge bg-university-secondary fs-6">{{ lecturer.get_academic_rank_display }}</p>
                             
-                            <div class="d-grid gap-2 mt-3">
-                                <a href="{% url 'lecturer_update' lecturer.pk %}" class="btn btn-primary">
-                                    <i class="bi bi-pencil"></i> Edit Profile
+                            <div class="d-grid gap-2 mt-4">
+                                <a href="{% url 'lecturer_update' lecturer.pk %}" class="btn btn-university">
+                                    <i class="bi bi-pencil-square me-2"></i> Edit Profile
                                 </a>
-                                <a href="#" class="btn btn-outline-primary">
-                                    <i class="bi bi-journal-bookmark"></i> View Courses
+                                <a href="#" class="btn btn-outline-university">
+                                    <i class="bi bi-journal-bookmark me-2"></i> View Courses
                                 </a>
+                            </div>
+
+                            <!-- Quick Stats -->
+                            <div class="card mt-4 border-university-light">
+                                <div class="card-body text-start">
+                                    <h6 class="card-subtitle mb-3 text-university"><i class="bi bi-speedometer2 me-2"></i>Quick Stats</h6>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Courses:</span>
+                                        <span class="fw-bold">12</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Students:</span>
+                                        <span class="fw-bold">245</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted">Years:</span>
+                                        <span class="fw-bold">5</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
                         <!-- Details Column -->
                         <div class="col-md-8">
-                            <div class="row">
-                                <!-- Professional Information -->
-                                <div class="col-12">
-                                    <div class="card mb-4">
-                                        <div class="card-header bg-light">
-                                            <h5 class="card-title mb-0">Professional Information</h5>
+                            <!-- Professional Information -->
+                            <div class="card mb-4 border-university-light">
+                                <div class="card-header bg-university-light">
+                                    <h5 class="card-title mb-0 text-university">
+                                        <i class="bi bi-briefcase me-2"></i>Professional Information
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Staff ID</h6>
+                                            <p class="fw-bold">{{ lecturer.staff_id }}</p>
                                         </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <h6 class="text-muted small">Staff ID</h6>
-                                                    <p>{{ lecturer.staff_id }}</p>
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <h6 class="text-muted small">Department</h6>
-                                                    <p>{{ lecturer.department.name }}</p>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <h6 class="text-muted small">Employment Type</h6>
-                                                    <p>{{ lecturer.get_employment_type_display }}</p>
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <h6 class="text-muted small">Date of Employment</h6>
-                                                    <p>{{ lecturer.date_of_employment|date:"d M Y"|default:"Not provided" }}</p>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <h6 class="text-muted small">Qualification</h6>
-                                                    <p>{{ lecturer.qualification|default:"Not provided" }}</p>
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <h6 class="text-muted small">Specialization</h6>
-                                                    <p>{{ lecturer.specialization|default:"Not provided" }}</p>
-                                                </div>
-                                            </div>
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Department</h6>
+                                            <p class="fw-bold">{{ lecturer.department.name }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Employment Type</h6>
+                                            <p class="fw-bold">{{ lecturer.get_employment_type_display }}</p>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Date of Employment</h6>
+                                            <p class="fw-bold">{{ lecturer.date_of_employment|date:"d M Y"|default:"Not provided" }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Qualification</h6>
+                                            <p class="fw-bold">{{ lecturer.qualification|default:"Not provided" }}</p>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Specialization</h6>
+                                            <p class="fw-bold">{{ lecturer.specialization|default:"Not provided" }}</p>
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <!-- Contact Information -->
-                                <div class="col-12">
-                                    <div class="card mb-4">
-                                        <div class="card-header bg-light">
-                                            <h5 class="card-title mb-0">Contact Information</h5>
+                            </div>
+                            
+                            <!-- Contact Information -->
+                            <div class="card mb-4 border-university-light">
+                                <div class="card-header bg-university-light">
+                                    <h5 class="card-title mb-0 text-university">
+                                        <i class="bi bi-telephone me-2"></i>Contact Information
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Email</h6>
+                                            <p class="fw-bold">{{ lecturer.email|default:"Not provided" }}</p>
                                         </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <h6 class="text-muted small">Email</h6>
-                                                    <p>{{ lecturer.email|default:"Not provided" }}</p>
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <h6 class="text-muted small">Phone Number</h6>
-                                                    <p>{{ lecturer.phone_number|default:"Not provided" }}</p>
-                                                </div>
-                                            </div>
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Phone Number</h6>
+                                            <p class="fw-bold">{{ lecturer.phone_number|default:"Not provided" }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Office</h6>
+                                            <p class="fw-bold">{{ lecturer.office_location|default:"Not provided" }}</p>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Office Hours</h6>
+                                            <p class="fw-bold">{{ lecturer.office_hours|default:"Not provided" }}</p>
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <!-- Additional Information -->
-                                <div class="col-12">
-                                    <div class="card mb-4">
-                                        <div class="card-header bg-light">
-                                            <h5 class="card-title mb-0">Additional Information</h5>
+                            </div>
+                            
+                            <!-- Additional Information -->
+                            <div class="card mb-4 border-university-light">
+                                <div class="card-header bg-university-light">
+                                    <h5 class="card-title mb-0 text-university">
+                                        <i class="bi bi-info-circle me-2"></i>Additional Information
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-12 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Biography</h6>
+                                            <div class="border rounded p-3 bg-light">
+                                                {{ lecturer.biography|default:"Not provided"|linebreaks }}
+                                            </div>
                                         </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-12 mb-3">
-                                                    <h6 class="text-muted small">Biography</h6>
-                                                    <p>{{ lecturer.biography|default:"Not provided"|linebreaks }}</p>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <h6 class="text-muted small">National ID</h6>
-                                                    <p>{{ lecturer.national_id|default:"Not provided" }}</p>
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <h6 class="text-muted small">Status</h6>
-                                                    <p>{{ lecturer.get_status_display }}</p>
-                                                </div>
-                                            </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-muted small text-uppercase">National ID</h6>
+                                            <p class="fw-bold">{{ lecturer.national_id|default:"Not provided" }}</p>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-muted small text-uppercase">Status</h6>
+                                            <span class="badge {% if lecturer.status == 'active' %}bg-success{% else %}bg-warning{% endif %}">
+                                                {{ lecturer.get_status_display }}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -145,12 +184,15 @@
                     </div>
                     
                     <!-- Bottom Action Buttons -->
-                    <div class="text-center mt-4">
-                        <a href="{% url 'lecturer_list' %}" class="btn btn-outline-secondary me-2">
-                            <i class="bi bi-arrow-left"></i> Back to List
+                    <div class="text-center mt-4 pt-3 border-top">
+                        <a href="{% url 'lecturer_list' %}" class="btn btn-outline-university me-3">
+                            <i class="bi bi-arrow-left me-2"></i> Back to Lecturers
                         </a>
-                        <a href="#" class="btn btn-primary">
-                            <i class="bi bi-journal-bookmark"></i> View Assigned Courses
+                        <a href="#" class="btn btn-university">
+                            <i class="bi bi-printer me-2"></i> Print Profile
+                        </a>
+                        <a href="#" class="btn btn-university ms-3">
+                            <i class="bi bi-journal-bookmark me-2"></i> View Assigned Courses
                         </a>
                     </div>
                 </div>
@@ -160,25 +202,61 @@
 </section>
 
 <style>
+    :root {
+        --university-primary: #2E7D32; /* Dark green */
+        --university-secondary: #81C784; /* Light green */
+        --university-light: #E8F5E9; /* Very light green */
+    }
+    .bg-university-primary {
+        background-color: var(--university-primary) !important;
+    }
+    .bg-university-secondary {
+        background-color: var(--university-secondary) !important;
+    }
+    .bg-university-light {
+        background-color: var(--university-light) !important;
+    }
+    .border-university-light {
+        border-color: var(--university-light) !important;
+    }
+    .btn-university {
+        background-color: var(--university-primary);
+        color: white;
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university {
+        color: var(--university-primary);
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university:hover {
+        background-color: var(--university-primary);
+        color: white;
+    }
+    .text-university {
+        color: var(--university-primary);
+    }
     .profile-img-container {
         position: relative;
         margin: 0 auto;
         width: 200px;
-        margin-top:12px;
+    }
+    .profile-img-container img {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .card {
+        border-radius: 8px;
+        overflow: hidden;
     }
     .card-header {
-        padding: 0.75rem 1.25rem;
-        background-color: #f8f9fa;
+        padding: 1rem 1.5rem;
     }
     h6.text-muted.small {
-        font-size: 0.8rem;
-        margin-bottom: 0.3rem;
+        font-size: 0.75rem;
+        margin-bottom: 0.25rem;
+        letter-spacing: 0.5px;
     }
     .rounded-circle {
         border-radius: 50%!important;
-    }
-    .card-title.mb-0 {
-        font-size: 1.1rem;
     }
 </style>
 {% endblock %}
