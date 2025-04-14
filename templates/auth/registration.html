@@ -1,6 +1,3 @@
-
-
-
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -9,198 +6,368 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>Muranga university of Technology | Register</title>
-  <meta content="" name="description">
-  <meta content="" name="keywords">
+  <title>Muranga University of Technology | Register</title>
+  <meta content="Official registration portal for Muranga University of Technology" name="description">
+  <meta content="Muranga University, MUT, Registration, Sign up" name="keywords">
 
   <!-- Favicons -->
-  <link href="{% static 'assets/img/logo.png' %}" rel="icon">
-  <link href="{% static 'assets/img/logo.png' %}" rel="apple-touch-icon">
+  <link href="{% static 'assets/img/logo.png'%}" rel="icon">
+  <link href="{% static 'assets/img/logo.png'%}" rel="apple-touch-icon">
 
   <!-- Google Fonts -->
-  <link href="https://fonts.gstatic.com" rel="preconnect">
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Vendor CSS Files -->
-  <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
-  <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
-  <link href="{% static 'assets/vendor/boxicons/css/boxicons.min.css' %}" rel="stylesheet">
-  <link href="{% static 'assets/vendor/quill/quill.snow.css' %}" rel="stylesheet">
-  <link href="{% static 'assets/vendor/quill/quill.bubble.css' %}" rel="stylesheet">
-  <link href="{% static 'assets/vendor/remixicon/remixicon.css' %}" rel="stylesheet">
-  <link href="{% static 'assets/vendor/simple-datatables/style.css' %}" rel="stylesheet">
+  <!-- Bootstrap CSS -->
+  <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css'%}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css'%}" rel="stylesheet">
 
-  <!-- Template Main CSS File -->
-  <link href="{% static 'assets/css/style.css' %}" rel="stylesheet">
+  <style>
+    :root {
+      --mut-green: #66c743;
+      --mut-dark-green: #4da53a;
+      --mut-gray: #f8f9fa;
+      --mut-dark: #2c3e50;
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--mut-gray);
+    }
+    
+    .register-container {
+      max-width: 500px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    
+    .register-card {
+      border: none;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    
+    .register-header {
+      background-color: white;
+      padding: 1rem;
+      text-align: center;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .register-logo {
+      height: 50px;
+      margin-bottom: 0.5rem;
+    }
+    
+    .university-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--mut-dark);
+      margin-bottom: 0.25rem;
+    }
+    
+    .university-name-short {
+      display: none;
+    }
+    
+    .register-title {
+      color: var(--mut-dark);
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      font-size: 1rem;
+    }
+    
+    .register-subtitle {
+      color: #6c757d;
+      font-size: 0.8rem;
+    }
+    
+    .register-body {
+      padding: 1.25rem;
+      background-color: white;
+    }
+    
+    .form-label {
+      font-weight: 500;
+      color: var(--mut-dark);
+      margin-bottom: 0.4rem;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    
+    .form-control, .form-select {
+      padding: 0.5rem 0.75rem;
+      border-radius: 4px;
+      border: 1px solid #e0e0e0;
+      font-size: 0.85rem;
+      height: calc(1.5em + 0.75rem + 2px);
+    }
+    
+    .form-control:focus, .form-select:focus {
+      border-color: var(--mut-green);
+      box-shadow: 0 0 0 0.2rem rgba(102, 199, 67, 0.15);
+    }
+    
+    .btn-mut {
+      background-color: var(--mut-green);
+      border-color: var(--mut-green);
+      color: white;
+      padding: 0.5rem;
+      font-weight: 500;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+    
+    .btn-mut:hover {
+      background-color: var(--mut-dark-green);
+      border-color: var(--mut-dark-green);
+    }
+    
+    .form-text {
+      font-size: 0.75rem;
+      color: #6c757d !important;
+      margin-top: 0.2rem;
+    }
+    
+    .login-link {
+      color: var(--mut-green);
+      font-weight: 500;
+      text-decoration: none;
+      font-size: 0.85rem;
+    }
+    
+    .footer {
+      text-align: center;
+      color: #6c757d;
+      font-size: 0.75rem;
+      margin-top: 1rem;
+    }
+    
+    .password-toggle {
+      cursor: pointer;
+      color: #6c757d;
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    
+    .alert {
+      border-radius: 4px;
+      padding: 0.5rem 0.75rem;
+      margin-bottom: 0.75rem;
+      font-size: 0.85rem;
+    }
+    
+    .name-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .name-field {
+      flex: 1;
+    }
+    
+    .input-group {
+      position: relative;
+    }
+    
+    @media (max-width: 576px) {
+      .register-container {
+        padding: 0 15px;
+      }
+      
+      .university-name {
+        display: none;
+      }
+      
+      .university-name-short {
+        display: block;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--mut-dark);
+        margin-bottom: 0.25rem;
+      }
+      
+      .register-header {
+        padding: 0.75rem;
+      }
+      
+      .register-body {
+        padding: 1rem;
+      }
+      
+      .name-row {
+        flex-direction: column;
+        gap: 0;
+      }
+    }
+  </style>
 </head>
 
 <body>
-
-  <main>
-    <div class="container">
-
-      <section class="section register min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
-        <div class="container">
-          <div class="row justify-content-center">
-            <div class="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
-
-              <div class="d-flex justify-content-center py-4">
-                <a href="{% url 'register'%}" class="logo d-flex align-items-center w-auto">
-                  <img src="{% static 'assets/img/logo.png' %}" alt=""  style="max-width: 80px; max-height: 80px;">
-                  <span class="d-none d-lg-block">MUT Portal</span>
-                </a>
-              </div><!-- End Logo -->
-
-              <div class="card mb-3">
-
-                <div class="card-body">
-
-                  <div class="message-container" id="system-messages">
-                    {% for message in messages %}
-                    <div class="alert-message alert-{{ message.tags }}">
-                        {{ message }}
-                        <span class="close-message">&times;</span>
-                    </div>
-                    {% endfor %}
-                  </div>
-
-                  {% if form.non_field_errors %}
-                  <div class="alert alert-danger">
-                    {% for error in form.non_field_errors %}
-                    <p>{{ error }}</p>
-                    {% endfor %}
-                  </div>
-                  {% endif %}
-
-                  <div class="pt-4 pb-2">
-                    <h5 class="card-title text-center pb-0 fs-4">Create Your Account</h5>
-                    <p class="text-center small">Enter your details to register</p>
-                  </div>
-
-                  <form method="POST" class="row g-3 needs-validation" novalidate>
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="user_type" class="form-label"><i class="bi bi-person-badge-fill me-1"></i>I am a:</label>
-                        <select class="form-select" id="user_type" name="user_type" required>
-                            <option value="" disabled selected>Select user type</option>
-                            <option value="student" {% if user_type == 'student' %}selected{% endif %}>Student</option>
-                            <option value="lecturer" {% if user_type == 'lecturer' %}selected{% endif %}>Lecturer</option>
-                        </select>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="username" class="form-label">
-                            <i class="bi bi-person-vcard-fill me-1"></i>
-                            <span id="id-label">Registration Number</span>
-                        </label>
-                        <input type="text" class="form-control" id="username" name="username" 
-                               value="{{ username|default:'' }}" required
-                               placeholder="Enter your registration number">
-                        <div class="form-text">Enter your official registration number or staff ID</div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="first_name" class="form-label"><i class="bi bi-person-fill me-1"></i>First Name</label>
-                            <input type="text" class="form-control" id="first_name" name="first_name" 
-                                   value="{{ first_name|default:'' }}" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="last_name" class="form-label"><i class="bi bi-person-fill me-1"></i>Last Name</label>
-                            <input type="text" class="form-control" id="last_name" name="last_name" 
-                                   value="{{ last_name|default:'' }}" required>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="password" class="form-label"><i class="bi bi-lock-fill me-1"></i>Password</label>
-                        <div class="input-group">
-                            <input type="password" class="form-control" id="password" name="password" required>
-                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                                <i class="bi bi-eye-fill"></i>
-                            </button>
-                        </div>
-                        <div class="form-text">Minimum 8 characters with at least one number and special character</div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="confirm_password" class="form-label"><i class="bi bi-lock-fill me-1"></i>Confirm Password</label>
-                        <div class="input-group">
-                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
-                            <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
-                                <i class="bi bi-eye-fill"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    
-                    
-
-                    <div class="col-12">
-                      <button class="btn btn-primary w-100" type="submit">Register</button>
-                    </div>
-                    <div class="col-12">
-                      <p class="small mb-0">Already have an account? <a href="{% url 'login'%}">Login</a></p>
-                    </div>
-                  </form>
-
-                </div>
-              </div>
-
-              <div class="credits">
-                Designed by <a href="https://innovationhubltd.com/">InnovationHub Softwares</a>
-              </div>
-
-            </div>
-          </div>
+  <div class="container d-flex flex-column justify-content-center py-3" style="min-height: auto;">
+    <div class="register-container">
+      <div class="register-card">
+        <div class="register-header">
+          <img src="{% static 'assets/img/logo.png' %}" alt="MUT Logo" class="register-logo">
+          <div class="university-name">Muranga University of Technology</div>
+          <div class="university-name-short">MUT</div>
+          <h5 class="register-title">Create Your Account</h5>
+          <p class="register-subtitle">Enter your details to register</p>
         </div>
+        
+        <div class="register-body">
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
 
-      </section>
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+              {% for error in form.non_field_errors %}
+                <p class="mb-0">{{ error }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
 
+          <form method="POST" class="needs-validation" novalidate>
+            {% csrf_token %}
+            
+            <div class="mb-2">
+              <label for="user_type" class="form-label">
+                <i class="bi bi-person-badge"></i>I am a:
+              </label>
+              <select class="form-select" id="user_type" name="user_type" required>
+                <option value="" disabled selected>Select user type</option>
+                <option value="student" {% if user_type == 'student' %}selected{% endif %}>Student</option>
+                <option value="lecturer" {% if user_type == 'lecturer' %}selected{% endif %}>Lecturer</option>
+              </select>
+            </div>
+            
+            <div class="mb-2">
+              <label for="username" class="form-label">
+                <i class="bi bi-person-vcard"></i>
+                <span id="id-label">Registration Number</span>
+              </label>
+              <input type="text" class="form-control" id="username" name="username" 
+                     value="{{ username|default:'' }}" required
+                     placeholder="Enter registration number">
+              <div class="form-text">Official registration number or staff ID</div>
+            </div>
+            
+            <div class="name-row">
+              <div class="name-field mb-2">
+                <label for="first_name" class="form-label">
+                  <i class="bi bi-person"></i>First Name
+                </label>
+                <input type="text" class="form-control" id="first_name" name="first_name" 
+                       value="{{ first_name|default:'' }}" required>
+              </div>
+              <div class="name-field mb-2">
+                <label for="last_name" class="form-label">
+                  <i class="bi bi-person"></i>Last Name
+                </label>
+                <input type="text" class="form-control" id="last_name" name="last_name" 
+                       value="{{ last_name|default:'' }}" required>
+              </div>
+            </div>
+            
+            <div class="mb-2">
+              <label for="password" class="form-label">
+                <i class="bi bi-lock"></i>Password
+              </label>
+              <div class="input-group">
+                <input type="password" class="form-control" id="password" name="password" placeholder="Create password" required>
+                <i class="bi bi-eye-slash password-toggle" id="togglePassword"></i>
+              </div>
+              <div class="form-text">8+ chars with number and special character</div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="confirm_password" class="form-label">
+                <i class="bi bi-lock"></i>Confirm Password
+              </label>
+              <div class="input-group">
+                <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Confirm password" required>
+                <i class="bi bi-eye-slash password-toggle" id="toggleConfirmPassword"></i>
+              </div>
+            </div>
+            
+            <button type="submit" class="btn btn-mut w-100 mb-2">Register</button>
+            
+            <div class="text-center pt-1">
+              <p class="mb-0 small">Already have an account? <a href="{% url 'login'%}" class="login-link">Login</a></p>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <div class="footer">
+        &copy; {% now "Y" %} Muranga University of Technology<br>
+        <small>Developed by InnovationHub Softwares</small>
+      </div>
     </div>
-  </main><!-- End #main -->
+  </div>
 
-  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
-
+  <!-- Bootstrap JS -->
+  <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
   
-<script>
-    // Toggle password visibility
-    document.getElementById('togglePassword').addEventListener('click', function() {
-        const password = document.getElementById('password');
-        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-        password.setAttribute('type', type);
-        this.innerHTML = type === 'password' ? '<i class="bi bi-eye-fill"></i>' : '<i class="bi bi-eye-slash-fill"></i>';
+  <script>
+    // Toggle password visibility for both fields
+    document.querySelectorAll('.password-toggle').forEach(toggle => {
+      toggle.addEventListener('click', function() {
+        const inputId = this.id === 'togglePassword' ? 'password' : 'confirm_password';
+        const passwordInput = document.getElementById(inputId);
+        
+        if (passwordInput.type === 'password') {
+          passwordInput.type = 'text';
+          this.classList.remove('bi-eye-slash');
+          this.classList.add('bi-eye');
+        } else {
+          passwordInput.type = 'password';
+          this.classList.remove('bi-eye');
+          this.classList.add('bi-eye-slash');
+        }
+      });
     });
-
-    // Toggle confirm password visibility
-    document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
-        const confirmPassword = document.getElementById('confirm_password');
-        const type = confirmPassword.getAttribute('type') === 'password' ? 'text' : 'password';
-        confirmPassword.setAttribute('type', type);
-        this.innerHTML = type === 'password' ? '<i class="bi bi-eye-fill"></i>' : '<i class="bi bi-eye-slash-fill"></i>';
-    });
-
+    
     // Change label text based on user type selection
     document.getElementById('user_type').addEventListener('change', function() {
-        const idLabel = document.getElementById('id-label');
-        const usernameField = document.getElementById('username');
-        
-        if(this.value === 'student') {
-            idLabel.textContent = 'Registration Number';
-            usernameField.placeholder = 'Enter your registration number';
-        } else if(this.value === 'lecturer') {
-            idLabel.textContent = 'Staff ID';
-            usernameField.placeholder = 'Enter your staff ID';
-        }
+      const idLabel = document.getElementById('id-label');
+      const usernameField = document.getElementById('username');
+      
+      if(this.value === 'student') {
+        idLabel.textContent = 'Registration Number';
+        usernameField.placeholder = 'Enter registration number';
+      } else if(this.value === 'lecturer') {
+        idLabel.textContent = 'Staff ID';
+        usernameField.placeholder = 'Enter staff ID';
+      }
     });
-</script>
-
-  <!-- Vendor JS Files -->
-  <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-  <script src="{% static 'assets/js/main.js' %}"></script>
-  
-
+    
+    // Form validation
+    (function() {
+      'use strict'
+      const forms = document.querySelectorAll('.needs-validation')
+      
+      Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+          if (!form.checkValidity()) {
+            event.preventDefault()
+            event.stopPropagation()
+          }
+          
+          form.classList.add('was-validated')
+        }, false)
+      })
+    })()
+  </script>
 </body>
-
 </html>
-
