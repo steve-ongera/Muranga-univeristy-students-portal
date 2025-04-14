@@ -3,7 +3,7 @@
 
 {% block content %}
 
-<div class="container-fluid py-4">
+<div class="container-fluid py-3">
     {% if messages %}
         {% for message in messages %}
             <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
@@ -14,165 +14,225 @@
     {% endif %}
 
     <div class="row">
-        <div class="col-md-3">
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0">Profile</h5>
-                </div>
-                <div class="card-body text-center">
-                    {% if student.profile_picture %}
-                        <img src="{{ student.profile_picture.url }}" alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="max-width: 150px;">
-                    {% else %}
-                        <div class="bg-light rounded-circle d-inline-flex justify-content-center align-items-center mb-3" style="width: 150px; height: 150px;">
-                            <span class="display-4 text-secondary">{{ student.first_name.0 }}{{ student.last_name.0 }}</span>
+        <!-- Left Column (8 parts) -->
+        <div class="col-lg-8">
+            <div class="row">
+                <!-- Academic Summary -->
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-header bg-white border-bottom">
+                            <h5 class="card-title mb-0 text-mut">Academic Summary</h5>
                         </div>
-                    {% endif %}
-                    <h4>{{ student.get_full_name }}</h4>
-                    <p class="text-muted">{{ student.registration_number }}</p>
-                    <div class="d-grid gap-2">
-                        <a href="#" class="btn btn-outline-primary">Edit Profile</a>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-3">
+                                <div>
+                                    <h6 class="text-muted small">Programme</h6>
+                                    <p class="mb-0">{{ programme.name }}</p>
+                                </div>
+                                <div class="text-end">
+                                    <h6 class="text-muted small">Year/Semester</h6>
+                                    <p class="mb-0">Year {{ student.current_year }} • Sem {{ student.current_semester }}</p>
+                                </div>
+                            </div>
+                            <hr class="my-2">
+                            <div class="row">
+                                <div class="col-6">
+                                    <h6 class="text-muted small">Admission Date</h6>
+                                    <p class="mb-2">{{ student.date_of_admission }}</p>
+                                </div>
+                                <div class="col-6">
+                                    <h6 class="text-muted small">Graduation</h6>
+                                    <p class="mb-2">{{ student.expected_graduation_date|default:"-" }}</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>Status:</span>
-                        <span class="badge {% if student.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
-                            {{ student.get_status_display }}
-                        </span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>Entry Mode:</span>
-                        <span>{{ student.get_entry_mode_display }}</span>
-                    </li>
-                </ul>
-            </div>
 
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0">Contact Information</h5>
+                <!-- Current Courses -->
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0 text-mut">Current Courses</h5>
+                            <a href="#" class="btn btn-sm btn-outline-mut">View All</a>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th class="border-0">Code</th>
+                                            <th class="border-0">Course</th>
+                                            <th class="border-0">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="3" class="text-center py-4">No courses registered</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">
-                        <i class="bi bi-envelope"></i> {{ student.email|default:"Not provided" }}
-                    </li>
-                    <li class="list-group-item">
-                        <i class="bi bi-telephone"></i> {{ student.phone_number|default:"Not provided" }}
-                    </li>
-                    <li class="list-group-item">
-                        <i class="bi bi-geo-alt"></i> 
-                        {% if student.postal_address and student.postal_code %}
-                            {{ student.postal_address }}, {{ student.postal_code }}
-                        {% else %}
-                            Address not provided
-                        {% endif %}
-                    </li>
-                </ul>
+
+                <!-- Personal Information -->
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-header bg-white border-bottom">
+                            <h5 class="card-title mb-0 text-mut">Personal Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled small">
+                                <li class="mb-2"><span class="text-muted">ID:</span> {{ student.id_number|default:"-" }}</li>
+                                <li class="mb-2"><span class="text-muted">DOB:</span> {{ student.date_of_birth|default:"-" }}</li>
+                                <li class="mb-2"><span class="text-muted">Gender:</span> {{ student.get_gender_display|default:"-" }}</li>
+                                <li class="mb-2"><span class="text-muted">County:</span> {{ student.county|default:"-" }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Emergency Contacts -->
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-header bg-white border-bottom">
+                            <h5 class="card-title mb-0 text-mut">Emergency Contacts</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <h6 class="small text-mut">Parent/Guardian</h6>
+                                <p class="mb-1 small">{{ student.parent_name|default:"-" }}</p>
+                                <p class="small text-muted">{{ student.parent_phone|default:"-" }}</p>
+                            </div>
+                            <div>
+                                <h6 class="small text-mut">Emergency Contact</h6>
+                                <p class="mb-1 small">{{ student.emergency_contact_name|default:"-" }}</p>
+                                <p class="small text-muted">{{ student.emergency_contact_phone|default:"-" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="col-md-9">
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0">Academic Information</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6>Programme</h6>
-                            <p>{{ programme.name }}</p>
-                            
-                            <h6>Current Year</h6>
-                            <p>Year {{ student.current_year }}</p>
-                            
-                            <h6>Current Semester</h6>
-                            <p>Semester {{ student.current_semester }}</p>
+        <!-- Right Column (4 parts) -->
+        <div class="col-lg-4">
+            <!-- Profile Card -->
+            <div class="card mb-3 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    {% if student.profile_picture %}
+                        <img src="{{ student.profile_picture.url }}" alt="Profile" class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mb-3 mx-auto" style="width: 120px; height: 120px;">
+                            <span class="h4 text-muted">{{ student.first_name.0 }}{{ student.last_name.0 }}</span>
                         </div>
-                        <div class="col-md-6">
-                            <h6>Date of Admission</h6>
-                            <p>{{ student.date_of_admission }}</p>
-                            
-                            <h6>Expected Graduation</h6>
-                            <p>{{ student.expected_graduation_date|default:"Not set" }}</p>
-                            
-                            {% if student.scholarship_info %}
-                            <h6>Scholarship Information</h6>
-                            <p>{{ student.scholarship_info }}</p>
-                            {% endif %}
-                        </div>
+                    {% endif %}
+                    <h5 class="mb-1">{{ student.get_full_name }}</h5>
+                    <p class="text-muted small mb-3">{{ student.registration_number }}</p>
+                    
+                    <div class="d-flex justify-content-center gap-2 mb-3">
+                        <span class="badge {% if student.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
+                            {{ student.get_status_display }}
+                        </span>
+                        <span class="badge bg-light text-dark">
+                            {{ student.get_entry_mode_display }}
+                        </span>
                     </div>
+                    
+                    <a href="#" class="btn btn-sm btn-outline-mut w-100">Edit Profile</a>
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card mb-4">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="card-title mb-0">Personal Information</h5>
-                        </div>
-                        <div class="card-body">
-                            <ul class="list-unstyled">
-                                <li class="mb-2"><strong>Date of Birth:</strong> {{ student.date_of_birth|default:"Not provided" }}</li>
-                                <li class="mb-2"><strong>Gender:</strong> {{ student.get_gender_display|default:"Not provided" }}</li>
-                                <li class="mb-2"><strong>ID Number:</strong> {{ student.id_number|default:"Not provided" }}</li>
-                                <li class="mb-2"><strong>Religion:</strong> {{ student.religion|default:"Not provided" }}</li>
-                                <li class="mb-2"><strong>County:</strong> {{ student.county|default:"Not provided" }}</li>
-                                <li class="mb-2"><strong>Town:</strong> {{ student.town|default:"Not provided" }}</li>
-                            </ul>
-                        </div>
-                    </div>
+            <!-- Fee Balance -->
+            <div class="card mb-3 border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0 text-mut">Fee Balance</h5>
                 </div>
-
-                <div class="col-md-6">
-                    <div class="card mb-4">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="card-title mb-0">Emergency Contacts</h5>
-                        </div>
-                        <div class="card-body">
-                            <h6>Parent/Guardian</h6>
-                            <ul class="list-unstyled mb-3">
-                                <li><strong>Name:</strong> {{ student.parent_name|default:"Not provided" }}</li>
-                                <li><strong>Phone:</strong> {{ student.parent_phone|default:"Not provided" }}</li>
-                            </ul>
-                            
-                            <h6>Emergency Contact</h6>
-                            <ul class="list-unstyled">
-                                <li><strong>Name:</strong> {{ student.emergency_contact_name|default:"Not provided" }}</li>
-                                <li><strong>Relationship:</strong> {{ student.emergency_contact_relationship|default:"Not provided" }}</li>
-                                <li><strong>Phone:</strong> {{ student.emergency_contact_phone|default:"Not provided" }}</li>
-                            </ul>
-                        </div>
-                    </div>
+                <div class="card-body text-center py-4">
+                    <h3 class="text-danger mb-0">KSh 24,500</h3>
+                    <p class="small text-muted">Due by 15th March 2023</p>
+                    <a href="#" class="btn btn-sm btn-mut mt-2">Make Payment</a>
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Current Semester Courses</h5>
-                    <a href="#" class="btn btn-sm btn-light">View All Courses</a>
+            <!-- Hostel Information -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0 text-mut">Hostel</h5>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Course Code</th>
-                                    <th>Course Name</th>
-                                    <th>Credits</th>
-                                    <th>Lecturer</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td colspan="5" class="text-center">No courses registered for this semester.</td>
-                                </tr>
-                                <!-- Course data would be populated here dynamically -->
-                            </tbody>
-                        </table>
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-mut text-white rounded p-2 me-3">
+                            <i class="bi bi-building fs-5"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Jomo Kenyatta Hall</h6>
+                            <p class="small text-muted mb-0">Room B12</p>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between small">
+                        <span class="text-muted">Check-in:</span>
+                        <span>15 Jan 2023</span>
+                    </div>
+                    <div class="d-flex justify-content-between small">
+                        <span class="text-muted">Check-out:</span>
+                        <span>30 May 2023</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    :root {
+        --mut-green: #66c743;
+        --mut-dark-green: #4da53a;
+        --mut-light: #f8f9fa;
+    }
+    
+    .text-mut {
+        color: var(--mut-green);
+    }
+    
+    .btn-mut {
+        background-color: var(--mut-green);
+        border-color: var(--mut-green);
+        color: white;
+    }
+    
+    .btn-mut:hover {
+        background-color: var(--mut-dark-green);
+        border-color: var(--mut-dark-green);
+    }
+    
+    .btn-outline-mut {
+        color: var(--mut-green);
+        border-color: var(--mut-green);
+    }
+    
+    .btn-outline-mut:hover {
+        background-color: var(--mut-green);
+        color: white;
+    }
+    
+    .card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+    }
+    
+    .table th {
+        font-weight: 500;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+</style>
+
 {% endblock %}

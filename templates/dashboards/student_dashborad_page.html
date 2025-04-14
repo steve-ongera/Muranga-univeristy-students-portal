@@ -4,7 +4,7 @@
 {% block content %}
 
 <link rel="stylesheet" href="{% static 'assets/css/student_dashboard.css' %}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
     :root {
         --muranga-primary: #4CAF50;
@@ -13,24 +13,40 @@
         --muranga-accent: #8BC34A;
         --text-dark: #333333;
         --text-light: #FFFFFF;
+        --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        --border-radius: 10px;
+        --transition: all 0.3s ease;
+    }
+    
+    body {
+        font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background-color: #f7f9fc;
+        color: #424242;
     }
     
     /* Message Container */
     .message-container {
-        margin: 15px 0;
+        margin: 20px 0;
     }
     
     .alert-message {
-        padding: 15px;
-        border-radius: 4px;
-        margin-bottom: 10px;
+        padding: 16px 20px;
+        border-radius: var(--border-radius);
+        margin-bottom: 12px;
         position: relative;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        animation: fadeIn 0.5s;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
     
     .alert-success {
         background-color: #E8F5E9;
         color: #2E7D32;
-        border-left: 4px solid #4CAF50;
+        
     }
     
     .close-message {
@@ -38,70 +54,115 @@
         right: 15px;
         top: 15px;
         cursor: pointer;
+        opacity: 0.7;
+        transition: var(--transition);
+    }
+    
+    .close-message:hover {
+        opacity: 1;
     }
     
     /* Main Content */
     .main-content {
-        padding: 20px;
-        background-color: #F5F5F5;
+        padding: 30px;
+        background-color: #f7f9fc;
+        min-height: calc(100vh - 80px);
     }
     
     /* Dashboard Tabs */
     .dashboard-tabs {
         display: flex;
-        margin-bottom: 20px;
-        border-bottom: 1px solid #E0E0E0;
+        margin-bottom: 25px;
+        border-bottom: 1px solid #e0e0e0;
+        background-color: white;
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
     }
     
     .tab {
-        padding: 12px 24px;
+        padding: 16px 28px;
         cursor: pointer;
         font-weight: 500;
         color: #666;
-        border-bottom: 2px solid transparent;
+        border-bottom: 3px solid transparent;
+        transition: var(--transition);
+    }
+    
+    .tab:hover {
+        color: var(--muranga-primary);
+        background-color: rgba(76, 175, 80, 0.05);
     }
     
     .tab.active {
         color: var(--muranga-primary);
-        border-bottom: 2px solid var(--muranga-primary);
+        border-bottom: 3px solid var(--muranga-primary);
         font-weight: 600;
+        background-color: rgba(76, 175, 80, 0.08);
     }
     
     /* Welcome Card */
     .welcome-card {
         background-color: white;
-        border-radius: 8px;
-        padding: 25px;
-        margin-bottom: 25px;
+        border-radius: var(--border-radius);
+        padding: 30px;
+        margin-bottom: 30px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        border-left: 4px solid var(--muranga-primary);
+        box-shadow: var(--card-shadow);
+        border-left: 5px solid var(--muranga-primary);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .welcome-card::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 150px;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(139, 195, 74, 0.1) 100%);
+        z-index: 1;
+    }
+    
+    .welcome-text {
+        z-index: 2;
     }
     
     .welcome-text h2 {
         color: var(--muranga-dark);
         margin-top: 0;
-        margin-bottom: 10px;
-        font-size: 24px;
+        margin-bottom: 12px;
+        font-size: 28px;
+        font-weight: 600;
     }
     
     .welcome-text p {
         color: #666;
         margin-bottom: 0;
+        font-size: 15px;
+        line-height: 1.6;
+        max-width: 600px;
+    }
+    
+    .welcome-image {
+        z-index: 2;
     }
     
     .welcome-image img {
         max-width: 180px;
         height: auto;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
     
     /* Dashboard Grid */
     .dashboard-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 20px;
+        gap: 25px;
     }
     
     .dashboard-full-width {
@@ -110,168 +171,360 @@
     
     /* Fee Card */
     .fee-card {
-        background-color: var(--muranga-primary);
+        background: linear-gradient(135deg, var(--muranga-primary) 0%, var(--muranga-dark) 100%);
         color: white;
-        border-radius: 8px;
-        padding: 25px;
+        border-radius: var(--border-radius);
+        padding: 30px;
         text-align: center;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        transition: transform 0.3s ease;
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .fee-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='rgba(255,255,255,0.05)' fill-rule='evenodd'/%3E%3C/svg%3E");
+        opacity: 0.3;
     }
     
     .fee-card:hover {
-        transform: translateY(-3px);
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(46, 125, 50, 0.3);
     }
     
     .fee-icon {
-        font-size: 2.5rem;
+        font-size: 2.8rem;
+        margin-bottom: 20px;
+        opacity: 0.9;
+    }
+    
+    .fee-card h3 {
+        font-size: 18px;
+        font-weight: 500;
         margin-bottom: 15px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
     
     .fee-balance {
-        font-size: 1.8rem;
-        font-weight: 600;
-        margin: 15px 0;
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin: 20px 0;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
     .pay-btn {
         background-color: white;
-        color: var(--muranga-primary);
+        color: var(--muranga-dark);
         border: none;
-        padding: 10px 25px;
-        border-radius: 4px;
+        padding: 12px 30px;
+        border-radius: 50px;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: var(--transition);
+        font-size: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
     
     .pay-btn:hover {
         background-color: #f0f0f0;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
     }
     
     /* Semester Card */
     .semester-card {
-        background-color: var(--muranga-dark);
+        background: linear-gradient(135deg, var(--muranga-dark) 0%, #1b5e20 100%);
         color: white;
-        border-radius: 8px;
-        padding: 25px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        transition: transform 0.3s ease;
+        border-radius: var(--border-radius);
+        padding: 30px;
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .semester-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='rgba(255,255,255,0.05)'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     }
     
     .semester-card:hover {
-        transform: translateY(-3px);
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(27, 94, 32, 0.3);
     }
     
     .semester-icon {
-        font-size: 2rem;
-        margin-bottom: 15px;
+        font-size: 2.4rem;
+        margin-bottom: 20px;
+        opacity: 0.9;
     }
     
     .semester-card h3 {
-        font-size: 1.2rem;
-        margin-bottom: 5px;
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        letter-spacing: 0.5px;
     }
     
     .semester-card p {
         margin-bottom: 20px;
         opacity: 0.9;
+        font-size: 14px;
     }
     
     .semester-card h4 {
-        margin: 15px 0 10px 0;
+        margin: 20px 0 12px 0;
+        font-size: 16px;
+        font-weight: 500;
     }
     
     .progress-bar {
-        background-color: rgba(255,255,255,0.2);
-        border-radius: 4px;
+        background-color: rgba(255,255,255,0.15);
+        border-radius: 50px;
         height: 10px;
-        margin: 10px 0;
+        margin: 12px 0;
         overflow: hidden;
     }
     
     .progress-fill {
-        background-color: var(--muranga-accent);
+        background: linear-gradient(90deg, var(--muranga-accent) 0%, #c5e1a5 100%);
         height: 100%;
+        border-radius: 50px;
+        box-shadow: 0 0 10px rgba(139, 195, 74, 0.5);
+        transition: width 1s ease-in-out;
     }
     
     /* Units Section */
     .units-section {
         background-color: white;
-        border-radius: 8px;
-        padding: 25px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        border-left: 4px solid var(--muranga-primary);
+        border-radius: 5px;
+        padding: 30px;
+        
+    }
+    
+    .units-section:hover {
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
     }
     
     .section-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #f0f0f0;
     }
     
     .section-title {
         color: var(--muranga-dark);
         margin: 0;
-        font-size: 1.2rem;
+        font-size: 18px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
+    
+    .section-title::before {
+        content: "\f51c";
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        margin-right: 10px;
+        color: var(--muranga-primary);
     }
     
     .view-all {
         color: var(--muranga-primary);
         font-weight: 500;
         text-decoration: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        background-color: var(--muranga-light);
+        transition: var(--transition);
     }
     
     .view-all:hover {
-        text-decoration: underline;
+        background-color: #d7edda;
+        box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+    }
+
+    .units-section {
+        background-color: white;
+        border-radius: px;
+        padding: 30px;
+        box-shadow: var(--card-shadow);
+        /* Removed the left border */
+        transition: var(--transition);
     }
     
     .units-table {
         width: 100%;
-        border-collapse: collapse;
+        border-collapse: separate;
+        border-spacing: 0;
     }
     
     .units-table th {
-        background-color: #F5F5F5;
+        background-color: #f5f9f5;
         text-align: left;
-        padding: 12px 15px;
+        padding: 15px 20px;
         color: var(--muranga-dark);
         font-weight: 600;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .units-table th:first-child {
+        border-top-left-radius: 8px;
+    }
+    
+    .units-table th:last-child {
+        border-top-right-radius: 8px;
     }
     
     .units-table td {
-        padding: 12px 15px;
-        border-bottom: 1px solid #EEE;
+        padding: 16px 20px;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 15px;
+        transition: var(--transition);
     }
+    
+    .units-table tr:hover td {
+        background-color: #f9fcf9;
+    }
+    
+    .units-table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .units-table tr:last-child td:first-child {
+        border-bottom-left-radius: 8px;
+    }
+    
+    .units-table tr:last-child td:last-child {
+        border-bottom-right-radius: 8px;
+    }
+    
+    /* Also modified the hostel card to remove the left border */
+    .hostel-card {
+        background-color: white;
+        border-radius: 5px;
+        padding: 30px;
+        box-shadow: var(--card-shadow);
+        text-align: center;
+        /* Removed the left border */
+        transition: var(--transition);
+    }
+
     
     .status-pending {
         color: #757575;
+        display: inline-flex;
+        align-items: center;
+        font-weight: 500;
+    }
+    
+    .status-pending::before {
+        content: "";
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background-color: #9e9e9e;
+        border-radius: 50%;
+        margin-right: 8px;
     }
     
     /* Hostel Card */
-    .hostel-card {
-        background-color: white;
-        border-radius: 8px;
-        padding: 25px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        text-align: center;
-        border-left: 4px solid var(--muranga-primary);
+    
+    
+    .hostel-card:hover {
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
     }
     
     .hostel-title {
         color: var(--muranga-dark);
         margin-top: 0;
-        margin-bottom: 20px;
+        margin-bottom: 25px;
+        font-size: 18px;
+        font-weight: 600;
+        position: relative;
+        display: inline-block;
+    }
+    
+    .hostel-title::after {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 50px;
+        height: 3px;
+        background-color: var(--muranga-primary);
+        border-radius: 3px;
     }
     
     .hostel-icon {
-        font-size: 3rem;
+        font-size: 3.5rem;
         color: var(--muranga-primary);
-        margin: 15px 0;
+        margin: 20px 0;
+        background-color: var(--muranga-light);
+        width: 100px;
+        height: 100px;
+        line-height: 100px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    
+    .hostel-details {
+        margin-top: 20px;
+        background-color: #f9fcf9;
+        padding: 20px;
+        border-radius: 8px;
+        display: inline-block;
+        min-width: 250px;
+    }
+    
+    .hostel-details p {
+        margin: 10px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .hostel-details i {
+        color: var(--muranga-primary);
+        margin-right: 10px;
+    }
+    
+    /* Animation */
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
     }
     
     /* Responsive */
+    @media (max-width: 992px) {
+        .main-content {
+            padding: 20px;
+        }
+        
+        .dashboard-grid {
+            gap: 20px;
+        }
+    }
+    
     @media (max-width: 768px) {
         .dashboard-grid {
             grid-template-columns: 1fr;
@@ -284,15 +537,52 @@
         .welcome-card {
             flex-direction: column;
             text-align: center;
+            padding: 25px;
         }
         
         .welcome-image {
-            margin-top: 20px;
+            margin-top: 25px;
+        }
+        
+        .welcome-text h2 {
+            font-size: 24px;
+        }
+        
+        .tab {
+            padding: 12px 20px;
+            font-size: 14px;
+        }
+        
+        .units-table th, .units-table td {
+            padding: 12px 15px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .main-content {
+            padding: 15px;
+        }
+        
+        .dashboard-tabs {
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .view-all {
+            margin-top: 10px;
+        }
+        
+        .units-table {
+            display: block;
+            overflow-x: auto;
         }
     }
 </style>
-
-
 
 <div class="message-container" id="system-messages">
     {% for message in messages %}
@@ -307,9 +597,9 @@
 <div class="main-content">
     <!-- Dashboard Header Tabs -->
     <div class="dashboard-tabs">
-        <div class="tab active">Dashboard</div>
-        <div class="tab">Finance</div>
-        <div class="tab">View Statement</div>
+        <div class="tab active"><i class="fas fa-home"></i> Dashboard</div>
+        <div class="tab"><i class="fas fa-money-bill"></i> Finance</div>
+        <div class="tab"><i class="fas fa-file-invoice"></i> View Statement</div>
     </div>
 
     <!-- Welcome Card -->
@@ -319,7 +609,7 @@
             <p>We're delighted to have you. Need help on system walk through? Navigate to virtual assistant on the side menu</p>
         </div>
         <div class="welcome-image">
-            <img src="{% static 'assets/img/profile.png' %}" alt="Student Dashboard">
+            <img src="{% static 'assets/img/profile.png' %}" alt="Student Profile">
         </div>
     </div>
 
@@ -331,8 +621,8 @@
                 <i class="fas fa-coins"></i>
             </div>
             <h3>Fee Balance</h3>
-            <div class="fee-balance"> KSh {{ current_balance|floatformat:2 }}</div>
-            <button class="pay-btn">Pay Now</button>
+            <div class="fee-balance">KSh {{ current_balance|floatformat:2 }}</div>
+            <button class="pay-btn"><i class="fas fa-credit-card"></i> Pay Now</button>
         </div>
 
         <!-- Semester Progress Card -->
@@ -354,7 +644,7 @@
         <div class="units-section dashboard-full-width">
             <div class="section-header">
                 <h3 class="section-title">Current Registered Units</h3>
-                <a href="{% url 'unit_enrollment' %}" class="view-all">Manage Units</a>
+                <a href="{% url 'unit_enrollment' %}" class="view-all"><i class="fas fa-edit"></i> Manage Units</a>
             </div>
             <table class="units-table">
                 <thead>
@@ -375,7 +665,7 @@
                                 {% if allocation %}
                                     {{ allocation.lecturer.get_full_name }}
                                 {% else %}
-                                    Not Assigned
+                                    <span style="color: #f57c00;">Not Assigned</span>
                                 {% endif %}
                             {% endwith %}
                         </td>
@@ -383,7 +673,12 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="4" class="text-center">No units registered for current semester</td>
+                        <td colspan="4" style="text-align: center; padding: 30px;">
+                            <div style="color: #9e9e9e;">
+                                <i class="fas fa-info-circle" style="font-size: 24px;"></i>
+                                <p style="margin-top: 10px;">No units registered for current semester</p>
+                            </div>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -392,7 +687,7 @@
 
         <!-- Hostel Info Card -->
         <div class="hostel-card dashboard-full-width">
-            <h3 class="hostel-title">Hostel info</h3>
+            <h3 class="hostel-title">Hostel Information</h3>
             <div class="hostel-icon">
                 <i class="fas fa-building"></i>
             </div>
@@ -413,6 +708,13 @@
         button.addEventListener('click', function() {
             this.parentElement.style.display = 'none';
         });
+    });
+    
+    // Add animation to progress bar on page load
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            document.querySelector('.progress-fill').style.width = '{{ session_progress }}%';
+        }, 300);
     });
 </script>
 {% endblock %}

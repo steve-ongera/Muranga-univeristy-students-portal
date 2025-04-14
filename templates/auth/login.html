@@ -20,13 +20,15 @@
   <!-- Bootstrap CSS -->
   <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css'%}" rel="stylesheet">
   <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css'%}" rel="stylesheet">
+  <link href="{% static 'assets/css/messages.css'%}" rel="stylesheet">
+  <script src="{% static 'assets/js/messages.js'%}"></script>
 
   <style>
     :root {
       --mut-green: #66c743;
       --mut-dark-green: #4da53a;
       --mut-gray: #f8f9fa;
-      --mut-dark: #2c3e50;
+      --mut-dark:  #4da53a;
     }
     
     body {
@@ -206,14 +208,15 @@
         </div>
         
         <div class="login-body">
-          {% if messages %}
+          
+          <div class="message-container" id="system-messages">
             {% for message in messages %}
-              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <div class="alert-message alert-{{ message.tags }}">
                 {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-              </div>
+                <span class="close-message">&times;</span>
+            </div>
             {% endfor %}
-          {% endif %}
+          </div>
           
           <form method="POST" class="needs-validation" novalidate>
             {% csrf_token %}
