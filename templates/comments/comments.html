@@ -1,9 +1,92 @@
 {% extends 'base/base.html' %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
+<style>
+    /* Muranga University Theme Colors */
+    :root {
+        --muranga-primary: #2E7D32;  /* Dark Green */
+        --muranga-secondary: #4CAF50;  /* Medium Green */
+        --muranga-light: #E8F5E9;  /* Light Green */
+        --muranga-accent: #81C784;  /* Soft Green */
+        --muranga-dark: #1B5E20;    /* Darker Green */
+    }
+    
+    /* Strengthen CSS specificity with more targeted selectors */
+    .bg-primary, 
+    div.bg-primary, 
+    .card-header.bg-primary {
+        background-color: var(--muranga-primary) !important;
+    }
+
+    .btn-primary,
+    button.btn-primary,
+    input[type="submit"].btn-primary {
+        background-color: var(--muranga-primary) !important;
+        border-color: var(--muranga-primary) !important;
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--muranga-dark) !important;
+        border-color: var(--muranga-dark) !important;
+    }
+    
+    .text-primary {
+        color: var(--muranga-primary) !important;
+    }
+    
+    .bg-success {
+        background-color: var(--muranga-secondary) !important;
+    }
+    
+    .bg-warning {
+        background-color: #FFC107 !important; /* Keeping original warning color */
+    }
+    
+    .text-success {
+        color: var(--muranga-secondary) !important;
+    }
+    
+    .card-header {
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .shadow-sm {
+        box-shadow: 0 0.125rem 0.25rem rgba(46, 125, 50, 0.1) !important;
+    }
+    
+    .border-bottom {
+        border-bottom: 1px solid rgba(46, 125, 50, 0.1) !important;
+    }
+    
+    .bg-light {
+        background-color: var(--muranga-light) !important;
+    }
+    
+    .form-control:focus {
+        border-color: var(--muranga-accent);
+        box-shadow: 0 0 0 0.25rem rgba(76, 175, 80, 0.25);
+    }
+    
+    .list-group-item-action:hover {
+        background-color: rgba(76, 175, 80, 0.05);
+    }
+    
+    .text-muted {
+        color: #6c757d !important;
+    }
+    
+    /* Full width container styles */
+    .container-fluid {
+        padding-left: 15px;
+        padding-right: 15px;
+        width: 100%;
+    }
+</style>
+
+<!-- Changed from container to container-fluid and removed col-lg-10 -->
+<div class="container-fluid py-5">
+    <div class="row">
+        <div class="col-12">
             <div class="card shadow-sm mb-5">
                 <div class="card-header bg-primary text-white">
                     <h3 class="mb-0"><i class="fas fa-comments me-2"></i>Student Comments/Questions</h3>

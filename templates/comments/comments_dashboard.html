@@ -1,6 +1,60 @@
 {% extends 'base/base.html' %}
 
 {% block content %}
+<style>
+    :root {
+        --muranga-primary: #2E7D32;  /* Dark Green */
+        --muranga-secondary: #4CAF50;  /* Medium Green */
+        --muranga-light: #E8F5E9;  /* Light Green */
+        --muranga-accent: #81C784;  /* Soft Green */
+        --muranga-dark: #1B5E20;    /* Darker Green */
+    }
+    /* University Theme Overrides */
+    .bg-primary {
+        background-color: var(--muranga-primary) !important;
+    }
+    
+    .btn-primary {
+        background-color: var(--muranga-primary);
+        border-color: var(--muranga-primary);
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--muranga-dark);
+        border-color: var(--muranga-dark);
+    }
+    
+    .btn-outline-primary {
+        color: var(--muranga-primary);
+        border-color: var(--muranga-primary);
+    }
+    
+    .btn-outline-primary:hover {
+        background-color: var(--muranga-primary);
+        border-color: var(--muranga-primary);
+    }
+    
+    .table-light {
+        background-color: var(--muranga-light);
+    }
+    
+    .table-success {
+        background-color: rgba(76, 175, 80, 0.15);
+    }
+    
+    .table-warning {
+        background-color: rgba(255, 193, 7, 0.15);
+    }
+    
+    .badge.bg-success {
+        background-color: var(--muranga-secondary) !important;
+    }
+    
+    .shadow {
+        box-shadow: 0 0.5rem 1rem rgba(46, 125, 50, 0.15) !important;
+    }
+</style>
+
 <div class="container-fluid py-4">
     <div class="card shadow">
         <div class="card-header bg-primary text-white">

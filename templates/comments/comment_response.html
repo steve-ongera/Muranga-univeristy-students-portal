@@ -1,105 +1,213 @@
 {% extends 'base/base.html' %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-            <h3 class="mb-0"><i class="fas fa-reply me-2"></i>Respond to Student Comment</h3>
-        </div>
-        
-        <div class="card-body">
-            <!-- Student Comment -->
-            <div class="mb-4 p-3 bg-light rounded">
-                <div class="d-flex justify-content-between mb-2">
-                    <h5>Student Comment</h5>
-                    <span class="text-muted">{{ comment.created_at|date:"F j, Y H:i" }}</span>
+<style>
+    /* Muranga University Theme Colors */
+    :root {
+        --muranga-primary: #2E7D32;  /* Dark Green */
+        --muranga-secondary: #4CAF50;  /* Medium Green */
+        --muranga-light: #E8F5E9;  /* Light Green */
+        --muranga-accent: #81C784;  /* Soft Green */
+        --muranga-dark: #1B5E20;    /* Darker Green */
+    }
+    
+    /* Strengthen CSS specificity with more targeted selectors */
+    .bg-primary, 
+    div.bg-primary, 
+    .card-header.bg-primary {
+        background-color: var(--muranga-primary) !important;
+    }
+
+    .btn-primary,
+    button.btn-primary,
+    input[type="submit"].btn-primary {
+        background-color: var(--muranga-primary) !important;
+        border-color: var(--muranga-primary) !important;
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--muranga-dark) !important;
+        border-color: var(--muranga-dark) !important;
+    }
+    
+    .text-primary {
+        color: var(--muranga-primary) !important;
+    }
+    
+    .bg-success {
+        background-color: var(--muranga-secondary) !important;
+    }
+    
+    .bg-warning {
+        background-color: #FFC107 !important; /* Keeping original warning color */
+    }
+    
+    .text-success {
+        color: var(--muranga-secondary) !important;
+    }
+    
+    .card-header {
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .shadow-sm {
+        box-shadow: 0 0.125rem 0.25rem rgba(46, 125, 50, 0.1) !important;
+    }
+    
+    .border-bottom {
+        border-bottom: 1px solid rgba(46, 125, 50, 0.1) !important;
+    }
+    
+    .bg-light {
+        background-color: var(--muranga-light) !important;
+    }
+    
+    .form-control:focus {
+        border-color: var(--muranga-accent);
+        box-shadow: 0 0 0 0.25rem rgba(76, 175, 80, 0.25);
+    }
+    
+    .list-group-item-action:hover {
+        background-color: rgba(76, 175, 80, 0.05);
+    }
+    
+    .text-muted {
+        color: #6c757d !important;
+    }
+    
+    .btn-outline-secondary:hover {
+        background-color: var(--muranga-accent);
+        border-color: var(--muranga-accent);
+    }
+    
+    .form-check-input:checked {
+        background-color: var(--muranga-primary);
+        border-color: var(--muranga-primary);
+    }
+</style>
+
+<div class="container-fluid py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-reply me-2"></i>Respond to Student Comment</h3>
                 </div>
-                <div class="d-flex align-items-start mb-3">
-                    <div class="me-3">
-                        <div class="bg-primary text-white rounded-circle p-2 text-center" style="width: 40px; height: 40px;">
-                            <i class="fas fa-user"></i>
+                
+                <div class="card-body">
+                    <!-- Student Comment -->
+                    <div class="mb-4 p-3 bg-light rounded">
+                        <div class="d-flex justify-content-between mb-2">
+                            <h5>Student Comment</h5>
+                            <span class="text-muted">{{ comment.created_at|date:"F j, Y H:i" }}</span>
                         </div>
-                    </div>
-                    <div>
-                        <h6 class="mb-1">{{ comment.student.get_full_name }}</h6>
-                        <p class="mb-0 text-muted small">{{ comment.student.registration_number }}</p>
-                    </div>
-                </div>
-                <p class="mb-0 ps-4">{{ comment.comment }}</p>
-            </div>
-            
-            <!-- Admin Response Form -->
-            <form method="POST" class="needs-validation" novalidate>
-                {% csrf_token %}
-                
-                <div class="mb-4">
-                    <label for="id_admin_response" class="form-label fw-bold">Your Response</label>
-                    <textarea 
-                        class="form-control" 
-                        id="id_admin_response" 
-                        name="admin_response" 
-                        rows="5"
-                        placeholder="Type your detailed response here..."
-                    >{% if form.admin_response.value %}{{ form.admin_response.value }}{% endif %}</textarea>
-                    {% if form.admin_response.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.admin_response.errors }}
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <div class="mb-4 form-check form-switch">
-                    <input 
-                        class="form-check-input" 
-                        type="checkbox" 
-                        id="id_is_resolved" 
-                        name="is_resolved"
-                        {% if form.is_resolved.value %}checked{% endif %}
-                    >
-                    <label class="form-check-label fw-bold" for="id_is_resolved">Mark as Resolved</label>
-                </div>
-                
-                <div class="d-flex justify-content-between">
-                    <a href="{% url 'admin_comment_dashboard' %}" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
-                    </a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-paper-plane me-2"></i>Submit Response
-                    </button>
-                </div>
-            </form>
-            
-            <!-- Previous Responses (if any) -->
-            {% if comment.admin_response %}
-            <div class="mt-5">
-                <h5 class="mb-3">Previous Response</h5>
-                <div class="p-3 bg-light rounded">
-                    <div class="d-flex justify-content-between mb-2">
-                        <h6>Admin Response</h6>
-                        <span class="text-muted">{{ comment.updated_at|date:"F j, Y H:i" }}</span>
-                    </div>
-                    <div class="d-flex align-items-start mb-3">
-                        <div class="me-3">
-                            <div class="bg-success text-white rounded-circle p-2 text-center" style="width: 40px; height: 40px;">
-                                <i class="fas fa-user-shield"></i>
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="me-3">
+                                <div class="bg-primary text-white rounded-circle p-2 text-center" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">{{ comment.student.get_full_name }}</h6>
+                                <p class="mb-0 text-muted small">{{ comment.student.registration_number }}</p>
                             </div>
                         </div>
-                        <div>
-                            <h6 class="mb-1">
-                                {% if comment.responded_by %}
-                                    {{ comment.responded_by.get_full_name }}
-                                {% else %}
-                                    Administrator
-                                {% endif %}
-                            </h6>
-                            <p class="mb-0 text-muted small">Staff</p>
+                        <p class="mb-0 ps-4">{{ comment.comment }}</p>
+                    </div>
+                    
+                    <!-- Admin Response Form -->
+                    <form method="POST" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="id_admin_response" class="form-label fw-bold">Your Response</label>
+                            <textarea 
+                                class="form-control" 
+                                id="id_admin_response" 
+                                name="admin_response" 
+                                rows="5"
+                                placeholder="Type your detailed response here..."
+                            >{% if form.admin_response.value %}{{ form.admin_response.value }}{% endif %}</textarea>
+                            {% if form.admin_response.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.admin_response.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4 form-check form-switch">
+                            <input 
+                                class="form-check-input" 
+                                type="checkbox" 
+                                id="id_is_resolved" 
+                                name="is_resolved"
+                                {% if form.is_resolved.value %}checked{% endif %}
+                            >
+                            <label class="form-check-label fw-bold" for="id_is_resolved">Mark as Resolved</label>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'admin_comment_dashboard' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Response
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <!-- Previous Responses (if any) -->
+                    {% if comment.admin_response %}
+                    <div class="mt-5">
+                        <h5 class="mb-3">Previous Response</h5>
+                        <div class="p-3 bg-light rounded">
+                            <div class="d-flex justify-content-between mb-2">
+                                <h6>Admin Response</h6>
+                                <span class="text-muted">{{ comment.updated_at|date:"F j, Y H:i" }}</span>
+                            </div>
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="me-3">
+                                    <div class="bg-success text-white rounded-circle p-2 text-center" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-user-shield"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">
+                                        {% if comment.responded_by %}
+                                            {{ comment.responded_by.get_full_name }}
+                                        {% else %}
+                                            Administrator
+                                        {% endif %}
+                                    </h6>
+                                    <p class="mb-0 text-muted small">Staff</p>
+                                </div>
+                            </div>
+                            <p class="mb-0 ps-4">{{ comment.admin_response }}</p>
                         </div>
                     </div>
-                    <p class="mb-0 ps-4">{{ comment.admin_response }}</p>
+                    {% endif %}
                 </div>
             </div>
-            {% endif %}
         </div>
     </div>
 </div>
+
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+</script>
 {% endblock %}
