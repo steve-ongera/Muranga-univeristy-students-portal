@@ -24,6 +24,15 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 import os
+from django.db.models import Sum
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+import json
+
+
+
 
 def login_view(request):
     """
@@ -311,9 +320,6 @@ def registration_view(request):
     # If GET request, just show the registration form
     return render(request, 'auth/registration.html')
 
-from django.db.models import Sum
-from datetime import datetime
-@login_required
 @login_required
 def student_dashboard(request):
     """
@@ -498,16 +504,6 @@ def lecturer_dashboard(request):
         messages.error(request, "Lecturer profile not found. Please contact administration.")
         return redirect('login')
 
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from django.views.decorators.http import require_GET
-import json
-from datetime import datetime
-from .models import (
-    Student, Lecturer, Programme, AcademicYear,
-    StudentReporting, Department, Faculty
-)
 
 @require_GET
 def gender_distribution_api(request):
