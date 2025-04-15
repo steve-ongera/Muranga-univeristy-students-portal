@@ -2,45 +2,118 @@
 {% load static %}
 
 {% block content %}
-<div class="container py-5">
-    <h2 class="mb-4">Unit Enrollment</h2>
+<style>
+    /* Muranga University Theme Colors */
+    :root {
+        --muranga-primary: #2E7D32;  /* Dark Green */
+        --muranga-secondary: #4CAF50;  /* Medium Green */
+        --muranga-light: #E8F5E9;  /* Light Green */
+        --muranga-accent: #81C784;  /* Soft Green */
+    }
     
-    <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
-            <h5>Enrollment Information</h5>
+    body {
+        background-color: #f5f5f5;
+    }
+    
+    .card-header {
+        background-color: var(--muranga-primary) !important;
+    }
+    
+    .bg-success {
+        background-color: var(--muranga-secondary) !important;
+    }
+    
+    .btn-primary {
+        background-color: var(--muranga-primary);
+        border-color: var(--muranga-primary);
+    }
+    
+    .btn-primary:hover {
+        background-color: #1B5E20;
+        border-color: #1B5E20;
+    }
+    
+    .table-success {
+        background-color: var(--muranga-light) !important;
+    }
+    
+    .alert-info {
+        background-color: var(--muranga-light);
+        border-color: var(--muranga-accent);
+        color: var(--muranga-primary);
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(76, 175, 80, 0.1);
+    }
+    
+    .enrollment-card {
+        border: 1px solid var(--muranga-accent);
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(46, 125, 50, 0.1);
+    }
+    
+    .student-info-card {
+        background-color: white;
+        border-left: 4px solid var(--muranga-secondary);
+    }
+    
+    .action-btn {
+        transition: all 0.3s ease;
+    }
+    
+    .action-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .enrollment-status {
+        color: var(--muranga-primary);
+        font-weight: 500;
+    }
+</style>
+
+<div class="container py-5">
+    <h2 class="mb-4 text-center" style="color: var(--muranga-primary);">Unit Enrollment</h2>
+    
+    <!-- Student Information Card -->
+    <div class="card mb-4 student-info-card">
+        <div class="card-header text-white">
+            <h5><i class="fas fa-user-graduate me-2"></i>Enrollment Information</h5>
         </div>
         <div class="card-body">
             <div class="row">
                 <div class="col-md-6">
-                    <p><strong>Programme:</strong> {{ student.programme.name }}</p>
-                    <p><strong>Current Year:</strong> Year {{ student.current_year }}</p>
+                    <p><strong><i class="fas fa-book me-2"></i>Programme:</strong> {{ student.programme.name }}</p>
+                    <p><strong><i class="fas fa-calendar-alt me-2"></i>Current Year:</strong> Year {{ student.current_year }}</p>
                 </div>
                 <div class="col-md-6">
-                    <p><strong>Current Semester:</strong> Semester {{ student.current_semester }}</p>
-                    <p><strong>Academic Year:</strong> {{ current_semester.academic_year.name }}</p>
+                    <p><strong><i class="fas fa-clock me-2"></i>Current Semester:</strong> Semester {{ student.current_semester }}</p>
+                    <p><strong><i class="fas fa-university me-2"></i>Academic Year:</strong> {{ current_semester.academic_year.name }}</p>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Enrollment Form -->
     <form method="post">
         {% csrf_token %}
         
-        <div class="card mb-4">
-            <div class="card-header bg-info text-white">
-                <h5>Available Units</h5>
+        <div class="card mb-4 enrollment-card">
+            <div class="card-header text-white">
+                <h5><i class="fas fa-list-ol me-2"></i>Available Units</h5>
             </div>
             <div class="card-body">
                 {% if available_units %}
                     <div class="table-responsive">
                         <table class="table table-hover">
-                            <thead>
+                            <thead class="table-light">
                                 <tr>
                                     <th>Select</th>
                                     <th>Unit Code</th>
                                     <th>Unit Name</th>
                                     <th>Credit Hours</th>
-                                    <th>Core/Elective</th>
+                                    <th>Type</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -49,9 +122,9 @@
                                         <td>
                                             {% if unit.id not in enrolled_units %}
                                                 <input type="checkbox" name="units" value="{{ unit.id }}" 
-                                                       id="unit_{{ unit.id }}">
+                                                       id="unit_{{ unit.id }}" class="form-check-input">
                                             {% else %}
-                                                <span class="text-success">✔ Enrolled</span>
+                                                <span class="enrollment-status"><i class="fas fa-check-circle"></i> Enrolled</span>
                                             {% endif %}
                                         </td>
                                         <td>{{ unit.unit.code }}</td>
@@ -64,72 +137,94 @@
                         </table>
                     </div>
                 {% else %}
-                    <div class="alert alert-warning">
-                        No units available for enrollment in your current year and semester.
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>No units available for enrollment in your current year and semester.
                     </div>
                 {% endif %}
             </div>
         </div>
 
         {% if available_units %}
-            <div class="text-center">
-                <button type="submit" class="btn btn-primary btn-lg">
-                    <i class="fas fa-save"></i> Submit Enrollment
+            <div class="text-center mb-4">
+                <button type="submit" class="btn btn-primary btn-lg action-btn">
+                    <i class="fas fa-save me-2"></i> Submit Enrollment
                 </button>
             </div>
         {% endif %}
     </form>
 
-    <!-- Current Enrollments -->
-    <!-- Current Enrollments -->
-<div class="card mt-4">
-    <div class="card-header bg-success text-white">
-        <h5>Your Current Enrollments</h5>
-    </div>
-    <div class="card-body">
-        {% if current_enrollments %}
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Unit Code</th>
-                            <th>Unit Name</th>
-                            <th>Lecturer</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for enrollment in current_enrollments %}
+    <!-- Current Enrollments Section -->
+    <div class="card mt-4 enrollment-card">
+        <div class="card-header text-white">
+            <h5><i class="fas fa-clipboard-list me-2"></i>Your Current Enrollments</h5>
+        </div>
+        <div class="card-body">
+            {% if current_enrollments %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead class="table-light">
                             <tr>
-                                <td>{{ enrollment.programme_unit.unit.code }}</td>
-                                <td>{{ enrollment.programme_unit.unit.name }}</td>
-                                <td>
-                                    {% with allocation=enrollment.programme_unit.unit_allocations.filter|first %}
-                                        {% if allocation %}
-                                            {{ allocation.lecturer.get_full_name }}
-                                        {% else %}
-                                            Not assigned
-                                        {% endif %}
-                                    {% endwith %}
-                                </td>
-                                <td>
-                                    <a href="{% url 'drop_unit' enrollment.id %}" 
-                                       class="btn btn-sm btn-danger"
-                                       onclick="return confirm('Are you sure you want to drop this unit?');">
-                                        Drop
-                                    </a>
-                                </td>
+                                <th>Unit Code</th>
+                                <th>Unit Name</th>
+                                <th>Lecturer</th>
+                                <th>Status</th>
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <div class="alert alert-info">
-                You are not enrolled in any units for this semester.
-            </div>
-        {% endif %}
+                        </thead>
+                        <tbody>
+                            {% for enrollment in current_enrollments %}
+                                <tr>
+                                    <td>{{ enrollment.programme_unit.unit.code }}</td>
+                                    <td>{{ enrollment.programme_unit.unit.name }}</td>
+                                    <td>
+                                        {% with allocation=enrollment.programme_unit.unit_allocations.filter|first %}
+                                            {% if allocation %}
+                                                {{ allocation.lecturer.get_full_name }}
+                                            {% else %}
+                                                <span class="text-muted">Not assigned</span>
+                                            {% endif %}
+                                        {% endwith %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-danger action-btn" disabled>
+                                            <i class="fas fa-trash-alt me-1"></i> Drop Unit
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>You are not enrolled in any units for this semester.
+                </div>
+            {% endif %}
+        </div>
     </div>
 </div>
-</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Disable all drop unit links
+        const dropLinks = document.querySelectorAll('a[href*="drop_unit"]');
+        dropLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('Unit dropping is currently disabled. Please contact the administration office for assistance.');
+                return false;
+            });
+            
+            // Visual indication that it's disabled
+            link.classList.add('disabled');
+            link.style.opacity = '0.6';
+            link.style.cursor = 'not-allowed';
+        });
+        
+        // Add Muranga University theme to all relevant elements
+        const primaryElements = document.querySelectorAll('.card-header, .btn-primary');
+        primaryElements.forEach(el => {
+            el.style.backgroundColor = '#2E7D32';
+        });
+    });
+</script>
 {% endblock %}

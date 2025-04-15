@@ -8,16 +8,19 @@
       background-color: #f8f9fa;
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      border: 1px solid #4CAF50; /* Muranga University green accent */
   }
 
   .enroll-header {
       text-align: center;
       margin-bottom: 20px;
+      color: #2E7D32; /* Darker green for headings */
   }
 
   .enroll-header h3 {
-      color: #2c3e50;
+      color: #2E7D32;
       margin-bottom: 5px;
+      font-weight: 600;
   }
 
   .student-info {
@@ -25,15 +28,19 @@
       font-size: 16px;
       color: #555;
       margin-bottom: 25px;
+      padding: 8px;
+      background-color: #E8F5E9; /* Light green background */
+      border-radius: 5px;
   }
 
   .alert-info {
-      background-color: #e9f7fe;
-      color: #31708f;
+      background-color: #E8F5E9;
+      color: #2E7D32;
       padding: 10px 15px;
       border-radius: 5px;
       margin-bottom: 20px;
       text-align: center;
+      border-left: 4px solid #4CAF50;
   }
 
   form {
@@ -46,6 +53,11 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
+  }
+
+  .form-group label {
+      color: #2E7D32;
+      font-weight: 500;
   }
 
   .checkbox-group {
@@ -61,12 +73,19 @@
       gap: 10px;
       font-size: 15px;
       color: #333;
+      padding: 5px;
+      border-radius: 4px;
+  }
+
+  .checkbox-item:hover {
+      background-color: #E8F5E9;
   }
 
   input[type="checkbox"] {
       width: 18px;
       height: 18px;
       cursor: pointer;
+      accent-color: #4CAF50; /* Green checkboxes */
   }
 
   select, input[type="text"], input[type="number"], input[type="date"] {
@@ -75,24 +94,58 @@
       border-radius: 5px;
   }
 
+  select:focus, input[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus {
+      border-color: #4CAF50;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+  }
+
   button[type="submit"] {
       padding: 10px 15px;
-      background-color: #007bff;
+      background-color: #4CAF50; /* Muranga University green */
       color: white;
       border: none;
       border-radius: 5px;
       font-size: 16px;
       transition: background-color 0.3s ease;
       cursor: pointer;
+      font-weight: 500;
   }
 
   button[type="submit"]:hover {
-      background-color: #0056b3;
+      background-color: #388E3C; /* Darker green on hover */
   }
 
   button[disabled] {
-      background-color: grey;
+      background-color: #A5D6A7;
       cursor: not-allowed;
+  }
+
+  .message-container {
+      max-width: 700px;
+      margin: 20px auto 0 auto;
+  }
+
+  .alert-message {
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+      position: relative;
+  }
+
+  .alert-success {
+      background-color: #E8F5E9;
+      color: #2E7D32;
+      border-left: 4px solid #4CAF50;
+  }
+
+  .close-message {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-weight: bold;
   }
 </style>
 
@@ -103,14 +156,14 @@
         <span class="close-message">&times;</span>
     </div>
     {% endfor %}
-  </div>
+</div>
 
 <div class="enroll-container">
     <div class="enroll-header">
         <h3>Enroll Subjects for {{ current_term.name }} {{ current_term.year }}</h3>
     </div>
 
-    <p class="student-info">Student: {{ student.username }}</p>
+    <p class="student-info">Student: {{ student.username }} ({{ student.registration_number }})</p>
 
     {% if already_enrolled %}
         <div class="alert-info">
@@ -136,7 +189,34 @@
         </div>
       </div>
 
-      <button type="submit" {% if already_enrolled %}disabled{% endif %}>Enroll</button>
+      <button type="submit" {% if already_enrolled %}disabled{% endif %}>Enroll Subjects</button>
     </form>
 </div>
+
+<script>
+  // Make drop unit button non-clickable
+  document.addEventListener('DOMContentLoaded', function() {
+      // Close message functionality
+      const closeButtons = document.querySelectorAll('.close-message');
+      closeButtons.forEach(button => {
+          button.addEventListener('click', function() {
+              this.parentElement.style.display = 'none';
+          });
+      });
+      
+      // Disable drop unit functionality (if exists on the page)
+      const dropButtons = document.querySelectorAll('.drop-unit-btn, .btn-drop');
+      dropButtons.forEach(button => {
+          button.disabled = true;
+          button.style.cursor = 'not-allowed';
+          button.style.opacity = '0.6';
+      });
+      
+      // Add Muranga University theme to select elements
+      const selects = document.querySelectorAll('select');
+      selects.forEach(select => {
+          select.style.borderColor = '#4CAF50';
+      });
+  });
+</script>
 {% endblock %}
