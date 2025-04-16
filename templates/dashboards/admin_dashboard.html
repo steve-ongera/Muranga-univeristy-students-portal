@@ -339,41 +339,176 @@
 
       <!-- Right side columns -->
       <div class="col-lg-4">
-        <!-- Recent Activity -->
-        <div class="card">
-          <div class="filter">
-            <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-              <li class="dropdown-header text-start">
-                <h6>Filter</h6>
-              </li>
-              <li><a class="dropdown-item" href="#">Today</a></li>
-              <li><a class="dropdown-item" href="#">This Month</a></li>
-              <li><a class="dropdown-item" href="#">This Year</a></li>
-            </ul>
-          </div>
-
+        <!-- Reporting in the current semester -->
+        <div class="card" style="border-color: #ffffff">
           <div class="card-body">
-            <h5 class="card-title">Recent Activity <span>| Today</span></h5>
-            <div class="activity-wrapper">
-              <div class="activity">
-                {% for activity in recent_activities %}
-                  <div class="activity-item d-flex">
-                    <div class="activite-label">{{ activity.timestamp|date:"g:ia" }}</div>
-                    <i class='bi bi-circle-fill activity-badge text-success align-self-start'></i>
-                    <div class="activity-content">
-                      {{ activity.user.username }} <a href="#" class="fw-bold text-dark">{{ activity.action }}</a> at {{ activity.timestamp|date:"M d, Y H:i" }}
-                    </div>
-                  </div><!-- End activity item-->
-                {% endfor %}
-              </div>
-            </div>
+            <h5 class="card-title" style="color: #2E7D32;">Student Reportings <span style="color: #8BC34A;">| All Semesters</span></h5>
+            <div id="reportingChart" style="min-height: 400px;" class="echart"></div>
           </div>
-        </div><!-- End Recent Activity -->
+        </div>
+        <script>
+          document.addEventListener("DOMContentLoaded", function () {
+            var chartDom = document.getElementById('reportingChart');
+            var myChart = echarts.init(chartDom);
+
+            var option = {
+              title: {
+                text: 'Reportings per Semester',
+                left: 'center',
+                textStyle: {
+                  color: '#2E7D32',
+                  fontWeight: 'bold'
+                }
+              },
+              tooltip: {
+                trigger: 'axis',
+                backgroundColor: 'rgba(139, 195, 74, 0.7)',
+                borderColor: '#8BC34A',
+                textStyle: {
+                  color: '#333'
+                }
+              },
+              legend: {
+                top: 'bottom',
+                data: ['Reported', 'Not Reported', 'Deferred'],
+                textStyle: {
+                  color: '#2E7D32'
+                }
+              },
+              grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '10%',
+                containLabel: true
+              },
+              xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: {{ reporting_labels|safe }},
+                axisLabel: {
+                  rotate: 30, // Slanted labels
+                  color: '#2E7D32'
+                },
+                axisLine: {
+                  lineStyle: {
+                    color: '#8BC34A'
+                  }
+                }
+              },
+              yAxis: {
+                type: 'value',
+                axisLine: {
+                  lineStyle: {
+                    color: '#8BC34A'
+                  }
+                },
+                axisLabel: {
+                  color: '#2E7D32'
+                },
+                splitLine: {
+                  lineStyle: {
+                    color: 'rgba(139, 195, 74, 0.2)'
+                  }
+                }
+              },
+              backgroundColor: {
+                type: 'linear',
+                x: 0,
+                y: 0,
+                x2: 0,
+                y2: 1,
+                colorStops: [{
+                  offset: 0,
+                  color: 'rgba(220, 237, 200, 0.5)' // Light green fade at top
+                }, {
+                  offset: 1,
+                  color: 'rgba(255, 255, 255, 0.1)' // Fade to transparent at bottom
+                }]
+              },
+              series: [
+                {
+                  name: 'Reported',
+                  type: 'line',
+                  data: {{ reported_data|safe }},
+                  smooth: true,
+                  lineStyle: { color: '#4CAF50', width: 3 },
+                  areaStyle: {
+                    color: {
+                      type: 'linear',
+                      x: 0,
+                      y: 0,
+                      x2: 0,
+                      y2: 1,
+                      colorStops: [{
+                        offset: 0,
+                        color: 'rgba(76, 175, 80, 0.6)'
+                      }, {
+                        offset: 1,
+                        color: 'rgba(76, 175, 80, 0.1)'
+                      }]
+                    }
+                  }
+                },
+                {
+                  name: 'Not Reported',
+                  type: 'line',
+                  data: {{ not_reported_data|safe }},
+                  smooth: true,
+                  lineStyle: { color: '#FFC107', width: 3 },
+                  areaStyle: {
+                    color: {
+                      type: 'linear',
+                      x: 0,
+                      y: 0,
+                      x2: 0,
+                      y2: 1,
+                      colorStops: [{
+                        offset: 0,
+                        color: 'rgba(255, 193, 7, 0.6)'
+                      }, {
+                        offset: 1,
+                        color: 'rgba(255, 193, 7, 0.1)'
+                      }]
+                    }
+                  }
+                },
+                {
+                  name: 'Deferred',
+                  type: 'line',
+                  data: {{ deferred_data|safe }},
+                  smooth: true,
+                  lineStyle: { color: '#F44336', width: 3 },
+                  areaStyle: {
+                    color: {
+                      type: 'linear',
+                      x: 0,
+                      y: 0,
+                      x2: 0,
+                      y2: 1,
+                      colorStops: [{
+                        offset: 0,
+                        color: 'rgba(244, 67, 54, 0.6)'
+                      }, {
+                        offset: 1,
+                        color: 'rgba(244, 67, 54, 0.1)'
+                      }]
+                    }
+                  }
+                }
+              ]
+            };
+
+            myChart.setOption(option);
+            window.addEventListener('resize', myChart.resize);
+          });
+        </script>
+        
+        
+        
 
         <!-- Gender Population Analysis -->
-        <div class="card-body">
-            <div class="card">
+        
+        <div class="card">
                 <div class="filter">
                     <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
                     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
@@ -395,8 +530,8 @@
                     <h5 class="card-title">Gender Distribution <span>| {{ current_academic_year_display }}</span></h5>
                     <div id="genderDonutChart" style="min-height: 400px; width: 100%;"></div>
                 </div>
-            </div>
-        </div>
+          </div>
+        
 
         <!--population trends-->
         <div class="card">
@@ -412,6 +547,7 @@
             var option = {
               title: {
                 text: 'Student Population Trend',
+                color: '#2E7D32',
                 left: 'center'
               },
               tooltip: {
@@ -435,7 +571,7 @@
                   type: 'bar',
                   data: {{ population_trend_data|safe }},
                   itemStyle: {
-                    color: '#3c8dbc'
+                    color: '#2E7D32'
                   },
                   label: {
                     show: true,

@@ -601,11 +601,20 @@ def admin_dashboard(request):
         population_trend_data.append(count)
     
     # Prepare reporting statistics
-    reporting_stats = {
-        'reported': StudentReporting.objects.filter(reporting_status='reported').count(),
-        'not_reported': StudentReporting.objects.filter(reporting_status='not_reported').count(),
-        'deferred': StudentReporting.objects.filter(reporting_status='deferred').count(),
-    }
+    # Group reporting statistics by academic year and semester
+    reporting_trend_data = defaultdict(lambda: {'reported': 0, 'not_reported': 0, 'deferred': 0})
+
+    # Get all reportings and group
+    all_reportings = StudentReporting.objects.select_related('academic_year', 'semester')
+    for report in all_reportings:
+        label = f"{report.academic_year.name} - {report.semester.name}"  # E.g., "2023/2024 - Semester 1"
+        reporting_trend_data[label][report.reporting_status] += 1
+
+    # Sort by academic year and semester
+    sorted_labels = sorted(reporting_trend_data.keys())
+    reported_data = [reporting_trend_data[label]['reported'] for label in sorted_labels]
+    not_reported_data = [reporting_trend_data[label]['not_reported'] for label in sorted_labels]
+    deferred_data = [reporting_trend_data[label]['deferred'] for label in sorted_labels]
     
     context = {
         'page_title': 'Admin Dashboard',
@@ -631,7 +640,12 @@ def admin_dashboard(request):
         'population_trend_labels': json.dumps(population_trend_labels),
         'population_trend_data': json.dumps(population_trend_data),
         'gender_data': json.dumps(gender_data),
-        'reporting_stats': json.dumps(reporting_stats),
+        #reportings
+        'reporting_labels': json.dumps(sorted_labels),
+        'reported_data': json.dumps(reported_data),
+        'not_reported_data': json.dumps(not_reported_data),
+        'deferred_data': json.dumps(deferred_data),
+
         
         # Academic year filter
         'academic_year_choices': academic_year_choices,
