@@ -3064,19 +3064,28 @@ def unit_allocation_view(request):
         
         if not current_semester:
             messages.error(request, "No current semester set in the system")
-            return redirect('admin_dashboard')  # Replace with your dashboard URL
+            return redirect('admin_dashboard')
     except AcademicYear.DoesNotExist:
         messages.error(request, "No current academic year set in the system")
         return redirect('admin_dashboard')
 
-    # Get all departments (for filtering)
+    # Get all departments
     departments = Department.objects.all()
+    
+    # Handle department filter - convert "None" string to None
     selected_department_id = request.GET.get('department')
-
+    if selected_department_id == 'None':
+        selected_department_id = None
+    
     # Get all lecturers (filter by department if selected)
     lecturers_query = Lecturer.objects.filter(is_active=True)
     if selected_department_id:
-        lecturers_query = lecturers_query.filter(department_id=selected_department_id)
+        try:
+            selected_department_id = int(selected_department_id)
+            lecturers_query = lecturers_query.filter(department_id=selected_department_id)
+        except (ValueError, TypeError):
+            messages.error(request, "Invalid department selected")
+            return redirect('unit_allocation')
     
     lecturers = lecturers_query.select_related('department').order_by('last_name')
 
@@ -3113,6 +3122,11 @@ def unit_allocation_view(request):
         except Lecturer.DoesNotExist:
             messages.error(request, "Selected lecturer not found")
             return redirect('unit_allocation')
+        except ValueError:
+            messages.error(request, "Invalid lecturer ID")
+            return redirect('unit_allocation')
+
+    # ... rest of your view code ...
 
     # Handle form submission
     if request.method == 'POST':
