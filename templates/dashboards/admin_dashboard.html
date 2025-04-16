@@ -398,24 +398,58 @@
             </div>
         </div>
 
+        <!--population trends-->
         <div class="card">
-          <div class="filter">
-            <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-              <li class="dropdown-header text-start">
-                <h6>Filter</h6>
-              </li>
-              <li><a class="dropdown-item" href="#">Academic</a></li>
-              <li><a class="dropdown-item" href="#">Academic year</a></li>
-              <li><a class="dropdown-item" href="#">Academic year</a></li>
-            </ul>
-          </div>
-        
           <div class="card-body pb-0">
-            <h5 class="card-title">Student Admission by Year <span>| All Time</span></h5>
-            <div id="studentYearlyDonutChart" style="min-height: 400px;" class="echart"></div>
+            <h5 class="card-title">Population trend <span>| All Time</span></h5>
+            <div id="populationtrend" style="min-height: 400px;" class="echart"></div>
           </div>
         </div>
+        <script>
+          document.addEventListener("DOMContentLoaded", function () {
+            var chartDom = document.getElementById('populationtrend');
+            var myChart = echarts.init(chartDom);
+            var option = {
+              title: {
+                text: 'Student Population Trend',
+                left: 'center'
+              },
+              tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' }
+              },
+              xAxis: {
+                type: 'category',
+                data: {{ population_trend_labels|safe }},
+                axisLabel: {
+                  rotate: 45
+                }
+              },
+              yAxis: {
+                type: 'value',
+                name: 'Number of Students'
+              },
+              series: [
+                {
+                  name: 'Students',
+                  type: 'bar',
+                  data: {{ population_trend_data|safe }},
+                  itemStyle: {
+                    color: '#3c8dbc'
+                  },
+                  label: {
+                    show: true,
+                    position: 'top'
+                  }
+                }
+              ]
+            };
+        
+            myChart.setOption(option);
+            window.addEventListener('resize', myChart.resize);
+          });
+        </script>
+        
 
         <!-- News & Updates -->
         <div class="card">

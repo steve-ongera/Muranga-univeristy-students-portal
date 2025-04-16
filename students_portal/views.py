@@ -539,6 +539,7 @@ def prepare_gender_data_by_academic_year(academic_year_id):
         {'value': gender_counts['O'], 'name': 'Other'}
     ]
 
+
 @login_required
 def admin_dashboard(request):
     # Get all academic years ordered chronologically
