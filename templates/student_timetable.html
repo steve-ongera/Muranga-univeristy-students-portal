@@ -1,0 +1,108 @@
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Timetable</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .timetable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .timetable th, .timetable td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: center;
+        }
+        .timetable th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .time-column {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            width: 100px;
+        }
+        .lesson-cell {
+            min-width: 150px;
+        }
+        .unit-code {
+            font-weight: bold;
+        }
+        .lecture-hall {
+            font-style: italic;
+            color: #6c757d;
+        }
+        .empty-cell {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h2 class="mb-0">My Timetable</h2>
+            </div>
+            <div class="card-body">
+                {% if error %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% else %}
+                    <div class="mb-4">
+                        <h4>{{ programme.name }} - Year {{ year_of_study }}</h4>
+                        <p class="mb-0">{{ current_semester }}</p>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-bordered timetable">
+                            <thead>
+                                <tr>
+                                    <th class="time-column">Time</th>
+                                    {% for day in days_of_week %}
+                                        <th>{{ day }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for slot in time_slots %}
+                                    {% with slot.start_time|time:"H:i" as start %}
+                                    {% with slot.end_time|time:"H:i" as end %}
+                                    {% with time_range=start|add:"-"|add:end %}
+                                    <tr>
+                                        <td class="time-column">{{ time_range }}</td>
+                                        {% for day in days_of_week %}
+                                            <td class="lesson-cell">
+                                                {% with day_name=day %}
+                                                    {% if timetable_data|get_item:day_name|get_item:time_range %}
+                                                        {% with lesson=timetable_data|get_item:day_name|get_item:time_range %}
+                                                            <div class="unit-code">{{ lesson.unit_code }}</div>
+                                                            <div>{{ lesson.unit_name }}</div>
+                                                            <div class="lecture-hall">{{ lesson.lecture_hall }}</div>
+                                                            <div><small>{{ lesson.lecturer }}</small></div>
+                                                        {% endwith %}
+                                                    {% else %}
+                                                        <div class="empty-cell">-</div>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </td>
+                                        {% endfor %}
+                                    </tr>
+                                    {% endwith %}
+                                    {% endwith %}
+                                    {% endwith %}
+                                {% endfor %}
+
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

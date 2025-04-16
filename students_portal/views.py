@@ -2956,3 +2956,91 @@ def timetable_view(request):
             return JsonResponse({'success': False, 'error': str(e)})
 
     return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import Semester, ScheduledLesson, StudentEnrollment
+
+@login_required
+def student_timetable(request):
+    # Get current student and semester
+    student = Student.objects.get(registration_number=request.user.username)
+    current_semester = Semester.objects.filter(is_current=True).first()
+    
+    if not current_semester:
+        return render(request, 'student_timetable.html', {
+            'error': 'No current semester found'
+        })
+    
+    # Get the student's enrollment for current semester
+    enrollment = StudentEnrollment.objects.filter(
+        student=student,
+        semester=current_semester
+    ).first()
+    
+    if not enrollment:
+        return render(request, 'student_timetable.html', {
+            'error': 'You are not enrolled in any programme for this semester'
+        })
+    
+    # Get the programme from programme_unit
+    programme = enrollment.programme_unit.programme
+    
+    # Get the timetable for their programme and year
+    timetable = Timetable.objects.filter(
+        semester=current_semester,
+        programme=programme,
+        year_of_study=enrollment.programme_unit.year_of_study,
+        is_published=True
+    ).first()
+    
+    if not timetable:
+        return render(request, 'student_timetable.html', {
+            'error': 'Timetable not available for your programme'
+        })
+    
+    # Get all scheduled lessons for this timetable
+    scheduled_lessons = ScheduledLesson.objects.filter(
+        timetable=timetable
+    ).select_related(
+        'unit_allocation__programme_unit__unit',
+        'time_slot',
+        'lecture_hall'
+    ).order_by('time_slot__day_of_week', 'time_slot__start_time')
+    
+    # Get day choices from TimeSlot model
+    day_choices = TimeSlot._meta.get_field('day_of_week').choices
+    days_of_week = {value: label for value, label in day_choices}
+    
+    # Initialize timetable data structure
+    timetable_data = {day: {} for day in days_of_week.values()}
+    
+    # Get all unique time slots for this timetable
+    time_slots = TimeSlot.objects.filter(
+        scheduled_lessons__timetable=timetable
+    ).distinct().order_by('start_time')
+    
+    # Populate timetable data
+    for lesson in scheduled_lessons:
+        day_name = lesson.time_slot.get_day_of_week_display()
+        time_range = f"{lesson.time_slot.start_time.strftime('%H:%M')}-{lesson.time_slot.end_time.strftime('%H:%M')}"
+        
+        timetable_data[day_name][time_range] = {
+            'unit_code': lesson.unit_allocation.programme_unit.unit.code,
+            'unit_name': lesson.unit_allocation.programme_unit.unit.name,
+            'lecture_hall': lesson.lecture_hall.name,
+            'lecturer': lesson.unit_allocation.lecturer.get_full_name(),
+        }
+    
+    context = {
+        'current_semester': current_semester,
+        'programme': programme,
+        'year_of_study': enrollment.programme_unit.year_of_study,
+        'days_of_week': days_of_week.values(),
+        'time_slots': time_slots,
+        'timetable_data': timetable_data,
+    }
+    
+    return render(request, 'student_timetable.html', context)

@@ -52,6 +52,8 @@ urlpatterns = [
     path('programmes/', views.programme_list, name='programme_list'),
     path('programmes/<int:programme_id>/', views.programme_detail, name='programme_detail'),
     path('timetable/', views.timetable_view, name='timetable'),
+    path('student_timetable/', views.student_timetable , name='student_timetable'),
+
 
     path('promote-students/', views.promote_students, name='promote_students'),
     path('fee-history/', views.student_fee_history, name='student_fee_history'),
