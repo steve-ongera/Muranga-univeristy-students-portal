@@ -86,6 +86,8 @@ urlpatterns = [
      path('attendance/scan/', views.student_scan_qr, name='student_scan_qr'),
      # Unit Allocation URLs
      path('unit-allocation/', views.unit_allocation_view, name='unit_allocation'),
+    path('special-exam-application/', views.special_exam_application, name='special_exam_application'),
+     path('verify-exam-payment/', views.verify_exam_payment, name='verify_exam_payment'),
 
 
 

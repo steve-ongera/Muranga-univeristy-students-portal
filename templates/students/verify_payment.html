@@ -1,0 +1,49 @@
+<!-- verify_payment.html -->
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">
+                <i class="fas fa-check-circle mr-2"></i>
+                Verify Exam Payment
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="alert alert-info">
+                        <h5 class="alert-heading">Payment Instructions:</h5>
+                        <ol>
+                            <li>Make payment of KSH 800 per supplementary exam unit</li>
+                            <li>Payment method: M-Pesa Paybill 123456, Account: Your Registration Number</li>
+                            <li>Enter the verification code you received after application below</li>
+                        </ol>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="verification_code">Verification Code</label>
+                            <input type="text" class="form-control form-control-lg" 
+                                   id="verification_code" name="verification_code" 
+                                   placeholder="Enter your 12-digit code" required>
+                            <small class="form-text text-muted">
+                                This code was sent to you after submitting your application
+                            </small>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-success btn-lg px-5">
+                                <i class="fas fa-check mr-2"></i>
+                                Verify Payment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

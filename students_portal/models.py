@@ -748,3 +748,74 @@ class ScheduledLesson(models.Model):
     
     def __str__(self):
         return f"{self.unit_allocation.programme_unit.unit.code} at {self.time_slot} in {self.lecture_hall}"
+
+
+# models.py
+from django.db import models
+from django.utils import timezone
+from django.core.validators import MinValueValidator
+import secrets
+from datetime import timedelta
+
+class SpecialExamApplication(models.Model):
+    """Model to track special/supplementary exam applications"""
+    APPLICATION_TYPES = (
+        ('supplementary', 'Supplementary Exam'),
+        ('special', 'Special Exam'),
+    )
+    
+    STATUS_CHOICES = (
+        ('pending', 'Pending Payment'),
+        ('paid', 'Payment Complete'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('completed', 'Completed'),
+    )
+    
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='exam_applications')
+    semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    application_type = models.CharField(max_length=20, choices=APPLICATION_TYPES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    application_date = models.DateTimeField(auto_now_add=True)
+    payment_amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+    payment_reference = models.CharField(max_length=50, blank=True, null=True)
+    verification_code = models.CharField(max_length=12, unique=True)
+    code_expiry = models.DateTimeField()
+    admin_remarks = models.TextField(blank=True, null=True)
+    
+    class Meta:
+        ordering = ['-application_date']
+    
+    def __str__(self):
+        return f"{self.student.registration_number} - {self.get_application_type_display()} ({self.status})"
+    
+    def save(self, *args, **kwargs):
+        if not self.verification_code:
+            self.verification_code = self.generate_verification_code()
+            self.code_expiry = timezone.now() + timedelta(days=7)  # Code expires in 7 days
+        super().save(*args, **kwargs)
+    
+    def generate_verification_code(self):
+        return secrets.token_hex(6).upper()  # 12-character hex code
+    
+    def is_code_valid(self):
+        return timezone.now() < self.code_expiry
+    
+    def calculate_payment_amount(self, units_count):
+        # KSH 800 per supplementary exam
+        return units_count * 800
+
+
+class AppliedExamUnit(models.Model):
+    """Units included in an exam application"""
+    application = models.ForeignKey(SpecialExamApplication, on_delete=models.CASCADE, related_name='applied_units')
+    unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
+    original_enrollment = models.ForeignKey(StudentEnrollment, on_delete=models.CASCADE)
+    original_grade = models.ForeignKey(StudentUnitGrade, on_delete=models.CASCADE)
+    is_approved = models.BooleanField(default=False)
+    
+    class Meta:
+        unique_together = ('application', 'unit')
+    
+    def __str__(self):
+        return f"{self.application} - {self.unit.code}"

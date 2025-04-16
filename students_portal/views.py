@@ -3187,3 +3187,248 @@ def unit_allocation_view(request):
     }
     
     return render(request, 'units/unit_allocation.html', context)
+
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from .models import (
+    Student, StudentEnrollment, StudentUnitGrade, ProgrammeUnit,
+    Semester, AcademicYear
+)
+# views.py
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from django.utils import timezone
+from .models import (
+    Student, StudentEnrollment, StudentUnitGrade, ProgrammeUnit,
+    Semester, AcademicYear, SpecialExamApplication, AppliedExamUnit, Unit
+)
+from django.conf import settings
+from django.core.mail import EmailMessage
+
+@login_required
+def special_exam_application(request):
+    # Get current student
+    try:
+        student = Student.objects.get(registration_number=request.user.username)
+    except Student.DoesNotExist:
+        messages.error(request, "Student record not found")
+        return redirect('student_dashboard')
+    
+    # Get current academic year and semester
+    try:
+        current_academic_year = AcademicYear.objects.get(is_current=True)
+        current_semester = Semester.objects.get(
+            academic_year=current_academic_year,
+            is_current=True
+        )
+    except (AcademicYear.DoesNotExist, Semester.DoesNotExist):
+        messages.error(request, "Current semester information not available")
+        return redirect('student_dashboard')
+    
+    # Get all failed units for this student
+    failed_units = StudentUnitGrade.objects.filter(
+        enrollment__student=student,
+        is_pass=False
+    ).select_related(
+        'enrollment__programme_unit__unit',
+        'enrollment__programme_unit__programme',
+        'enrollment__semester'
+    )
+    
+    # Categorize failed units
+    failed_in_current_semester = []
+    failed_in_previous_semesters = []
+    supplementary_eligible = []
+    special_exam_eligible = []
+    
+    for grade in failed_units:
+        unit_info = {
+            'id': grade.id,
+            'unit_id': grade.enrollment.programme_unit.unit.id,
+            'unit_code': grade.enrollment.programme_unit.unit.code,
+            'unit_name': grade.enrollment.programme_unit.unit.name,
+            'semester_taken': grade.enrollment.semester,
+            'year_taken': grade.enrollment.programme_unit.year_of_study,
+            'semester_taken_number': grade.enrollment.programme_unit.semester,
+            'grade': grade.grade.grade if grade.grade else 'F',
+            'score': grade.total_score,
+            'is_current': grade.enrollment.semester == current_semester,
+            'enrollment_id': grade.enrollment.id,
+            'grade_id': grade.id,
+        }
+        
+        if unit_info['is_current']:
+            failed_in_current_semester.append(unit_info)
+        else:
+            failed_in_previous_semesters.append(unit_info)
+    
+    # Check if student qualifies for special exams (failed > 3 units in one semester)
+    semester_failure_counts = {}
+    for unit in failed_in_previous_semesters + failed_in_current_semester:
+        semester_key = f"{unit['semester_taken']}"
+        semester_failure_counts[semester_key] = semester_failure_counts.get(semester_key, 0) + 1
+    
+    qualifies_for_special = any(count > 3 for count in semester_failure_counts.values())
+    
+    # Find which failed units are being offered in current semester
+    current_offered_units = ProgrammeUnit.objects.filter(
+        semester=current_semester.number
+    ).values_list('unit__code', flat=True)
+    
+    # Categorize units based on eligibility
+    for unit in failed_in_previous_semesters + failed_in_current_semester:
+        if unit['unit_code'] in current_offered_units:
+            if qualifies_for_special:
+                special_exam_eligible.append(unit)
+            else:
+                supplementary_eligible.append(unit)
+    
+    # Handle form submission
+    # Handle form submission
+    if request.method == 'POST':
+        selected_units = request.POST.getlist('units')
+        application_type = request.POST.get('application_type')
+        
+        # Validate selected units
+        # Create a dictionary of all eligible units for easier lookup
+        all_eligible_units = {str(u['id']): u for u in supplementary_eligible + special_exam_eligible}
+        valid_unit_ids = all_eligible_units.keys()
+        
+        invalid_units = [unit for unit in selected_units if unit not in valid_unit_ids]
+        
+        if invalid_units:
+            messages.error(request, "Invalid unit selection")
+            return redirect('special_exam_application')
+        
+        if not selected_units:
+            messages.warning(request, "Please select at least one unit")
+            return redirect('special_exam_application')
+        
+        # Check if already applied for any of these units
+        already_applied = AppliedExamUnit.objects.filter(
+            original_grade_id__in=[all_eligible_units[unit_id]['grade_id'] for unit_id in selected_units],
+            application__student=student,
+            application__semester=current_semester
+        ).exists()
+        
+        if already_applied:
+            messages.error(request, "You have already applied for one or more of these units")
+            return redirect('special_exam_application')
+        
+        # Process application
+        try:
+            with transaction.atomic():
+                # Create the application
+                application = SpecialExamApplication.objects.create(
+                    student=student,
+                    semester=current_semester,
+                    application_type=application_type,
+                    payment_amount=800 * len(selected_units),
+                )
+                
+                # Add selected units to the application
+                for unit_id in selected_units:
+                    unit_info = all_eligible_units[unit_id]
+                    AppliedExamUnit.objects.create(
+                        application=application,
+                        unit_id=unit_info['unit_id'],
+                        original_enrollment_id=unit_info['enrollment_id'],
+                        original_grade_id=unit_info['grade_id'],
+                    )
+                
+                # Generate and send PDF receipt
+                pdf_buffer = application.generate_pdf_receipt()
+                
+                email = EmailMessage(
+                    f"Exam Application Receipt - {application.get_application_type_display()}",
+                    f"Dear {student.get_full_name()},\n\n"
+                    f"Please find attached your {application.get_application_type_display()} application receipt.\n"
+                    f"Verification Code: {application.verification_code}\n"
+                    f"Total Amount: KSH {application.payment_amount:.2f}\n\n"
+                    "Payment Instructions:\n"
+                    "1. M-Pesa Paybill: 123456\n"
+                    "2. Account: Your Registration Number\n"
+                    "3. Amount: KSH 800 per unit\n\n"
+                    "Thank you,\n"
+                    "Examinations Office\n"
+                    "Muranga University of Technology",
+                    settings.DEFAULT_FROM_EMAIL,
+                    [student.email],
+                )
+                email.attach(
+                    f"exam_application_{application.id}.pdf",
+                    pdf_buffer.getvalue(),
+                    'application/pdf'
+                )
+                email.send()
+                
+                messages.success(
+                    request,
+                    f"{application.get_application_type_display()} application submitted successfully! "
+                    f"A receipt has been sent to your email. Verification code: {application.verification_code}"
+                )
+                
+        except Exception as e:
+            messages.error(request, f"Error creating application: {str(e)}")
+            # Log the full error for debugging
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error in special_exam_application: {str(e)}", exc_info=True)
+        
+        return redirect('special_exam_application')
+    
+    # ... [rest of the view remains the same] ...
+    
+    # Get already applied units to disable checkboxes
+    applied_unit_ids = AppliedExamUnit.objects.filter(
+        application__student=student,
+        application__semester=current_semester
+    ).values_list('original_grade_id', flat=True)
+    
+    context = {
+        'student': student,
+        'current_semester': current_semester,
+        'failed_in_current_semester': failed_in_current_semester,
+        'failed_in_previous_semesters': failed_in_previous_semesters,
+        'supplementary_eligible': supplementary_eligible,
+        'special_exam_eligible': special_exam_eligible,
+        'qualifies_for_special': qualifies_for_special,
+        'total_failed_units': len(failed_in_current_semester) + len(failed_in_previous_semesters),
+        'applied_unit_ids': list(applied_unit_ids),
+    }
+    
+    return render(request, 'students/special_exam_application.html', context)
+
+
+@login_required
+def verify_exam_payment(request):
+    """View for students to verify their payment with the code"""
+    if request.method == 'POST':
+        verification_code = request.POST.get('verification_code', '').strip().upper()
+        
+        try:
+            application = SpecialExamApplication.objects.get(
+                verification_code=verification_code,
+                student__registration_number=request.user.username
+            )
+            
+            if not application.is_code_valid():
+                messages.error(request, "This verification code has expired")
+                return redirect('verify_exam_payment')
+            
+            # Update application status
+            application.status = 'paid'
+            application.save()
+            
+            messages.success(request, "Payment verified successfully! Your application is now being processed.")
+            return redirect('student_dashboard')
+            
+        except SpecialExamApplication.DoesNotExist:
+            messages.error(request, "Invalid verification code")
+    
+    return render(request, 'students/verify_payment.html')

@@ -1,0 +1,284 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card shadow-lg mb-4">
+        <div class="card-header bg-danger text-white">
+            <h3 class="mb-0">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                Special/Supplementary Exam Application
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <h5 class="alert-heading">Exam Rules:</h5>
+                <ul class="mb-0">
+                    <li>Failed <strong>3 or fewer</strong> units: Apply for supplementary exams when offered</li>
+                    <li>Failed <strong>more than 3</strong> units in one semester: Must apply for special exams</li>
+                    <li>You can only apply for units currently being offered this semester</li>
+                </ul>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Your Status</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-3">
+                                <span>Total Failed Units:</span>
+                                <span class="badge bg-danger">{{ total_failed_units }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3">
+                                <span>Current Semester:</span>
+                                <span>{{ current_semester }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Eligibility:</span>
+                                {% if qualifies_for_special %}
+                                    <span class="badge bg-warning text-dark">Special Exams Required</span>
+                                {% else %}
+                                    <span class="badge bg-success">Supplementary Exams</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Application Summary</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if qualifies_for_special %}
+                                <p class="text-danger">
+                                    <i class="fas fa-exclamation-circle mr-2"></i>
+                                    You have failed more than 3 units in one semester and must apply for special exams.
+                                </p>
+                            {% endif %}
+                            <p>
+                                <i class="fas fa-info-circle mr-2"></i>
+                                You can apply for {{ special_exam_eligible|length }} special exam(s) and 
+                                {{ supplementary_eligible|length }} supplementary exam(s) this semester.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Current Semester Failures -->
+            {% if failed_in_current_semester %}
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock mr-2"></i>
+                        Recently Failed Units (Current Semester)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Unit Code</th>
+                                    <th>Unit Name</th>
+                                    <th>Score</th>
+                                    <th>Grade</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for unit in failed_in_current_semester %}
+                                <tr>
+                                    <td>{{ unit.unit_code }}</td>
+                                    <td>{{ unit.unit_name }}</td>
+                                    <td>{{ unit.score|floatformat:2 }}</td>
+                                    <td><span class="badge bg-danger">{{ unit.grade }}</span></td>
+                                    <td>
+                                        {% if unit.unit_code in current_offered_units %}
+                                            {% if qualifies_for_special %}
+                                                <span class="badge bg-warning text-dark">Eligible for Special Exam</span>
+                                            {% else %}
+                                                <span class="badge bg-info">Eligible for Supplementary</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge bg-secondary">Not Currently Offered</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Previous Semester Failures -->
+            {% if failed_in_previous_semesters %}
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history mr-2"></i>
+                        Previously Failed Units
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Unit Code</th>
+                                    <th>Unit Name</th>
+                                    <th>Semester Taken</th>
+                                    <th>Score</th>
+                                    <th>Grade</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for unit in failed_in_previous_semesters %}
+                                <tr>
+                                    <td>{{ unit.unit_code }}</td>
+                                    <td>{{ unit.unit_name }}</td>
+                                    <td>{{ unit.semester_taken }}</td>
+                                    <td>{{ unit.score|floatformat:2 }}</td>
+                                    <td><span class="badge bg-danger">{{ unit.grade }}</span></td>
+                                    <td>
+                                        {% if unit.unit_code in current_offered_units %}
+                                            {% if qualifies_for_special %}
+                                                <span class="badge bg-warning text-dark">Eligible for Special Exam</span>
+                                            {% else %}
+                                                <span class="badge bg-info">Eligible for Supplementary</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge bg-secondary">Not Currently Offered</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Application Form -->
+            {% if supplementary_eligible or special_exam_eligible %}
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-alt mr-2"></i>
+                        Exam Application Form
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% if qualifies_for_special %}
+                        <input type="hidden" name="application_type" value="special">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            You must apply for <strong>Special Exams</strong> because you failed more than 3 units in one semester.
+                        </div>
+                        {% else %}
+                        <input type="hidden" name="application_type" value="supplementary">
+                        {% endif %}
+                        
+                        <h5 class="mb-3">Available Units for Application</h5>
+                        
+                        {% if special_exam_eligible %}
+                        <div class="mb-4">
+                            <h6 class="text-warning">
+                                <i class="fas fa-star mr-2"></i>
+                                Special Exam Units
+                            </h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <tbody>
+                                        {% for unit in special_exam_eligible %}
+                                        <tr>
+                                            <td width="30">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" 
+                                                           name="units" value="{{ unit.id }}" 
+                                                           id="unit_{{ unit.id }}">
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <label for="unit_{{ unit.id }}" class="mb-0">
+                                                    <strong>{{ unit.unit_code }}</strong> - {{ unit.unit_name }}
+                                                </label>
+                                            </td>
+                                            <td>Originally taken in {{ unit.semester_taken }}</td>
+                                            <td>Score: {{ unit.score|floatformat:2 }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if supplementary_eligible %}
+                        <div class="mb-4">
+                            <h6 class="text-info">
+                                <i class="fas fa-book mr-2"></i>
+                                Supplementary Exam Units
+                            </h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <tbody>
+                                        {% for unit in supplementary_eligible %}
+                                        <tr>
+                                            <!-- ... [previous template code remains the same until the checkbox part] ... -->
+                                            <td width="30">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" 
+                                                        name="units" value="{{ unit.id }}" 
+                                                        id="unit_{{ unit.id }}"
+                                                        {% if unit.grade_id in applied_unit_ids %}disabled checked{% endif %}>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <label for="unit_{{ unit.id }}" class="mb-0">
+                                                    <strong>{{ unit.unit_code }}</strong> - {{ unit.unit_name }}
+                                                    {% if unit.grade_id in applied_unit_ids %}
+                                                    <span class="badge bg-success ml-2">Already Applied</span>
+                                                    {% endif %}
+                                                </label>
+                                            </td>
+                                            <!-- ... [rest of the template remains the same] ... -->
+                                            <td>Originally taken in {{ unit.semester_taken }}</td>
+                                            <td>Score: {{ unit.score|floatformat:2 }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <i class="fas fa-paper-plane mr-2"></i>
+                                Submit Application
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle mr-2"></i>
+                You currently have no units eligible for special/supplementary exams in this semester.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

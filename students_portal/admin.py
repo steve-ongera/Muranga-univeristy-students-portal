@@ -386,7 +386,37 @@ class ScheduledLessonAdmin(admin.ModelAdmin):
         return obj.unit_allocation.programme_unit.unit.name
     get_unit_name.short_description = 'Unit Name'
     get_unit_name.admin_order_field = 'unit_allocation__programme_unit__unit__name'
+# admin.py
+from django.contrib import admin
+from .models import SpecialExamApplication, AppliedExamUnit
 
+class AppliedExamUnitInline(admin.TabularInline):
+    model = AppliedExamUnit
+    extra = 0
+    readonly_fields = ('unit', 'original_enrollment', 'original_grade')
+    can_delete = False
+
+@admin.register(SpecialExamApplication)
+class SpecialExamApplicationAdmin(admin.ModelAdmin):
+    list_display = ('student', 'semester', 'application_type', 'status', 
+                   'payment_amount', 'application_date')
+    list_filter = ('status', 'application_type', 'semester')
+    search_fields = ('student__registration_number', 'student__first_name', 
+                    'student__last_name', 'verification_code')
+    readonly_fields = ('verification_code', 'code_expiry')
+    inlines = [AppliedExamUnitInline]
+    actions = ['approve_applications', 'reject_applications']
+    
+    def approve_applications(self, request, queryset):
+        updated = queryset.filter(status='paid').update(status='approved')
+        self.message_user(request, f"{updated} applications approved successfully")
+    approve_applications.short_description = "Approve selected applications"
+    
+    def reject_applications(self, request, queryset):
+        updated = queryset.exclude(status='completed').update(status='rejected')
+        self.message_user(request, f"{updated} applications rejected")
+    reject_applications.short_description = "Reject selected applications"
+    
 admin.site.register(UserNotification, UserNotificationAdmin)
 admin.site.register(FeesStructure, FeesStructureAdmin)
 admin.site.register(StudentFee, StudentFeeAdmin)
