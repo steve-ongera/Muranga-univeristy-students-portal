@@ -719,7 +719,7 @@ class Timetable(models.Model):
     """Model to represent a timetable for a semester"""
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE, related_name='timetables')
     programme = models.ForeignKey(Programme, on_delete=models.CASCADE, related_name='timetables')
-    year_of_study = models.IntegerField()  # 1st year, 2nd year, etc.
+    year_of_study = models.IntegerField()  # 1, 2 , etc.
     is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

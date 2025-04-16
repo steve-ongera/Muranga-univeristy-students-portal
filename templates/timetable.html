@@ -3,203 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>University Timetable</title>
+    <title>Timetable Viewer</title>
+    <!-- Bootstrap CSS for basic styling -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- jQuery for AJAX -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        .timetable {
-            margin-top: 20px;
+        .container {
+            max-width: 800px;
+            margin-top: 50px;
         }
-        .timetable-day {
-            margin-bottom: 30px;
-        }
-        .timetable-card {
-            border-left: 4px solid #0d6efd;
-            margin-bottom: 10px;
-        }
-        .loading {
-            display: none;
+        .form-container {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
     </style>
 </head>
 <body>
-    <div class="container mt-4">
-        <h1 class="mb-4">University Timetable Generator</h1>
-        
-        <div class="card">
-            <div class="card-body">
-                <form id="timetableForm">
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <label for="semesterSelect" class="form-label">Semester</label>
-                            <select class="form-select" id="semesterSelect" required>
-                                <option value="">Select Semester</option>
-                                {% for semester in semesters %}
-                                <option value="{{ semester.id }}">{{ semester.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="programmeSelect" class="form-label">Programme</label>
-                            <select class="form-select" id="programmeSelect" required>
-                                <option value="">Select Programme</option>
-                                {% for programme in programmes %}
-                                <option value="{{ programme.id }}">{{ programme.name }} ({{ programme.code }})</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="yearSelect" class="form-label">Year of Study</label>
-                            <select class="form-select" id="yearSelect" required>
-                                <option value="">Select Year</option>
-                                <option value="1">First Year</option>
-                                <option value="2">Second Year</option>
-                                <option value="3">Third Year</option>
-                                <option value="4">Fourth Year</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary">
-                        <span id="submitText">Generate Timetable</span>
-                        <div id="loadingSpinner" class="spinner-border spinner-border-sm loading" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </button>
-                </form>
-            </div>
+    <div class="container">
+        <div class="form-container">
+            <h2 class="mb-4">View Timetable</h2>
+            <form id="timetable-form" method="post">
+                {% csrf_token %}
+                
+                <!-- Semester Selection -->
+                <div class="mb-3">
+                    <label for="id_semester" class="form-label">Semester:</label>
+                    <select id="id_semester" name="semester_id" class="form-select" required>
+                        <option value="">Select Semester</option>
+                        {% for semester in semesters %}
+                            <option value="{{ semester.id }}">{{ semester }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Programme Selection -->
+                <div class="mb-3">
+                    <label for="id_programme" class="form-label">Programme:</label>
+                    <select id="id_programme" name="programme_id" class="form-select" required>
+                        <option value="">Select Programme</option>
+                        {% for programme in programmes %}
+                            <option value="{{ programme.id }}">{{ programme.name }} ({{ programme.code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Year of Study Selection -->
+                <div class="mb-3">
+                    <label for="id_year_of_study" class="form-label">Year of Study:</label>
+                    <select id="id_year_of_study" name="year_of_study" class="form-select" required disabled>
+                        <option value="">Select Programme First</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">View Timetable</button>
+            </form>
         </div>
         
-        <div id="timetableContainer" class="timetable mt-4">
-            <!-- Timetable will be displayed here -->
+        <!-- Timetable Display Area -->
+        <div id="timetable-results" class="mt-4">
+            <!-- Timetable will be displayed here after form submission -->
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        $(document).ready(function() {
-            $('#timetableForm').on('submit', function(e) {
-                e.preventDefault();
+    $(document).ready(function() {
+        // When programme selection changes
+        $('#id_programme').change(function() {
+            var programmeId = $(this).val();
+            var yearSelect = $('#id_year_of_study');
+            
+            if (programmeId) {
+                // Enable year select
+                yearSelect.prop('disabled', false);
                 
-                // Show loading spinner
-                $('#submitText').addClass('loading');
-                $('#loadingSpinner').removeClass('loading');
+                // Show loading state
+                yearSelect.html('<option value="">Loading years...</option>');
                 
-                // Get form data
-                const semesterId = $('#semesterSelect').val();
-                const programmeId = $('#programmeSelect').val();
-                const yearOfStudy = $('#yearSelect').val();
-                
-                // Make AJAX request
+                // Fetch years via AJAX
                 $.ajax({
                     url: window.location.pathname,
                     type: 'POST',
                     data: {
-                        'semester_id': semesterId,
                         'programme_id': programmeId,
-                        'year_of_study': yearOfStudy,
+                        'action': 'get_years',
                         'csrfmiddlewaretoken': '{{ csrf_token }}'
                     },
                     success: function(response) {
                         if (response.success) {
-                            displayTimetable(response.timetable);
-                        } else {
-                            alert('Error: ' + response.error);
+                            yearSelect.empty();
+                            if (response.year_options.length > 0) {
+                                $.each(response.year_options, function(index, year) {
+                                    yearSelect.append($('<option>', {
+                                        value: year,
+                                        text: 'Year ' + year
+                                    }));
+                                });
+                            } else {
+                                yearSelect.html('<option value="">No years available</option>');
+                            }
                         }
                     },
-                    error: function(xhr, status, error) {
-                        alert('An error occurred: ' + error);
-                    },
-                    complete: function() {
-                        // Hide loading spinner
-                        $('#submitText').removeClass('loading');
-                        $('#loadingSpinner').addClass('loading');
+                    error: function() {
+                        yearSelect.html('<option value="">Error loading years</option>');
                     }
                 });
-            });
-            
-            function displayTimetable(timetableData) {
-                const container = $('#timetableContainer');
-                container.empty();
-                
-                if (Object.keys(timetableData).length === 0) {
-                    container.html('<div class="alert alert-info">No timetable data available for the selected criteria.</div>');
-                    return;
-                }
-                
-                // Create a card for the timetable
-                const timetableCard = $('<div class="card"></div>');
-                const cardBody = $('<div class="card-body"></div>');
-                
-                // Add title
-                const title = $('<h3 class="card-title mb-4">Timetable</h3>');
-                cardBody.append(title);
-                
-                // Create tabs for each day
-                const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-                
-                const navTabs = $('<ul class="nav nav-tabs" id="timetableTabs" role="tablist"></ul>');
-                const tabContent = $('<div class="tab-content mt-3" id="timetableTabContent"></div>');
-                
-                days.forEach((day, index) => {
-                    if (timetableData[day]) {
-                        // Create tab nav item
-                        const activeClass = index === 0 ? 'active' : '';
-                        const navItem = $(`
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link ${activeClass}" id="${day.toLowerCase()}-tab" data-bs-toggle="tab" 
-                                    data-bs-target="#${day.toLowerCase()}" type="button" role="tab">
-                                    ${day}
-                                </button>
-                            </li>
-                        `);
-                        navTabs.append(navItem);
-                        
-                        // Create tab content
-                        const tabPaneActive = index === 0 ? 'show active' : '';
-                        const tabPane = $(`
-                            <div class="tab-pane fade ${tabPaneActive}" id="${day.toLowerCase()}" role="tabpanel">
-                                <div class="timetable-day" id="${day.toLowerCase()}-content"></div>
-                            </div>
-                        `);
-                        tabContent.append(tabPane);
-                        
-                        // Add lessons for this day
-                        const dayContent = $(`#${day.toLowerCase()}-content`);
-                        timetableData[day].forEach(lesson => {
-                            const lessonCard = $(`
-                                <div class="card timetable-card">
-                                    <div class="card-body">
-                                        <h5 class="card-title">${lesson.unit_code} - ${lesson.unit_name}</h5>
-                                        <div class="row">
-                                            <div class="col-md-4">
-                                                <p class="mb-1"><strong>Time:</strong> ${lesson.time}</p>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <p class="mb-1"><strong>Lecturer:</strong> ${lesson.lecturer}</p>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <p class="mb-1"><strong>Hall:</strong> ${lesson.hall}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            `);
-                            dayContent.append(lessonCard);
-                        });
-                    }
-                });
-                
-                cardBody.append(navTabs);
-                cardBody.append(tabContent);
-                timetableCard.append(cardBody);
-                container.append(timetableCard);
-                
-                // Initialize Bootstrap tabs if not already initialized
-                if ($.fn.tab) {
-                    $('#timetableTabs button').tab();
-                }
+            } else {
+                // No programme selected
+                yearSelect.prop('disabled', true);
+                yearSelect.html('<option value="">Select Programme First</option>');
             }
         });
+
+        // Form submission handler
+        $('#timetable-form').submit(function(e) {
+            e.preventDefault();
+            
+            $.ajax({
+                url: window.location.pathname,
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    if (response.success) {
+                        // Display the timetable data
+                        $('#timetable-results').html(
+                            '<div class="alert alert-success">Timetable loaded successfully</div>' +
+                            '<pre>' + JSON.stringify(response.timetable, null, 2) + '</pre>'
+                        );
+                    } else {
+                        $('#timetable-results').html(
+                            '<div class="alert alert-danger">Error: ' + response.error + '</div>'
+                        );
+                    }
+                },
+                error: function() {
+                    $('#timetable-results').html(
+                        '<div class="alert alert-danger">An error occurred while processing your request</div>'
+                    );
+                }
+            });
+        });
+    });
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -2860,11 +2860,14 @@ def generate_timetable(semester_id, programme_id, year_of_study):
 
 
 def view_timetable(semester_id, programme_id, year_of_study):
-    timetable = Timetable.objects.get(
-        semester_id=semester_id,
-        programme_id=programme_id,
-        year_of_study=year_of_study
-    )
+    try:
+        timetable = Timetable.objects.get(
+            semester_id=semester_id,
+            programme_id=programme_id,
+            year_of_study=year_of_study
+        )
+    except Timetable.DoesNotExist:
+        return None  # or return an empty dict {}
     
     lessons = timetable.scheduled_lessons.select_related(
         'unit_allocation__programme_unit__unit',
@@ -2891,33 +2894,65 @@ def view_timetable(semester_id, programme_id, year_of_study):
     return timetable_data
 
 
-
 from django.shortcuts import render
 from django.http import JsonResponse
-from django.views import View
-
-from django.shortcuts import render
-from django.http import JsonResponse
+from .models import Semester, Programme
 
 def timetable_view(request):
     template_name = 'timetable.html'
-    
+
     if request.method == 'GET':
-        # Get available semesters, programmes for the dropdowns
         semesters = Semester.objects.filter(is_current=True)
+        current_year = semesters.first().academic_year if semesters.exists() else None
         programmes = Programme.objects.all()
+        
+        # Initialize with empty year options - they'll be loaded via AJAX
+        year_options = []
+
         return render(request, template_name, {
             'semesters': semesters,
-            'programmes': programmes
+            'programmes': programmes,  # Note: using 'programmes' in template
+            'current_year': current_year,
+            'year_options': year_options,  # Not used directly in the new approach
         })
-    
+
     elif request.method == 'POST':
+        # Handle AJAX request for year options
+        if request.POST.get('action') == 'get_years':
+            programme_id = request.POST.get('programme_id')
+            try:
+                programme = Programme.objects.get(id=programme_id)
+                year_options = list(range(1, programme.duration_years + 1))
+                return JsonResponse({
+                    'success': True,
+                    'year_options': year_options,
+                    'programme_name': programme.name
+                })
+            except Programme.DoesNotExist:
+                return JsonResponse({'success': False, 'error': 'Programme not found'})
+        
+        # Handle form submission for timetable
         semester_id = request.POST.get('semester_id')
         programme_id = request.POST.get('programme_id')
         year_of_study = request.POST.get('year_of_study')
-        
+
+        if not all([semester_id, programme_id, year_of_study]):
+            return JsonResponse({'success': False, 'error': 'Missing required fields'})
+
         try:
             timetable_data = view_timetable(semester_id, programme_id, year_of_study)
+            if not timetable_data:
+                try:
+                    generate_timetable(semester_id, programme_id, year_of_study)
+                    timetable_data = view_timetable(semester_id, programme_id, year_of_study)
+                    return JsonResponse({'success': True, 'timetable': timetable_data})
+                except Exception as gen_error:
+                    return JsonResponse({
+                        'success': False,
+                        'error': f'Timetable generation failed: {str(gen_error)}'
+                    })
             return JsonResponse({'success': True, 'timetable': timetable_data})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
