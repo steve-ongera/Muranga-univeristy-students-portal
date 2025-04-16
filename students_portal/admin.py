@@ -318,7 +318,75 @@ class QRAttendanceLogAdmin(admin.ModelAdmin):
     )
     search_fields = ('student__registration_number', 'device_fingerprint')
     list_filter = ('scan_time', 'session__lecturer')
-   
+
+from django.contrib import admin
+from .models import LectureHall, TimeSlot, Timetable, ScheduledLesson
+
+
+@admin.register(LectureHall)
+class LectureHallAdmin(admin.ModelAdmin):
+    list_display = ('name', 'capacity', 'building')
+    list_filter = ('building',)
+    search_fields = ('name', 'building', 'description')
+    ordering = ('name',)
+
+
+@admin.register(TimeSlot)
+class TimeSlotAdmin(admin.ModelAdmin):
+    list_display = ('get_day_display', 'start_time', 'end_time')
+    list_filter = ('day_of_week',)
+    search_fields = ('start_time', 'end_time', 'day_of_week')  # Added search_fields
+    ordering = ('day_of_week', 'start_time')
+    
+    def get_day_display(self, obj):
+        return obj.get_day_of_week_display()
+    get_day_display.short_description = 'Day'
+    get_day_display.admin_order_field = 'day_of_week'
+
+
+class ScheduledLessonInline(admin.TabularInline):
+    model = ScheduledLesson
+    extra = 1
+    autocomplete_fields = ['unit_allocation', 'time_slot', 'lecture_hall']
+
+
+@admin.register(Timetable)
+class TimetableAdmin(admin.ModelAdmin):
+    list_display = ('programme', 'year_of_study', 'semester', 'is_published', 'updated_at')
+    list_filter = ('semester', 'programme', 'year_of_study', 'is_published')
+    search_fields = ('programme__name', 'semester__name')
+    inlines = [ScheduledLessonInline]
+    list_editable = ('is_published',)
+    actions = ['publish_timetables', 'unpublish_timetables']
+    
+    def publish_timetables(self, request, queryset):
+        updated = queryset.update(is_published=True)
+        self.message_user(request, f"{updated} timetable(s) have been published.")
+    publish_timetables.short_description = "Publish selected timetables"
+    
+    def unpublish_timetables(self, request, queryset):
+        updated = queryset.update(is_published=False)
+        self.message_user(request, f"{updated} timetable(s) have been unpublished.")
+    unpublish_timetables.short_description = "Unpublish selected timetables"
+
+
+@admin.register(ScheduledLesson)
+class ScheduledLessonAdmin(admin.ModelAdmin):
+    list_display = ('get_unit_code', 'get_unit_name', 'time_slot', 'lecture_hall', 'frequency')
+    list_filter = ('timetable__semester', 'timetable__programme', 'frequency', 'lecture_hall')
+    search_fields = ('unit_allocation__programme_unit__unit__code', 'unit_allocation__programme_unit__unit__name', 'lecture_hall__name')
+    autocomplete_fields = ['unit_allocation', 'time_slot', 'lecture_hall', 'timetable']
+    
+    def get_unit_code(self, obj):
+        return obj.unit_allocation.programme_unit.unit.code
+    get_unit_code.short_description = 'Unit Code'
+    get_unit_code.admin_order_field = 'unit_allocation__programme_unit__unit__code'
+    
+    def get_unit_name(self, obj):
+        return obj.unit_allocation.programme_unit.unit.name
+    get_unit_name.short_description = 'Unit Name'
+    get_unit_name.admin_order_field = 'unit_allocation__programme_unit__unit__name'
+
 admin.site.register(UserNotification, UserNotificationAdmin)
 admin.site.register(FeesStructure, FeesStructureAdmin)
 admin.site.register(StudentFee, StudentFeeAdmin)

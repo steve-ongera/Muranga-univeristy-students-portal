@@ -680,4 +680,71 @@ class QRAttendanceLog(models.Model):
     class Meta:
         unique_together = [('session', 'student'), ('session', 'device_fingerprint')]
 
-        
+
+#Time table management 
+class LectureHall(models.Model):
+    """Model for lecture halls/rooms"""
+    name = models.CharField(max_length=50, unique=True)  # e.g., ML1, ML2
+    capacity = models.IntegerField()
+    building = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    
+    def __str__(self):
+        return self.name
+
+
+class TimeSlot(models.Model):
+    """Model for time slots (e.g., 8:00-10:00)"""
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    day_of_week = models.IntegerField(choices=[
+        (0, 'Monday'),
+        (1, 'Tuesday'),
+        (2, 'Wednesday'),
+        (3, 'Thursday'),
+        (4, 'Friday'),
+        (5, 'Saturday'),
+        (6, 'Sunday'),
+    ])
+    
+    class Meta:
+        unique_together = ('start_time', 'end_time', 'day_of_week')
+        ordering = ['day_of_week', 'start_time']
+    
+    def __str__(self):
+        return f"{self.get_day_of_week_display()} {self.start_time.strftime('%H:%M')}-{self.end_time.strftime('%H:%M')}"
+
+
+class Timetable(models.Model):
+    """Model to represent a timetable for a semester"""
+    semester = models.ForeignKey(Semester, on_delete=models.CASCADE, related_name='timetables')
+    programme = models.ForeignKey(Programme, on_delete=models.CASCADE, related_name='timetables')
+    year_of_study = models.IntegerField()  # 1st year, 2nd year, etc.
+    is_published = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ('semester', 'programme', 'year_of_study')
+    
+    def __str__(self):
+        return f"{self.programme.name} Year {self.year_of_study} - {self.semester}"
+
+
+class ScheduledLesson(models.Model):
+    """Model for scheduled unit lessons"""
+    timetable = models.ForeignKey(Timetable, on_delete=models.CASCADE, related_name='scheduled_lessons')
+    unit_allocation = models.ForeignKey(UnitAllocation, on_delete=models.CASCADE, related_name='scheduled_lessons')
+    time_slot = models.ForeignKey(TimeSlot, on_delete=models.PROTECT, related_name='scheduled_lessons')
+    lecture_hall = models.ForeignKey(LectureHall, on_delete=models.PROTECT, related_name='scheduled_lessons')
+    frequency = models.CharField(max_length=20, choices=[
+        ('weekly', 'Weekly'),
+        ('biweekly', 'Bi-weekly'),
+        ('custom', 'Custom Schedule'),
+    ], default='weekly')
+    
+    class Meta:
+        unique_together = ('timetable', 'time_slot', 'lecture_hall')
+    
+    def __str__(self):
+        return f"{self.unit_allocation.programme_unit.unit.code} at {self.time_slot} in {self.lecture_hall}"

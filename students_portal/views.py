@@ -2735,3 +2735,189 @@ def student_scan_qr(request):
         return JsonResponse({'error': 'Invalid location data'}, status=400)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
+    
+
+#function to generate timetables automatically
+from django.db import transaction
+from datetime import time
+import random
+
+def generate_timetable(semester_id, programme_id, year_of_study):
+    """
+    Automatically generates a timetable for a given programme and year of study in a semester
+    """
+    # Get all required objects
+    semester = Semester.objects.get(pk=semester_id)
+    programme = Programme.objects.get(pk=programme_id)
+    
+    # Get all units for this programme/year/semester
+    units = ProgrammeUnit.objects.filter(
+        programme=programme,
+        year_of_study=year_of_study,
+        semester=semester.number
+    ).select_related('unit')
+    
+    # Get all available lecture halls
+    lecture_halls = list(LectureHall.objects.all())
+    
+    # Define standard time slots (can be customized)
+    time_slots = [
+        # Morning slots
+        {'start': time(8, 0), 'end': time(10, 0), 'day': 0},  # Monday
+        {'start': time(10, 0), 'end': time(12, 0), 'day': 0},
+        {'start': time(8, 0), 'end': time(10, 0), 'day': 1},   # Tuesday
+        {'start': time(10, 0), 'end': time(12, 0), 'day': 1},
+        {'start': time(8, 0), 'end': time(10, 0), 'day': 2},   # Wednesday
+        {'start': time(10, 0), 'end': time(12, 0), 'day': 2},
+        {'start': time(8, 0), 'end': time(10, 0), 'day': 3},   # Thursday
+        {'start': time(10, 0), 'end': time(12, 0), 'day': 3},
+        {'start': time(8, 0), 'end': time(10, 0), 'day': 4},   # Friday
+        {'start': time(10, 0), 'end': time(12, 0), 'day': 4},
+        # Afternoon slots
+        {'start': time(14, 0), 'end': time(16, 0), 'day': 0},
+        {'start': time(16, 0), 'end': time(18, 0), 'day': 0},
+        {'start': time(14, 0), 'end': time(16, 0), 'day': 1},
+        {'start': time(16, 0), 'end': time(18, 0), 'day': 1},
+        {'start': time(14, 0), 'end': time(16, 0), 'day': 2},
+        {'start': time(16, 0), 'end': time(18, 0), 'day': 2},
+        {'start': time(14, 0), 'end': time(16, 0), 'day': 3},
+        {'start': time(16, 0), 'end': time(18, 0), 'day': 3},
+        {'start': time(14, 0), 'end': time(16, 0), 'day': 4},
+        {'start': time(16, 0), 'end': time(18, 0), 'day': 4},
+    ]
+    
+    # Create or get the timetable
+    timetable, created = Timetable.objects.get_or_create(
+        semester=semester,
+        programme=programme,
+        year_of_study=year_of_study
+    )
+    
+    # Clear existing scheduled lessons if regenerating
+    timetable.scheduled_lessons.all().delete()
+    
+    # Get all unit allocations for these units in this semester
+    unit_allocations = UnitAllocation.objects.filter(
+        programme_unit__in=units,
+        semester=semester
+    ).select_related('lecturer', 'programme_unit__unit')
+    
+    with transaction.atomic():
+        # Create TimeSlot objects if they don't exist
+        for slot in time_slots:
+            time_slot_obj, _ = TimeSlot.objects.get_or_create(
+                start_time=slot['start'],
+                end_time=slot['end'],
+                day_of_week=slot['day']
+            )
+        
+        # Get all available time slots
+        all_time_slots = TimeSlot.objects.all().order_by('day_of_week', 'start_time')
+        
+        # Assign units to time slots
+        scheduled_lessons = []
+        for allocation in unit_allocations:
+            # Each unit typically has 2-3 sessions per week
+            sessions_per_week = 2 if allocation.programme_unit.unit.credit_hours <= 3 else 3
+            
+            # Find available time slots
+            available_slots = list(all_time_slots)
+            random.shuffle(available_slots)  # Randomize to create varied timetables
+            
+            assigned_slots = 0
+            for slot in available_slots:
+                if assigned_slots >= sessions_per_week:
+                    break
+                
+                # Check if this slot is already taken in this timetable
+                conflict_exists = ScheduledLesson.objects.filter(
+                    timetable=timetable,
+                    time_slot=slot
+                ).exists()
+                
+                if not conflict_exists:
+                    # Assign a random lecture hall
+                    hall = random.choice(lecture_halls)
+                    
+                    scheduled_lessons.append(ScheduledLesson(
+                        timetable=timetable,
+                        unit_allocation=allocation,
+                        time_slot=slot,
+                        lecture_hall=hall,
+                        frequency='weekly'
+                    ))
+                    assigned_slots += 1
+            
+            # If we couldn't find enough slots, this generation failed
+            if assigned_slots < sessions_per_week:
+                raise ValueError(f"Could not find enough time slots for {allocation.programme_unit.unit.code}")
+        
+        # Bulk create all scheduled lessons
+        ScheduledLesson.objects.bulk_create(scheduled_lessons)
+    
+    return timetable
+
+
+
+def view_timetable(semester_id, programme_id, year_of_study):
+    timetable = Timetable.objects.get(
+        semester_id=semester_id,
+        programme_id=programme_id,
+        year_of_study=year_of_study
+    )
+    
+    lessons = timetable.scheduled_lessons.select_related(
+        'unit_allocation__programme_unit__unit',
+        'unit_allocation__lecturer',
+        'time_slot',
+        'lecture_hall'
+    ).order_by('time_slot__day_of_week', 'time_slot__start_time')
+    
+    # Group by day for display
+    timetable_data = {}
+    for lesson in lessons:
+        day = lesson.time_slot.get_day_of_week_display()
+        if day not in timetable_data:
+            timetable_data[day] = []
+        
+        timetable_data[day].append({
+            'unit_code': lesson.unit_allocation.programme_unit.unit.code,
+            'unit_name': lesson.unit_allocation.programme_unit.unit.name,
+            'lecturer': lesson.unit_allocation.lecturer.get_full_name(),
+            'time': f"{lesson.time_slot.start_time.strftime('%H:%M')}-{lesson.time_slot.end_time.strftime('%H:%M')}",
+            'hall': lesson.lecture_hall.name
+        })
+    
+    return timetable_data
+
+
+
+from django.shortcuts import render
+from django.http import JsonResponse
+from django.views import View
+
+from django.shortcuts import render
+from django.http import JsonResponse
+
+def timetable_view(request):
+    template_name = 'timetable.html'
+    
+    if request.method == 'GET':
+        # Get available semesters, programmes for the dropdowns
+        semesters = Semester.objects.filter(is_current=True)
+        programmes = Programme.objects.all()
+        return render(request, template_name, {
+            'semesters': semesters,
+            'programmes': programmes
+        })
+    
+    elif request.method == 'POST':
+        semester_id = request.POST.get('semester_id')
+        programme_id = request.POST.get('programme_id')
+        year_of_study = request.POST.get('year_of_study')
+        
+        try:
+            timetable_data = view_timetable(semester_id, programme_id, year_of_study)
+            return JsonResponse({'success': True, 'timetable': timetable_data})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
