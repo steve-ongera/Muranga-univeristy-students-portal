@@ -3189,6 +3189,139 @@ def unit_allocation_view(request):
     return render(request, 'units/unit_allocation.html', context)
 
 
+from io import BytesIO
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+from django.conf import settings
+import os
+
+def generate_pdf_receipt(self):
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=72)
+    
+    # Custom styles
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(name='Center', alignment=TA_CENTER, fontSize=12))
+    styles.add(ParagraphStyle(name='Left', alignment=TA_LEFT, fontSize=10))
+    styles.add(ParagraphStyle(name='Bold', alignment=TA_LEFT, fontSize=10, leading=14, spaceAfter=6, fontName='Helvetica-Bold'))
+    styles.add(ParagraphStyle(name='Title', alignment=TA_CENTER, fontSize=14, leading=20, spaceAfter=12, fontName='Helvetica-Bold'))
+    styles.add(ParagraphStyle(name='Footer', alignment=TA_CENTER, fontSize=8, leading=10, spaceBefore=12, fontName='Helvetica'))
+    
+    # Logo path - make sure to have your logo in the static files
+    logo_path = os.path.join(settings.STATIC_ROOT, 'assets', 'img', 'logo.png')
+    
+    # Story elements
+    elements = []
+    
+    # Add logo and header
+    try:
+        logo = Image(logo_path, width=1.5*inch, height=1*inch)
+        logo.hAlign = 'CENTER'
+        elements.append(logo)
+    except:
+        pass  # Skip if logo not found
+    
+    elements.append(Paragraph("MURANGA UNIVERSITY OF TECHNOLOGY", styles['Title']))
+    elements.append(Paragraph("Examinations Office", styles['Center']))
+    elements.append(Spacer(1, 24))
+    
+    # Receipt title
+    elements.append(Paragraph(f"{self.get_application_type_display().upper()} EXAM APPLICATION RECEIPT", styles['Title']))
+    elements.append(Spacer(1, 12))
+    
+    # Student information
+    student_info = [
+        ["Registration Number:", self.student.registration_number],
+        ["Student Name:", self.student.get_full_name()],
+        ["Program:", str(self.student.program)],
+        ["Receipt Date:", self.created_at.strftime("%d-%m-%Y %H:%M")],
+        ["Verification Code:", self.verification_code],
+        ["Payment Status:", "Pending Payment"],  # You can update this based on actual status
+    ]
+    
+    student_table = Table(student_info, colWidths=[2*inch, 4*inch])
+    student_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    elements.append(student_table)
+    elements.append(Spacer(1, 24))
+    
+    # Units applied for
+    elements.append(Paragraph("Units Applied For:", styles['Bold']))
+    
+    unit_data = [["No.", "Unit Code", "Unit Name", "Amount"]] + [
+        [str(i+1), unit.unit.code, unit.unit.name, "KSH 800.00"] 
+        for i, unit in enumerate(self.applied_units.all())
+    ]
+    
+    unit_table = Table(unit_data, colWidths=[0.5*inch, 1.5*inch, 3*inch, 1*inch], repeatRows=1)
+    unit_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('ALIGN', (3, 0), (3, -1), 'RIGHT'),
+        ('LINEBELOW', (0, 0), (-1, 0), 1, colors.black),
+        ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.lightgrey),
+        ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+    ]))
+    elements.append(unit_table)
+    elements.append(Spacer(1, 12))
+    
+    # Payment summary
+    payment_data = [
+        ["Subtotal:", f"KSH {self.payment_amount:.2f}"],
+        ["Total Amount:", f"KSH {self.payment_amount:.2f}"],
+    ]
+    
+    payment_table = Table(payment_data, colWidths=[4*inch, 2*inch])
+    payment_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+        ('LINEABOVE', (0, -1), (-1, -1), 1, colors.black),
+    ]))
+    elements.append(payment_table)
+    elements.append(Spacer(1, 24))
+    
+    # Payment instructions
+    elements.append(Paragraph("Payment Instructions:", styles['Bold']))
+    payment_instructions = [
+        "1. M-Pesa Paybill Number: 123456",
+        "2. Account Number: Your Registration Number",
+        "3. Amount: KSH 800 per unit (Total: KSH {:.2f})".format(self.payment_amount),
+        "4. After payment, present the M-Pesa confirmation to the finance office",
+        "5. Payment must be made within 48 hours of this application",
+    ]
+    
+    for instruction in payment_instructions:
+        elements.append(Paragraph(instruction, styles['Left']))
+    
+    elements.append(Spacer(1, 24))
+    
+    # Footer
+    footer_text = [
+        "Muranga University of Technology",
+        "P.O Box 75-10200, Murang'a | Tel: +254 123 456 789",
+        "Email: exams@mut.ac.ke | Website: www.mut.ac.ke",
+        "This is an electronically generated receipt. No signature required.",
+    ]
+    
+    for text in footer_text:
+        elements.append(Paragraph(text, styles['Footer']))
+    
+    # Build the PDF
+    doc.build(elements)
+    
+    buffer.seek(0)
+    return buffer
+
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -3203,12 +3336,35 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.utils import timezone
+from django.db import transaction  # Added this import
+import logging
 from .models import (
     Student, StudentEnrollment, StudentUnitGrade, ProgrammeUnit,
     Semester, AcademicYear, SpecialExamApplication, AppliedExamUnit, Unit
 )
 from django.conf import settings
 from django.core.mail import EmailMessage
+
+# Set up logger
+logger = logging.getLogger(__name__)
+
+# views.py
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from django.utils import timezone
+from django.db import transaction  # Added this import
+import logging
+from .models import (
+    Student, StudentEnrollment, StudentUnitGrade, ProgrammeUnit,
+    Semester, AcademicYear, SpecialExamApplication, AppliedExamUnit, Unit
+)
+from django.conf import settings
+from django.core.mail import EmailMessage
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 @login_required
 def special_exam_application(request):
@@ -3289,16 +3445,14 @@ def special_exam_application(request):
                 supplementary_eligible.append(unit)
     
     # Handle form submission
-    # Handle form submission
     if request.method == 'POST':
         selected_units = request.POST.getlist('units')
         application_type = request.POST.get('application_type')
         
-        # Validate selected units
-        # Create a dictionary of all eligible units for easier lookup
-        all_eligible_units = {str(u['id']): u for u in supplementary_eligible + special_exam_eligible}
-        valid_unit_ids = all_eligible_units.keys()
+        logger.debug(f"Form submitted - Selected units: {selected_units}, Type: {application_type}")
         
+        # Validate selected units
+        valid_unit_ids = [str(u['id']) for u in (supplementary_eligible + special_exam_eligible)]
         invalid_units = [unit for unit in selected_units if unit not in valid_unit_ids]
         
         if invalid_units:
@@ -3311,7 +3465,7 @@ def special_exam_application(request):
         
         # Check if already applied for any of these units
         already_applied = AppliedExamUnit.objects.filter(
-            original_grade_id__in=[all_eligible_units[unit_id]['grade_id'] for unit_id in selected_units],
+            original_grade_id__in=[u['grade_id'] for u in supplementary_eligible + special_exam_eligible if str(u['id']) in selected_units],
             application__student=student,
             application__semester=current_semester
         ).exists()
@@ -3323,66 +3477,98 @@ def special_exam_application(request):
         # Process application
         try:
             with transaction.atomic():
+                logger.debug("Creating application...")
+                
                 # Create the application
                 application = SpecialExamApplication.objects.create(
                     student=student,
                     semester=current_semester,
                     application_type=application_type,
                     payment_amount=800 * len(selected_units),
+                    status='pending',  # Explicitly set initial status
                 )
+                
+                logger.debug(f"Application created with ID: {application.id}, Code: {application.verification_code}")
                 
                 # Add selected units to the application
                 for unit_id in selected_units:
-                    unit_info = all_eligible_units[unit_id]
-                    AppliedExamUnit.objects.create(
-                        application=application,
-                        unit_id=unit_info['unit_id'],
-                        original_enrollment_id=unit_info['enrollment_id'],
-                        original_grade_id=unit_info['grade_id'],
+                    # Find the unit info
+                    unit_info = next(
+                        (u for u in supplementary_eligible + special_exam_eligible if str(u['id']) == unit_id),
+                        None
                     )
-                
+                    
+                    if unit_info:
+                        logger.debug(f"Adding unit {unit_info['unit_code']} to application")
+                        
+                        applied_unit = AppliedExamUnit.objects.create(
+                            application=application,
+                            unit_id=unit_info['unit_id'],
+                            original_enrollment_id=unit_info['enrollment_id'],
+                            original_grade_id=unit_info['grade_id'],
+                        )
+                        
+                        logger.debug(f"Unit added with ID: {applied_unit.id}")
+            
+            # Move email sending outside transaction to prevent rollback
+            try:
                 # Generate and send PDF receipt
+                logger.debug("Generating PDF receipt...")
                 pdf_buffer = application.generate_pdf_receipt()
                 
-                email = EmailMessage(
-                    f"Exam Application Receipt - {application.get_application_type_display()}",
-                    f"Dear {student.get_full_name()},\n\n"
-                    f"Please find attached your {application.get_application_type_display()} application receipt.\n"
-                    f"Verification Code: {application.verification_code}\n"
-                    f"Total Amount: KSH {application.payment_amount:.2f}\n\n"
-                    "Payment Instructions:\n"
-                    "1. M-Pesa Paybill: 123456\n"
-                    "2. Account: Your Registration Number\n"
-                    "3. Amount: KSH 800 per unit\n\n"
-                    "Thank you,\n"
-                    "Examinations Office\n"
-                    "Muranga University of Technology",
-                    settings.DEFAULT_FROM_EMAIL,
-                    [student.email],
-                )
-                email.attach(
-                    f"exam_application_{application.id}.pdf",
-                    pdf_buffer.getvalue(),
-                    'application/pdf'
-                )
-                email.send()
+                # Get student's email directly from the Student model
+                student_email = student.email
                 
-                messages.success(
-                    request,
-                    f"{application.get_application_type_display()} application submitted successfully! "
-                    f"A receipt has been sent to your email. Verification code: {application.verification_code}"
+                if not student_email:
+                    logger.warning(f"No email found for student {student.registration_number}")
+                    messages.warning(
+                        request,
+                        "Application submitted successfully, but we couldn't send a confirmation email because your email address is not set."
+                    )
+                else:
+                    logger.debug(f"Sending email to {student_email}...")
+                    email = EmailMessage(
+                        f"Exam Application Receipt - {application.get_application_type_display()}",
+                        f"Dear {student.get_full_name()},\n\n"
+                        f"Please find attached your {application.get_application_type_display()} application receipt.\n"
+                        f"Verification Code: {application.verification_code}\n"
+                        f"Total Amount: KSH {application.payment_amount:.2f}\n\n"
+                        "Payment Instructions:\n"
+                        "1. M-Pesa Paybill: 123456\n"
+                        "2. Account: Your Registration Number\n"
+                        "3. Amount: KSH 800 per unit\n\n"
+                        "Thank you,\n"
+                        "Examinations Office\n"
+                        "Muranga University of Technology",
+                        settings.DEFAULT_FROM_EMAIL,
+                        [student_email],  # Using student.email directly
+                    )
+                    email.attach(
+                        f"exam_application_{application.id}.pdf",
+                        pdf_buffer.getvalue(),
+                        'application/pdf'
+                    )
+                    email.send()
+                    logger.debug("Email sent successfully")
+                
+            except Exception as email_error:
+                logger.error(f"Error sending email: {str(email_error)}", exc_info=True)
+                messages.warning(
+                    request, 
+                    "Application saved successfully, but there was an issue sending the email confirmation."
                 )
+            
+            messages.success(
+                request,
+                f"{application.get_application_type_display()} application submitted successfully! "
+                f"A receipt has been sent to your email. Verification code: {application.verification_code}"
+            )
                 
         except Exception as e:
+            logger.error(f"Error creating application: {str(e)}", exc_info=True)
             messages.error(request, f"Error creating application: {str(e)}")
-            # Log the full error for debugging
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f"Error in special_exam_application: {str(e)}", exc_info=True)
         
         return redirect('special_exam_application')
-    
-    # ... [rest of the view remains the same] ...
     
     # Get already applied units to disable checkboxes
     applied_unit_ids = AppliedExamUnit.objects.filter(
