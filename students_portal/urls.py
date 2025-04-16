@@ -84,6 +84,10 @@ urlpatterns = [
      path('student/attendance/history/<int:unit_allocation_id>/',views.student_attendance_history, name='student_attendance_history'),
      path('lecturer/units/<int:unit_allocation_id>/qr/', views.lecturer_generate_qr, name='lecturer_generate_qr'),
      path('attendance/scan/', views.student_scan_qr, name='student_scan_qr'),
+     # Unit Allocation URLs
+     path('unit-allocation/', views.unit_allocation_view, name='unit_allocation'),
+
+
 
     
 

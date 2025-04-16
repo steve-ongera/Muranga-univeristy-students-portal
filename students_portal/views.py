@@ -3044,3 +3044,132 @@ def student_timetable(request):
     }
     
     return render(request, 'student_timetable.html', context)
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.db.models import Q
+from .models import (
+    Lecturer, ProgrammeUnit, Semester, UnitAllocation,
+    AcademicYear, Department
+)
+
+def unit_allocation_view(request):
+    # Get current academic year and semester
+    try:
+        current_academic_year = AcademicYear.objects.get(is_current=True)
+        current_semester = Semester.objects.filter(
+            academic_year=current_academic_year,
+            is_current=True
+        ).first()
+        
+        if not current_semester:
+            messages.error(request, "No current semester set in the system")
+            return redirect('admin_dashboard')  # Replace with your dashboard URL
+    except AcademicYear.DoesNotExist:
+        messages.error(request, "No current academic year set in the system")
+        return redirect('admin_dashboard')
+
+    # Get all departments (for filtering)
+    departments = Department.objects.all()
+    selected_department_id = request.GET.get('department')
+
+    # Get all lecturers (filter by department if selected)
+    lecturers_query = Lecturer.objects.filter(is_active=True)
+    if selected_department_id:
+        lecturers_query = lecturers_query.filter(department_id=selected_department_id)
+    
+    lecturers = lecturers_query.select_related('department').order_by('last_name')
+
+    # Handle lecturer selection
+    selected_lecturer_id = request.GET.get('lecturer')
+    selected_lecturer = None
+    programme_units = []
+    existing_allocations = []
+
+    if selected_lecturer_id:
+        try:
+            selected_lecturer = Lecturer.objects.get(
+                id=selected_lecturer_id,
+                is_active=True
+            )
+            
+            # Get all programme units for current semester
+            programme_units = ProgrammeUnit.objects.filter(
+                semester=current_semester.number
+            ).select_related('unit', 'programme', 'programme__department')
+            
+            # Filter by lecturer's department if needed
+            if selected_department_id:
+                programme_units = programme_units.filter(
+                    programme__department=selected_lecturer.department
+                )
+            
+            # Get existing allocations for this lecturer in current semester
+            existing_allocations = UnitAllocation.objects.filter(
+                lecturer=selected_lecturer,
+                semester=current_semester
+            ).values_list('programme_unit_id', flat=True)
+
+        except Lecturer.DoesNotExist:
+            messages.error(request, "Selected lecturer not found")
+            return redirect('unit_allocation')
+
+    # Handle form submission
+    if request.method == 'POST':
+        if not selected_lecturer:
+            messages.error(request, "Please select a lecturer first")
+            return redirect('unit_allocation')
+        
+        # Get selected units from form
+        selected_unit_ids = request.POST.getlist('units')
+        
+        try:
+            # Validate selected units exist in current semester
+            valid_units = ProgrammeUnit.objects.filter(
+                id__in=selected_unit_ids,
+                semester=current_semester.number
+            )
+            
+            if len(valid_units) != len(selected_unit_ids):
+                messages.error(request, "Some selected units are invalid")
+                return redirect('unit_allocation')
+            
+            # Create new allocations
+            new_allocations = []
+            for unit in valid_units:
+                # Check if allocation already exists
+                if not UnitAllocation.objects.filter(
+                    programme_unit=unit,
+                    semester=current_semester
+                ).exists():
+                    new_allocations.append(UnitAllocation(
+                        lecturer=selected_lecturer,
+                        programme_unit=unit,
+                        semester=current_semester
+                    ))
+            
+            # Bulk create new allocations
+            if new_allocations:
+                UnitAllocation.objects.bulk_create(new_allocations)
+                messages.success(request, f"Successfully allocated {len(new_allocations)} units")
+            else:
+                messages.info(request, "No new units were allocated")
+            
+            return redirect('unit_allocation')
+        
+        except Exception as e:
+            messages.error(request, f"Error allocating units: {str(e)}")
+            return redirect('unit_allocation')
+
+    context = {
+        'current_academic_year': current_academic_year,
+        'current_semester': current_semester,
+        'departments': departments,
+        'selected_department_id': int(selected_department_id) if selected_department_id else None,
+        'lecturers': lecturers,
+        'selected_lecturer': selected_lecturer,
+        'programme_units': programme_units,
+        'existing_allocations': existing_allocations,
+    }
+    
+    return render(request, 'units/unit_allocation.html', context)

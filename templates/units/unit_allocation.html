@@ -1,0 +1,113 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4">Unit Allocation for {{ current_semester }}</h2>
+    
+    <!-- Department Filter -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Filter Lecturers</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="form-inline">
+                <div class="form-group mr-3">
+                    <label for="department" class="mr-2">Department:</label>
+                    <select name="department" id="department" class="form-control">
+                        <option value="">All Departments</option>
+                        {% for dept in departments %}
+                            <option value="{{ dept.id }}" {% if selected_department_id == dept.id|stringformat:"s" %}selected{% endif %}>
+                                {{ dept.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lecturer Selection -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Select Lecturer</h5>
+        </div>
+        <div class="card-body">
+            <div class="list-group">
+                {% for lecturer in lecturers %}
+                    <a href="?department={{ selected_department_id }}&lecturer={{ lecturer.id }}"
+                       class="list-group-item list-group-item-action {% if selected_lecturer and selected_lecturer.id == lecturer.id %}active{% endif %}">
+                        {{ lecturer.get_full_name }} ({{ lecturer.staff_id }})
+                        <span class="badge badge-secondary float-right">
+                            {{ lecturer.department.name }}
+                        </span>
+                    </a>
+                {% empty %}
+                    <div class="list-group-item">No lecturers found</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Unit Allocation Form -->
+    {% if selected_lecturer %}
+    <div class="card">
+        <div class="card-header">
+            <h5>Allocate Units to {{ selected_lecturer.get_full_name }}</h5>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="lecturer_id" value="{{ selected_lecturer.id }}">
+                
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Select</th>
+                                <th>Unit Code</th>
+                                <th>Unit Name</th>
+                                <th>Programme</th>
+                                <th>Year/Semester</th>
+                                <th>Department</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for unit in programme_units %}
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   name="units" value="{{ unit.id }}"
+                                                   id="unit_{{ unit.id }}"
+                                                   {% if unit.id in existing_allocations %}checked disabled{% endif %}>
+                                            <label class="form-check-label" for="unit_{{ unit.id }}"></label>
+                                        </div>
+                                    </td>
+                                    <td>{{ unit.unit.code }}</td>
+                                    <td>{{ unit.unit.name }}</td>
+                                    <td>{{ unit.programme.code }}</td>
+                                    <td>Year {{ unit.year_of_study }} - Sem {{ unit.semester }}</td>
+                                    <td>{{ unit.programme.department.name }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">No units available for allocation</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% if programme_units %}
+                <button type="submit" class="btn btn-success mt-3">
+                    <i class="fas fa-save"></i> Save Allocations
+                </button>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
