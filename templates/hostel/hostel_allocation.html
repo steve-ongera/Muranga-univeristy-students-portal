@@ -18,7 +18,7 @@
                 <h3>Hostel Allocation</h3>
             </div>
             <div class="card-body">
-                <form id="allocationForm">
+                <form id="allocationForm" method="POST">
                     {% csrf_token %}
                     
                     <!-- Student Search -->
@@ -64,14 +64,14 @@
                     <div id="allocationFields" class="hidden">
                         <div class="mb-3">
                             <label class="form-label">Hostel</label>
-                            <select class="form-control" id="hostelSelect" required>
+                            <select class="form-control" id="hostelSelect" name="hostel" required>
                                 <option value="">Select Hostel</option>
                             </select>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Room</label>
-                            <select class="form-control" id="roomSelect" required disabled>
+                            <select class="form-control" id="roomSelect" name="room" required disabled>
                                 <option value="">Select Room</option>
                             </select>
                             <small class="text-muted" id="roomAvailability"></small>
@@ -79,10 +79,13 @@
 
                         <div class="mb-3">
                             <label class="form-label">Bed</label>
-                            <select class="form-control" id="bedSelect" required disabled>
+                            <select class="form-control" id="bedSelect" name="bed" required disabled>
                                 <option value="">Select Bed</option>
                             </select>
                         </div>
+
+                        <input type="hidden" id="studentId" name="student">
+                        <input type="hidden" id="academicYear" name="academic_year">
 
                         <button type="submit" class="btn btn-success" id="submitBtn">Allocate Hostel</button>
                     </div>
@@ -94,7 +97,16 @@
     <script>
     $(document).ready(function() {
         let currentStudent = null;
+        let currentYear = null;
         
+        // Get current academic year (you'll need to add this view)
+        $.get('/hostel/get-current-year/', function(data) {
+            currentYear = data;
+            $('#academicYear').val(data.id);
+        }).fail(function() {
+            console.error('Error loading academic year');
+        });
+
         // Search student
         $('#searchStudent').click(function() {
             const regNumber = $('#regNumber').val().trim();
@@ -103,6 +115,7 @@
             $.get('/hostel/get-student-details/', {reg_number: regNumber}, function(data) {
                 if (data.exists) {
                     currentStudent = data;
+                    $('#studentId').val(data.id);
                     
                     // Display student details
                     $('#studentName').text(data.full_name);
@@ -131,7 +144,8 @@
                 } else {
                     alert('Student not found');
                 }
-            }).fail(function() {
+            }).fail(function(xhr) {
+                console.error('Error searching for student:', xhr.responseText);
                 alert('Error searching for student');
             });
         });
@@ -162,7 +176,8 @@
                 }
                 
                 $('#bedSelect').empty().append('<option value="">Select Bed</option>').prop('disabled', true);
-            }).fail(function() {
+            }).fail(function(xhr) {
+                console.error('Error loading rooms:', xhr.responseText);
                 alert('Error loading rooms');
             });
         });
@@ -186,7 +201,8 @@
                 } else {
                     $('#bedSelect').append('<option value="">No available beds</option>');
                 }
-            }).fail(function() {
+            }).fail(function(xhr) {
+                console.error('Error loading beds:', xhr.responseText);
                 alert('Error loading beds');
             });
         });
@@ -195,18 +211,17 @@
         $('#allocationForm').submit(function(e) {
             e.preventDefault();
             
-            if (!currentStudent || $('#alreadyAllocated').is(':visible')) {
-                alert('Invalid student selection');
+            if (!currentStudent) {
+                alert('Please search for a student first');
                 return;
             }
             
-            const formData = {
-                student: currentStudent.id,
-                hostel: $('#hostelSelect').val(),
-                room: $('#roomSelect').val(),
-                bed: $('#bedSelect').val(),
-                csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
-            };
+            if ($('#alreadyAllocated').is(':visible')) {
+                alert('This student already has a hostel allocation');
+                return;
+            }
+            
+            const formData = $(this).serialize();
             
             $.ajax({
                 url: '/hostel/allocate/',
@@ -217,10 +232,13 @@
                         alert('Hostel allocated successfully!');
                         location.reload();
                     } else {
-                        alert('Error: ' + (response.errors || 'Failed to allocate'));
+                        const errorMsg = response.errors ? JSON.stringify(response.errors) : 'Failed to allocate hostel';
+                        console.error('Allocation error:', errorMsg);
+                        alert('Error: ' + errorMsg);
                     }
                 },
-                error: function() {
+                error: function(xhr) {
+                    console.error('Server error:', xhr.responseText);
                     alert('Server error occurred');
                 }
             });

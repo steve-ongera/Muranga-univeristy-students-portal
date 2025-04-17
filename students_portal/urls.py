@@ -93,6 +93,7 @@ urlpatterns = [
     path('hostel/get-student-details/', views.get_student_details, name='get_student_details'),
     path('hostel/get-available-rooms/', views.get_available_rooms, name='get_available_rooms'),
     path('hostel/get-available-beds/', views.get_available_beds, name='get_available_beds'),
+    path('hostel/get-current-year/', views.get_current_year, name='get_current_year'),
 
 
 

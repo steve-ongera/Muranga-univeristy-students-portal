@@ -3746,3 +3746,10 @@ def get_available_beds(request):
     ).values('id', 'bed_number')
     
     return JsonResponse(list(beds), safe=False)
+
+
+def get_current_year(request):
+    current_year = AcademicYear.objects.filter(is_current=True).first()
+    if current_year:
+        return JsonResponse({'id': current_year.id, 'name': str(current_year)})
+    return JsonResponse({'error': 'No current academic year'}, status=400)
