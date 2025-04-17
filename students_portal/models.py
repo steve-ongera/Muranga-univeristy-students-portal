@@ -819,3 +819,72 @@ class AppliedExamUnit(models.Model):
     
     def __str__(self):
         return f"{self.application} - {self.unit.code}"
+
+
+
+class Hostel(models.Model):
+    """Model for university hostels"""
+    GENDER_CHOICES = (
+        ('male', 'Male'),
+        ('female', 'Female'),
+    )
+    
+    name = models.CharField(max_length=100)  # Kilimanjaro, Mount Kenya, etc.
+    code = models.CharField(max_length=10, unique=True)  # e.g., HOST-KILI
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
+    capacity = models.PositiveIntegerField(default=1600)  # 400 rooms × 4 beds
+    current_occupancy = models.PositiveIntegerField(default=0)
+    description = models.TextField(blank=True)
+    warden_name = models.CharField(max_length=100, blank=True)
+    warden_contact = models.CharField(max_length=15, blank=True)
+    
+    def __str__(self):
+        return f"{self.name} ({self.get_gender_display()})"
+
+class Room(models.Model):
+    """Model for individual rooms in hostels"""
+    hostel = models.ForeignKey(Hostel, on_delete=models.CASCADE, related_name='rooms')
+    room_number = models.CharField(max_length=10)  # e.g., "A101"
+    capacity = models.PositiveIntegerField(default=4)
+    current_occupancy = models.PositiveIntegerField(default=0)
+    is_full = models.BooleanField(default=False)
+    
+    class Meta:
+        unique_together = ('hostel', 'room_number')
+    
+    def __str__(self):
+        return f"{self.hostel.name} - Room {self.room_number}"
+
+class Bed(models.Model):
+    """Model for individual beds within rooms"""
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='beds')
+    bed_number = models.CharField(max_length=5)  # e.g., "Bed1", "Bed2"
+    is_occupied = models.BooleanField(default=False)
+    
+    class Meta:
+        unique_together = ('room', 'bed_number')
+    
+    def __str__(self):
+        return f"{self.room} - {self.bed_number}"
+    
+
+
+class HostelAllocation(models.Model):
+    """Tracks student hostel assignments per academic year"""
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='hostel_allocations')
+    academic_year = models.ForeignKey(AcademicYear, on_delete=models.CASCADE)
+    hostel = models.ForeignKey(Hostel, on_delete=models.CASCADE)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE)
+    bed = models.ForeignKey(Bed, on_delete=models.CASCADE)
+    date_allocated = models.DateField(auto_now_add=True)
+    date_vacated = models.DateField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        unique_together = (
+            ('student', 'academic_year'),  # 1 student per year
+            ('bed', 'academic_year'),     # 1 student per bed per year
+        )
+    
+    def __str__(self):
+        return f"{self.student} - {self.hostel} ({self.academic_year})"
