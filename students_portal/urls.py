@@ -89,6 +89,11 @@ urlpatterns = [
     path('special-exam-application/', views.special_exam_application, name='special_exam_application'),
      path('verify-exam-payment/', views.verify_exam_payment, name='verify_exam_payment'),
 
+     path('hostel/allocate/', views.allocate_hostel, name='allocate_hostel'),
+    path('hostel/get-student-details/', views.get_student_details, name='get_student_details'),
+    path('hostel/get-available-rooms/', views.get_available_rooms, name='get_available_rooms'),
+    path('hostel/get-available-beds/', views.get_available_beds, name='get_available_beds'),
+
 
 
     

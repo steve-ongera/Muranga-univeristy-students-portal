@@ -3618,3 +3618,131 @@ def verify_exam_payment(request):
             messages.error(request, "Invalid verification code")
     
     return render(request, 'students/verify_payment.html')
+
+
+
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required, user_passes_test
+from .models import Student, Hostel, Room, Bed, AcademicYear
+from .forms import HostelAllocationForm
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser or u.user_type == 'admin')
+def allocate_hostel(request):
+    current_year = AcademicYear.objects.filter(is_current=True).first()
+    
+    if request.method == 'POST':
+        form = HostelAllocationForm(request.POST)
+        if form.is_valid():
+            allocation = form.save(commit=False)
+            
+            # Mark bed as occupied
+            bed = allocation.bed
+            bed.is_occupied = True
+            bed.save()
+            
+            # Update room and hostel occupancy
+            room = bed.room
+            room.current_occupancy = room.beds.filter(is_occupied=True).count()
+            room.is_full = (room.current_occupancy >= room.capacity)
+            room.save()
+            
+            hostel = room.hostel
+            hostel.current_occupancy = HostelAllocation.objects.filter(
+                hostel=hostel, 
+                academic_year=current_year,
+                is_active=True
+            ).count()
+            hostel.save()
+            
+            allocation.save()
+            return JsonResponse({'success': True})
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors})
+    
+    form = HostelAllocationForm()
+    return render(request, 'hostel/hostel_allocation.html', {'form': form})
+
+def get_student_details(request):
+    reg_number = request.GET.get('reg_number', '').strip()
+    if not reg_number:
+        return JsonResponse({'error': 'Registration number required'}, status=400)
+    
+    try:
+        student = Student.objects.get(registration_number=reg_number)
+    except Student.DoesNotExist:
+        return JsonResponse({'exists': False})
+    
+    current_year = AcademicYear.objects.filter(is_current=True).first()
+    
+    allocated = HostelAllocation.objects.filter(
+        student=student,
+        academic_year=current_year,
+        is_active=True
+    ).exists()
+    
+    data = {
+        'exists': True,
+        'allocated': allocated,
+        'full_name': student.get_full_name(),
+        'gender': student.gender,
+        'programme': str(student.programme),
+        'hostels': list(Hostel.objects.filter(
+            gender='male' if student.gender == 'M' else 'female'
+        ).values('id', 'name'))
+    }
+    return JsonResponse(data)
+# views.py
+def get_available_rooms(request):
+    hostel_id = request.GET.get('hostel_id')
+    current_year = AcademicYear.objects.filter(is_current=True).first()
+    
+    if not hostel_id or not current_year:
+        return JsonResponse([], safe=False)
+    
+    # Get all rooms in the hostel that aren't full
+    rooms = Room.objects.filter(
+        hostel_id=hostel_id,
+        is_full=False
+    )
+    
+    # Get rooms that have available beds not allocated in current year
+    available_rooms = []
+    for room in rooms:
+        allocated_beds = HostelAllocation.objects.filter(
+            bed__room=room,
+            academic_year=current_year,
+            is_active=True
+        ).values_list('bed_id', flat=True)
+        
+        available_beds = room.beds.exclude(id__in=allocated_beds)
+        if available_beds.exists():
+            available_rooms.append({
+                'id': room.id,
+                'number': room.room_number,
+                'available_beds': available_beds.count()
+            })
+    
+    return JsonResponse(available_rooms, safe=False)
+
+def get_available_beds(request):
+    room_id = request.GET.get('room_id')
+    current_year = AcademicYear.objects.filter(is_current=True).first()
+    
+    if not room_id or not current_year:
+        return JsonResponse([], safe=False)
+    
+    allocated_beds = HostelAllocation.objects.filter(
+        bed__room_id=room_id,
+        academic_year=current_year,
+        is_active=True
+    ).values_list('bed_id', flat=True)
+    
+    beds = Bed.objects.filter(
+        room_id=room_id
+    ).exclude(
+        id__in=allocated_beds
+    ).values('id', 'bed_number')
+    
+    return JsonResponse(list(beds), safe=False)

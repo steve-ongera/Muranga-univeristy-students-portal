@@ -416,7 +416,38 @@ class SpecialExamApplicationAdmin(admin.ModelAdmin):
         updated = queryset.exclude(status='completed').update(status='rejected')
         self.message_user(request, f"{updated} applications rejected")
     reject_applications.short_description = "Reject selected applications"
-    
+
+from django.contrib import admin
+from .models import Hostel, Room, Bed, HostelAllocation
+
+@admin.register(Hostel)
+class HostelAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code', 'gender', 'capacity', 'current_occupancy', 'warden_name', 'warden_contact')
+    list_filter = ('gender',)
+    search_fields = ('name', 'code', 'warden_name', 'warden_contact')
+    ordering = ('name',)
+
+@admin.register(Room)
+class RoomAdmin(admin.ModelAdmin):
+    list_display = ('hostel', 'room_number', 'capacity', 'current_occupancy', 'is_full')
+    list_filter = ('hostel', 'is_full')
+    search_fields = ('room_number', 'hostel__name')
+    ordering = ('hostel__name', 'room_number')
+
+@admin.register(Bed)
+class BedAdmin(admin.ModelAdmin):
+    list_display = ('room', 'bed_number', 'is_occupied')
+    list_filter = ('room__hostel', 'is_occupied')
+    search_fields = ('bed_number', 'room__room_number', 'room__hostel__name')
+    ordering = ('room__hostel__name', 'room__room_number', 'bed_number')
+
+@admin.register(HostelAllocation)
+class HostelAllocationAdmin(admin.ModelAdmin):
+    list_display = ('student', 'academic_year', 'hostel', 'room', 'bed', 'date_allocated', 'date_vacated', 'is_active')
+    list_filter = ('academic_year', 'hostel', 'is_active')
+    search_fields = ('student__first_name', 'student__last_name', 'student__registration_number', 'hostel__name', 'room__room_number', 'bed__bed_number')
+    ordering = ('-date_allocated',)
+
 admin.site.register(UserNotification, UserNotificationAdmin)
 admin.site.register(FeesStructure, FeesStructureAdmin)
 admin.site.register(StudentFee, StudentFeeAdmin)

@@ -323,3 +323,26 @@ class LectureNotesForm(forms.ModelForm):
         }
 
 
+from django import forms
+from .models import Student, Hostel, Room, Bed, HostelAllocation, AcademicYear
+
+class HostelAllocationForm(forms.ModelForm):
+    class Meta:
+        model = HostelAllocation
+        fields = ['student', 'academic_year', 'hostel', 'room', 'bed']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set initial current academic year
+        current_year = AcademicYear.objects.filter(is_current=True).first()
+        if current_year:
+            self.fields['academic_year'].initial = current_year
+            self.fields['academic_year'].widget = forms.HiddenInput()
+        
+        # Limit beds to unoccupied ones
+        self.fields['bed'].queryset = Bed.objects.filter(is_occupied=False)
+        
+        # Empty choices by default (will be populated via AJAX)
+        self.fields['hostel'].queryset = Hostel.objects.none()
+        self.fields['room'].queryset = Room.objects.none()
+        self.fields['bed'].queryset = Bed.objects.none()
