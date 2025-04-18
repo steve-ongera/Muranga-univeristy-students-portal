@@ -3690,7 +3690,8 @@ def get_student_details(request):
         'programme': str(student.programme),
         'hostels': list(Hostel.objects.filter(
             gender='male' if student.gender == 'M' else 'female'
-        ).values('id', 'name'))
+        ).values('id', 'name')),
+        'id': student.id,  # Add this line to return the student ID
     }
     return JsonResponse(data)
 # views.py
