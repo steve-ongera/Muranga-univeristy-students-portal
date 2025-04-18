@@ -330,19 +330,27 @@ class HostelAllocationForm(forms.ModelForm):
     class Meta:
         model = HostelAllocation
         fields = ['student', 'academic_year', 'hostel', 'room', 'bed']
-        
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Set initial current academic year
-        current_year = AcademicYear.objects.filter(is_current=True).first()
-        if current_year:
-            self.fields['academic_year'].initial = current_year
-            self.fields['academic_year'].widget = forms.HiddenInput()
+        # Instead of limiting querysets, let Django validate that the objects exist
+        # and have proper relationships during clean()
         
-        # Limit beds to unoccupied ones
-        self.fields['bed'].queryset = Bed.objects.filter(is_occupied=False)
+    def clean(self):
+        cleaned_data = super().clean()
+        # Add custom validation here to ensure:
+        # 1. Room belongs to the selected hostel
+        # 2. Bed belongs to the selected room
+        # 3. All objects exist
         
-        # Empty choices by default (will be populated via AJAX)
-        self.fields['hostel'].queryset = Hostel.objects.none()
-        self.fields['room'].queryset = Room.objects.none()
-        self.fields['bed'].queryset = Bed.objects.none()
+        hostel = cleaned_data.get('hostel')
+        room = cleaned_data.get('room')
+        bed = cleaned_data.get('bed')
+        
+        if hostel and room and room.hostel != hostel:
+            self.add_error('room', 'Room must belong to the selected hostel')
+            
+        if room and bed and bed.room != room:
+            self.add_error('bed', 'Bed must belong to the selected room')
+            
+        return cleaned_data

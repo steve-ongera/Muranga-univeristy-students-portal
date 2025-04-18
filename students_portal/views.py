@@ -3626,6 +3626,8 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .models import Student, Hostel, Room, Bed, AcademicYear
 from .forms import HostelAllocationForm
+# Add this import
+from .models import Student, Hostel, Room, Bed, AcademicYear, HostelAllocation
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser or u.user_type == 'admin')
@@ -3659,6 +3661,7 @@ def allocate_hostel(request):
             allocation.save()
             return JsonResponse({'success': True})
         else:
+            print("Form errors:", form.errors)  # Add this for debugging
             return JsonResponse({'success': False, 'errors': form.errors})
     
     form = HostelAllocationForm()
