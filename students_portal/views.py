@@ -3757,3 +3757,66 @@ def get_current_year(request):
     if current_year:
         return JsonResponse({'id': current_year.id, 'name': str(current_year)})
     return JsonResponse({'error': 'No current academic year'}, status=400)
+
+
+
+from django.shortcuts import render, get_object_or_404
+from django.views import View
+from .models import AcademicYear, Hostel, Room, HostelAllocation, Student
+
+class HostelAllocationExplorer(View):
+    template_name = 'hostel_allocation_explorer.html'
+    
+    def get(self, request):
+        # Get all academic years
+        academic_years = AcademicYear.objects.all().order_by('-start_date')
+        
+        # Get selected academic year from query params
+        selected_year_id = request.GET.get('year')
+        selected_year = None
+        hostels = []
+        
+        if selected_year_id:
+            selected_year = get_object_or_404(AcademicYear, pk=selected_year_id)
+            # Get all hostels with allocations in this year
+            hostels = Hostel.objects.filter(
+                hostelallocation__academic_year=selected_year
+            ).distinct().order_by('name')
+        
+        # Get selected hostel from query params
+        selected_hostel_id = request.GET.get('hostel')
+        selected_hostel = None
+        rooms = []
+        
+        if selected_hostel_id and selected_year:
+            selected_hostel = get_object_or_404(Hostel, pk=selected_hostel_id)
+            # Get all rooms with allocations in this hostel/year
+            rooms = Room.objects.filter(
+                hostel=selected_hostel,
+                beds__hostelallocation__academic_year=selected_year
+            ).distinct().order_by('room_number')
+        
+        # Get selected room from query params
+        selected_room_id = request.GET.get('room')
+        selected_room = None
+        allocations = []
+        
+        if selected_room_id and selected_year:
+            selected_room = get_object_or_404(Room, pk=selected_room_id)
+            # Get all allocations for this room/year
+            allocations = HostelAllocation.objects.filter(
+                room=selected_room,
+                academic_year=selected_year
+            ).select_related('student', 'bed').order_by('bed__bed_number')
+        
+        context = {
+            'academic_years': academic_years,
+            'selected_year': selected_year,
+            'hostels': hostels,
+            'selected_hostel': selected_hostel,
+            'rooms': rooms,
+            'selected_room': selected_room,
+            'allocations': allocations,
+        }
+        
+        return render(request, self.template_name, context)

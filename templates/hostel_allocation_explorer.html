@@ -1,0 +1,193 @@
+{% extends 'base/base.html'%}
+{% load custom_filters %}
+{% load static %}
+
+{% block content %}
+<div class="message-container" id="system-messages">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        <i class="bi {% if message.tags == 'success' %}bi-check-circle{% else %}bi-exclamation-triangle{% endif %} me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="pagetitle">
+    <h1><i class="bi bi-building me-2"></i>Hostel Allocation Explorer</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}"><i class="bi bi-house-door"></i> Home</a></li>
+            <li class="breadcrumb-item">Accommodation</li>
+            <li class="breadcrumb-item active">Allocation Explorer</li>
+        </ol>
+    </nav>
+</div><!-- End Page Title -->
+
+<section class="section">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-university-primary text-white">
+                    <h5 class="card-title mb-0"><i class="bi bi-search me-2"></i>Explore Allocations</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Academic Year Selection -->
+                    <div class="mb-4">
+                        <h5 class="text-university mb-3"><i class="bi bi-calendar-range me-2"></i>Select Academic Year</h5>
+                        <div class="list-group list-group-horizontal-md flex-wrap">
+                            {% for year in academic_years %}
+                                <a href="?year={{ year.id }}" 
+                                   class="list-group-item list-group-item-action {% if selected_year and selected_year.id == year.id %}active bg-university-secondary{% endif %}">
+                                    {{ year.name }}
+                                    {% if year.is_current %}
+                                        <span class="badge bg-success ms-2">Current</span>
+                                    {% endif %}
+                                </a>
+                            {% empty %}
+                                <div class="alert alert-warning">No academic years found</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    {% if selected_year %}
+                    <!-- Hostel Selection -->
+                    <div class="mb-4">
+                        <h5 class="text-university mb-3"><i class="bi bi-building me-2"></i>Select Hostel ({{ selected_year.name }})</h5>
+                        {% if hostels %}
+                        <div class="row">
+                            {% for hostel in hostels %}
+                                <div class="col-md-4 mb-3">
+                                    <a href="?year={{ selected_year.id }}&hostel={{ hostel.id }}" 
+                                       class="card text-decoration-none {% if selected_hostel and selected_hostel.id == hostel.id %}border-university-primary border-2{% endif %}">
+                                        <div class="card-body">
+                                            <h6 class="card-title">{{ hostel.name }}</h6>
+                                            <div class="d-flex justify-content-between">
+                                                <span class="badge bg-{% if hostel.gender == 'male' %}primary{% else %}danger{% endif %}">
+                                                    {{ hostel.get_gender_display }}
+                                                </span>
+                                                <span class="text-muted">
+                                                    {{ hostel.capacity }} capacity
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="alert alert-warning">No hostels with allocations found for {{ selected_year.name }}</div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if selected_hostel %}
+                    <!-- Room Selection -->
+                    <div class="mb-4">
+                        <h5 class="text-university mb-3">
+                            <i class="bi bi-door-open me-2"></i>Select Room ({{ selected_hostel.name }} - {{ selected_year.name }})
+                        </h5>
+                        {% if rooms %}
+                        <div class="row">
+                            {% for room in rooms %}
+                                <div class="col-md-3 mb-3">
+                                    <a href="?year={{ selected_year.id }}&hostel={{ selected_hostel.id }}&room={{ room.id }}" 
+                                       class="card text-decoration-none {% if selected_room and selected_room.id == room.id %}border-university-primary border-2{% endif %}">
+                                        <div class="card-body text-center">
+                                            <h5 class="card-title">Room {{ room.room_number }}</h5>
+                                            <div class="progress mb-2">
+                                                <div class="progress-bar bg-{% if room.is_full %}danger{% else %}success{% endif %}" 
+                                                     role="progressbar" 
+                                                     style="width: {{ room.current_occupancy|percentage:room.capacity }}%">
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">
+                                                {{ room.current_occupancy }}/{{ room.capacity }} beds occupied
+                                            </small>
+                                        </div>
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="alert alert-warning">No rooms with allocations found in {{ selected_hostel.name }}</div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if selected_room %}
+                    <!-- Allocation Details -->
+                    <div>
+                        <h5 class="text-university mb-3">
+                            <i class="bi bi-people-fill me-2"></i>Room {{ selected_room.room_number }} Occupants ({{ selected_year.name }})
+                        </h5>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="bg-university-primary text-white">
+                                    <tr>
+                                        <th>Bed</th>
+                                        <th>Student</th>
+                                        <th>Programme</th>
+                                        <th>Year</th>
+                                        <th>Allocation Date</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for allocation in allocations %}
+                                    <tr>
+                                        <td>{{ allocation.bed.bed_number }}</td>
+                                        <td>
+                                            <a href="{% url 'student_detail' allocation.student.id %}" class="text-decoration-none">
+                                                {{ allocation.student.get_full_name }}<br>
+                                                <small class="text-muted">{{ allocation.student.registration_number }}</small>
+                                            </a>
+                                        </td>
+                                        <td>{{ allocation.student.programme.code }}</td>
+                                        <td>Year {{ allocation.student.current_year }}</td>
+                                        <td>{{ allocation.date_allocated|date:"d M Y" }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if allocation.is_active %}success{% else %}secondary{% endif %}">
+                                                {% if allocation.is_active %}Active{% else %}Vacated{% endif %}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4">No allocations found for this room</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-university-light">
+                    <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Browse hostel allocations by academic year, hostel, and room</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .border-university-primary {
+        border-color: var(--university-primary) !important;
+    }
+    
+    .list-group-horizontal-md .list-group-item {
+        margin-bottom: 0.5rem;
+    }
+    
+    .progress {
+        height: 8px;
+    }
+    
+    .percentage::after {
+        content: '%';
+    }
+</style>
+
+{% endblock %}

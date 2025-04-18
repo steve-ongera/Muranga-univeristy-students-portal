@@ -1,314 +1,230 @@
-{% extends 'base/base.html' %}
+{% extends 'base/base.html'%}
 {% load static %}
 
 {% block content %}
+<div class="message-container" id="system-messages">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        <i class="bi {% if message.tags == 'success' %}bi-check-circle{% else %}bi-exclamation-triangle{% endif %} me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="pagetitle">
+    <h1><i class="bi bi-journal-bookmark me-2"></i>Unit Allocation for {{ current_semester }}</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}"><i class="bi bi-house-door"></i> Home</a></li>
+            <li class="breadcrumb-item">Academic</li>
+            <li class="breadcrumb-item active">Unit Allocation</li>
+        </ol>
+    </nav>
+</div><!-- End Page Title -->
+
+<section class="section">
+    <div class="row">
+        <div class="col-lg-12">
+            <!-- Department Filter Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-university-primary text-white">
+                    <h5 class="card-title mb-0"><i class="bi bi-funnel me-2"></i>Filter Lecturers</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row align-items-center">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label class="form-label fw-bold">Department</label>
+                            <select name="department" id="department" class="form-select">
+                                <option value="">All Departments</option>
+                                {% for dept in departments %}
+                                    <option value="{{ dept.id }}" {% if selected_department_id and selected_department_id == dept.id %}selected{% endif %}>
+                                        {{ dept.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <button type="submit" class="btn btn-university w-100">
+                                <i class="bi bi-search me-1"></i> Filter Lecturers
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-lg-12">
+            <!-- Lecturer Selection Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-university-primary text-white">
+                    <h5 class="card-title mb-0"><i class="bi bi-person-video3 me-2"></i>Select Lecturer</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if lecturers %}
+                    <div class="list-group list-group-flush">
+                        {% for lecturer in lecturers %}
+                            <a href="?department={{ selected_department_id }}&lecturer={{ lecturer.id }}"
+                               class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if selected_lecturer and selected_lecturer.id == lecturer.id %}active bg-university-secondary text-white{% else %}bg-university-light{% endif %}">
+                                <div>
+                                    <h6 class="mb-1 fw-bold">{{ lecturer.get_full_name }}</h6>
+                                    <small class="{% if selected_lecturer and selected_lecturer.id == lecturer.id %}text-white-50{% else %}text-muted{% endif %} d-block">{{ lecturer.staff_id }}</small>
+                                </div>
+                                <span class="badge bg-university-primary rounded-pill">
+                                    {{ lecturer.department.name }}
+                                </span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-person-x fs-1 text-muted"></i>
+                        <h5 class="fw-bold mt-3">No lecturers found</h5>
+                        <p class="text-muted">Try changing your filter criteria</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-university-light">
+                    <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Select a lecturer to allocate units</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if selected_lecturer %}
+    <div class="row mt-4">
+        <div class="col-lg-12">
+            <!-- Unit Allocation Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-university-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-journal-plus me-2"></i>
+                        Allocate Units to <strong>{{ selected_lecturer.get_full_name }}</strong>
+                    </h5>
+                    <span class="badge bg-success">
+                        {{ selected_lecturer.department.name }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="lecturer_id" value="{{ selected_lecturer.id }}">
+                        
+                        {% if programme_units %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-4">
+                                <thead class="bg-university-primary text-white">
+                                    <tr>
+                                        <th style="width: 50px;">Select</th>
+                                        <th>Unit Code</th>
+                                        <th>Unit Name</th>
+                                        <th>Programme</th>
+                                        <th>Year/Semester</th>
+                                        <th>Department</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for unit in programme_units %}
+                                        <tr>
+                                            <td>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" 
+                                                           name="units" value="{{ unit.id }}"
+                                                           id="unit_{{ unit.id }}"
+                                                           {% if unit.id in existing_allocations %}checked disabled{% endif %}>
+                                                </div>
+                                            </td>
+                                            <td><strong>{{ unit.unit.code }}</strong></td>
+                                            <td>{{ unit.unit.name }}</td>
+                                            <td>{{ unit.programme.code }}</td>
+                                            <td>
+                                                <span class="badge bg-success">
+                                                    Year {{ unit.year_of_study }} - Sem {{ unit.semester }}
+                                                </span>
+                                            </td>
+                                            <td>{{ unit.programme.department.name }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="d-flex justify-content-center mt-4">
+                            <button type="submit" class="btn btn-university">
+                                <i class="bi bi-save me-1"></i> Save Allocations
+                            </button>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-journal-x fs-1 text-muted"></i>
+                            <h4 class="fw-bold mt-3">No units available for allocation</h4>
+                            <p class="text-muted">There are currently no units in this semester that can be allocated to this lecturer.</p>
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</section>
+
 <style>
     :root {
-        --univ-primary: #1B5E20;  /* Dark Green */
-        --univ-secondary: #388E3C;  /* Medium Green */
-        --univ-accent: #2E7D32;  /* Darker Green */
-        --univ-light: #E8F5E9;  /* Light Green Background */
-        --univ-text-light: #FFFFFF;  /* White text */
-        --univ-text-dark: #212121;  /* Dark text */
+        --university-primary: #2E7D32; /* Dark green */
+        --university-secondary: #81C784; /* Light green */
+        --university-light: #E8F5E9; /* Very light green */
     }
-    
-    body {
-        background-color: #f8f9fa;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    .bg-university-primary {
+        background-color: var(--university-primary) !important;
     }
-    
-    .univ-header {
-        background: linear-gradient(135deg, var(--univ-primary), var(--univ-accent));
-        color: var(--univ-text-light);
-        padding: 1.5rem;
-        border-radius: 8px;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    .bg-university-secondary {
+        background-color: var(--university-secondary) !important;
     }
-    
-    .card {
-        border: none;
-        border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        margin-bottom: 2rem;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        overflow: hidden;
+    .bg-university-light {
+        background-color: var(--university-light) !important;
     }
-    
-    .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    .btn-university {
+        background-color: var(--university-primary);
+        color: white;
+        border-color: var(--university-primary);
     }
-    
-    .card-header {
-        background: linear-gradient(135deg, var(--univ-primary), var(--univ-accent));
-        color: var(--univ-text-light);
-        border-radius: 0 !important;
-        padding: 1.25rem 1.5rem;
-        font-weight: 600;
-        border-bottom: none;
+    .btn-outline-university {
+        color: var(--university-primary);
+        border-color: var(--university-primary);
     }
-    
-    .btn-primary {
-        background-color: var(--univ-text-light);
-        border-color: var(--univ-primary);
-        color: var(--univ-primary);
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-    
-    .btn-primary:hover {
-        background-color: var(--univ-primary);
-        border-color: var(--univ-primary);
-        color: var(--univ-text-light);
-    }
-    
-    .btn-success {
-        background-color: var(--univ-secondary);
-        border-color: var(--univ-secondary);
-        color: var(--univ-text-light);
-        font-weight: 500;
-        padding: 0.75rem 2rem;
-        transition: all 0.3s ease;
-    }
-    
-    .btn-success:hover {
-        background-color: var(--univ-accent);
-        border-color: var(--univ-accent);
-        color: var(--univ-text-light);
-        transform: translateY(-2px);
+    .btn-outline-university:hover {
+        background-color: var(--university-primary);
+        color: white;
     }
     
     .list-group-item {
-        border-left: 4px solid transparent;
-        transition: all 0.3s ease;
-        padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid rgba(0,0,0,0.05);
+        transition: all 0.2s ease;
+        border-left: 3px solid transparent;
     }
     
     .list-group-item:hover {
-        border-left: 4px solid var(--univ-secondary);
-        background-color: var(--univ-light);
-        transform: translateX(5px);
+        border-left: 3px solid var(--university-primary);
+        background-color: rgba(129, 199, 132, 0.1);
     }
     
-    .list-group-item.active {
-        background-color: var(--univ-primary);
-        border-color: var(--univ-primary);
-        color: var(--univ-text-light);
+    .list-group-item.active:hover {
+        border-left: 3px solid white;
     }
     
-    .list-group-item.active .text-muted,
-    .list-group-item.active .badge {
-        color: rgba(255,255,255,0.8) !important;
-    }
-    
-    .badge {
-        padding: 0.5em 0.75em;
-        font-weight: 500;
-        letter-spacing: 0.5px;
-    }
-    
-    .badge-secondary {
-        background-color: var(--univ-accent);
-        color: var(--univ-text-light);
-    }
-    
-    table {
-        border-collapse: separate;
-        border-spacing: 0;
-    }
-    
-    thead {
-        background: linear-gradient(135deg, var(--univ-primary), var(--univ-accent));
-        color: var(--univ-text-light);
-    }
-    
-    th {
-        padding: 1rem;
-        font-weight: 500;
-        border: none;
-    }
-    
-    td {
-        padding: 1rem;
-        vertical-align: middle;
-        border-top: 1px solid rgba(0,0,0,0.05);
-    }
-    
-    tr:hover td {
-        background-color: var(--univ-light);
+    .form-check-input:checked {
+        background-color: var(--university-primary);
+        border-color: var(--university-primary);
     }
     
     tr:nth-child(even) {
         background-color: rgba(232, 245, 233, 0.3);
     }
     
-    .form-control:focus {
-        border-color: var(--univ-secondary);
-        box-shadow: 0 0 0 0.2rem rgba(56, 142, 60, 0.25);
-    }
-    
-    .form-check-input {
-        width: 1.25em;
-        height: 1.25em;
-        margin-top: 0;
-    }
-    
-    .form-check-input:checked {
-        background-color: var(--univ-primary);
-        border-color: var(--univ-primary);
-    }
-    
-    .table-responsive {
-        border-radius: 8px;
-        overflow: hidden;
-        border: 1px solid rgba(0,0,0,0.1);
-    }
-    
-    .text-muted {
-        color: #6c757d !important;
-    }
-    
-    .department-badge {
-        background-color: rgba(232, 245, 233, 0.9);
-        color: var(--univ-primary);
-        font-weight: 600;
+    tr:hover td {
+        background-color: rgba(129, 199, 132, 0.1);
     }
 </style>
-
-<div class="container-fluid py-4">
-    <div class="univ-header">
-        <h2 class="mb-0"><i class="fas fa-tasks mr-2"></i> Unit Allocation for {{ current_semester }}</h2>
-    </div>
-    
-    <!-- Department Filter -->
-    <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0"><i class="fas fa-filter mr-2"></i> Filter Lecturers</h5>
-        </div>
-        <div class="card-body">
-            <form method="get" class="row align-items-center">
-                <div class="col-md-6 mb-2 mb-md-0">
-                    <label for="department" class="form-label fw-bold">Department:</label>
-                    <select name="department" id="department" class="form-select form-select-lg">
-                        <option value="">All Departments</option>
-                        {% for dept in departments %}
-                            <option value="{{ dept.id }}" {% if selected_department_id and selected_department_id == dept.id %}selected{% endif %}>
-                                {{ dept.name }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-6 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-search mr-2"></i> Filter Lecturers
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Lecturer Selection -->
-    <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0"><i class="fas fa-chalkboard-teacher mr-2"></i> Select Lecturer</h5>
-        </div>
-        <div class="card-body p-0">
-            <div class="list-group list-group-flush">
-                {% for lecturer in lecturers %}
-                    <a href="?department={{ selected_department_id }}&lecturer={{ lecturer.id }}"
-                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if selected_lecturer and selected_lecturer.id == lecturer.id %}active{% endif %}">
-                        <div>
-                            <h6 class="mb-1 fw-bold">{{ lecturer.get_full_name }}</h6>
-                            <small class="text-muted d-block">{{ lecturer.staff_id }}</small>
-                        </div>
-                        <span class="badge bg-secondary">
-                            {{ lecturer.department.name }}
-                        </span>
-                    </a>
-                {% empty %}
-                    <div class="list-group-item text-center py-4">
-                        <i class="fas fa-user-slash fa-3x mb-3 text-muted"></i>
-                        <h5 class="fw-bold">No lecturers found</h5>
-                        <p class="text-muted">Try changing your filter criteria</p>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Unit Allocation Form -->
-    {% if selected_lecturer %}
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">
-                <i class="fas fa-book-open mr-2"></i>
-                Allocate Units to <strong>{{ selected_lecturer.get_full_name }}</strong>
-            </h5>
-            <span class="badge department-badge rounded-pill px-3 py-2">
-                {{ selected_lecturer.department.name }}
-            </span>
-        </div>
-        <div class="card-body">
-            <form method="post">
-                {% csrf_token %}
-                <input type="hidden" name="lecturer_id" value="{{ selected_lecturer.id }}">
-                
-                {% if programme_units %}
-                <div class="table-responsive">
-                    <table class="table table-hover mb-4">
-                        <thead>
-                            <tr>
-                                <th style="width: 50px;">Select</th>
-                                <th>Unit Code</th>
-                                <th>Unit Name</th>
-                                <th>Programme</th>
-                                <th>Year/Semester</th>
-                                <th>Department</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for unit in programme_units %}
-                                <tr>
-                                    <td>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" 
-                                                   name="units" value="{{ unit.id }}"
-                                                   id="unit_{{ unit.id }}"
-                                                   {% if unit.id in existing_allocations %}checked disabled{% endif %}>
-                                        </div>
-                                    </td>
-                                    <td><strong>{{ unit.unit.code }}</strong></td>
-                                    <td>{{ unit.unit.name }}</td>
-                                    <td>{{ unit.programme.code }}</td>
-                                    <td>
-                                        <span class="badge bg-light text-dark">
-                                            Year {{ unit.year_of_study }} - Sem {{ unit.semester }}
-                                        </span>
-                                    </td>
-                                    <td>{{ unit.programme.department.name }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                
-                <div class="d-grid gap-2 col-md-4 mx-auto mt-4">
-                    <button type="submit" class="btn btn-success btn-lg">
-                        <i class="fas fa-save mr-2"></i> Save Allocations
-                    </button>
-                </div>
-                {% else %}
-                <div class="text-center py-5">
-                    <i class="fas fa-book fa-4x mb-4 text-muted"></i>
-                    <h4 class="fw-bold">No units available for allocation</h4>
-                    <p class="text-muted">There are currently no units in this semester that can be allocated to this lecturer.</p>
-                </div>
-                {% endif %}
-            </form>
-        </div>
-    </div>
-    {% endif %}
-</div>
 {% endblock %}
