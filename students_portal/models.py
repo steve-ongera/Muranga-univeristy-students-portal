@@ -877,7 +877,7 @@ class HostelAllocation(models.Model):
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
     bed = models.ForeignKey(Bed, on_delete=models.CASCADE)
     date_allocated = models.DateField(auto_now_add=True)
-    date_vacated = models.DateField(null=True, blank=True)
+    date_vacated = models.DateField(auto_now=True, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     
     class Meta:
