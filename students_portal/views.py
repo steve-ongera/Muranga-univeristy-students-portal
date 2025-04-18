@@ -3820,3 +3820,69 @@ class HostelAllocationExplorer(View):
         }
         
         return render(request, self.template_name, context)
+    
+#unit enrollment to the current semester 
+from django.shortcuts import render
+from django.views import View
+from .models import Programme, ProgrammeUnit, Student, Semester, StudentEnrollment
+from django.db.models import Prefetch
+
+class ProgrammeUnitExplorer(View):
+    template_name = 'programme_unit_explorer.html'
+    
+    def get(self, request):
+        # Get current semester
+        current_semester = Semester.objects.filter(is_current=True).first()
+        
+        # Get all programmes with their units
+        programmes = Programme.objects.select_related('department').prefetch_related(
+            Prefetch('programme_units', 
+                    queryset=ProgrammeUnit.objects.select_related('unit')
+                    .order_by('year_of_study', 'semester'))
+        ).order_by('department__name', 'name')
+        
+        # Get selected programme from query params
+        selected_programme_id = request.GET.get('programme')
+        selected_programme = None
+        year_semester_units = {}
+        
+        if selected_programme_id:
+            selected_programme = get_object_or_404(Programme, pk=selected_programme_id)
+            
+            # Organize units by year and semester
+            for unit in selected_programme.programme_units.all():
+                year = unit.year_of_study
+                semester = unit.semester
+                
+                if year not in year_semester_units:
+                    year_semester_units[year] = {}
+                
+                if semester not in year_semester_units[year]:
+                    year_semester_units[year][semester] = []
+                
+                year_semester_units[year][semester].append(unit)
+        
+        # Get selected unit from query params
+        selected_unit_id = request.GET.get('unit')
+        selected_unit = None
+        enrollments = []
+        
+        if selected_unit_id and current_semester:
+            selected_unit = get_object_or_404(ProgrammeUnit, pk=selected_unit_id)
+            
+            # Get all enrollments for this unit in current semester
+            enrollments = StudentEnrollment.objects.filter(
+                programme_unit=selected_unit,
+                semester=current_semester
+            ).select_related('student').order_by('student__last_name', 'student__first_name')
+        
+        context = {
+            'programmes': programmes,
+            'selected_programme': selected_programme,
+            'year_semester_units': year_semester_units,
+            'selected_unit': selected_unit,
+            'enrollments': enrollments,
+            'current_semester': current_semester,
+        }
+        
+        return render(request, self.template_name, context)

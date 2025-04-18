@@ -94,7 +94,8 @@ urlpatterns = [
     path('hostel/get-available-rooms/', views.get_available_rooms, name='get_available_rooms'),
     path('hostel/get-available-beds/', views.get_available_beds, name='get_available_beds'),
     path('hostel/get-current-year/', views.get_current_year, name='get_current_year'),
-     path('hostel-explorer/', views.HostelAllocationExplorer.as_view(), name='hostel_allocation_explorer'),
+    path('hostel-explorer/', views.HostelAllocationExplorer.as_view(), name='hostel_allocation_explorer'),
+    path('programme-units/', views.ProgrammeUnitExplorer.as_view(), name='programme_unit_explorer'),
 
 
 

@@ -1,0 +1,286 @@
+{% extends 'base/base.html'%}
+{% load static %}
+
+{% block content %}
+<div class="message-container" id="system-messages">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        <i class="bi {% if message.tags == 'success' %}bi-check-circle{% else %}bi-exclamation-triangle{% endif %} me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="pagetitle">
+    <h1><i class="bi bi-journal-bookmark me-2"></i>Programme Unit Explorer</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}"><i class="bi bi-house-door"></i> Home</a></li>
+            <li class="breadcrumb-item">Academic</li>
+            <li class="breadcrumb-item active">Unit Explorer</li>
+        </ol>
+    </nav>
+</div><!-- End Page Title -->
+
+<section class="section">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-university-primary text-white">
+                    <h5 class="card-title mb-0"><i class="bi bi-book me-2"></i>Programme Units</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Programme Selection -->
+                    <div class="mb-4">
+                        <h5 class="text-university mb-3"><i class="bi bi-mortarboard me-2"></i>Select Programme</h5>
+                        <div class="row">
+                            {% for programme in programmes %}
+                                <div class="col-md-4 mb-3">
+                                    <a href="?programme={{ programme.id }}" 
+                                       class="card text-decoration-none {% if selected_programme and selected_programme.id == programme.id %}border-university-primary border-2{% endif %}">
+                                        <div class="card-body">
+                                            <h6 class="card-title">{{ programme.name }}</h6>
+                                            <div class="d-flex justify-content-between">
+                                                <span class="badge bg-university-secondary">
+                                                    {{ programme.code }}
+                                                </span>
+                                                <small class="text-muted">
+                                                    {{ programme.department.name }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            {% empty %}
+                                <div class="alert alert-warning">No programmes found</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    {% if selected_programme %}
+                    <!-- Year/Semester Navigation -->
+                    <div class="mb-4">
+                        <h5 class="text-university mb-3">
+                            <i class="bi bi-layers me-2"></i>Units for {{ selected_programme.name }} ({{ selected_programme.code }})
+                        </h5>
+                        
+                        <ul class="nav nav-tabs" id="yearTabs" role="tablist">
+                            {% for year, semesters in year_semester_units.items %}
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link {% if forloop.first %}active{% endif %}" 
+                                            id="year-{{ year }}-tab" 
+                                            data-bs-toggle="tab" 
+                                            data-bs-target="#year-{{ year }}" 
+                                            type="button" 
+                                            role="tab">
+                                        Year {{ year }}
+                                    </button>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        
+                        <div class="tab-content p-3 border border-top-0 rounded-bottom" id="yearTabsContent">
+                            {% for year, semesters in year_semester_units.items %}
+                                <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
+                                     id="year-{{ year }}" 
+                                     role="tabpanel">
+                                     
+                                    <ul class="nav nav-pills mb-3" id="semesterTabs-{{ year }}" role="tablist">
+                                        {% for semester in semesters.keys %}
+                                            <li class="nav-item" role="presentation">
+                                                <button class="nav-link {% if forloop.first %}active{% endif %}" 
+                                                        id="semester-{{ year }}-{{ semester }}-tab" 
+                                                        data-bs-toggle="pill" 
+                                                        data-bs-target="#semester-{{ year }}-{{ semester }}" 
+                                                        type="button" 
+                                                        role="tab">
+                                                    Semester {{ semester }}
+                                                </button>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                    
+                                    <div class="tab-content" id="semesterTabsContent-{{ year }}">
+                                        {% for semester, units in semesters.items %}
+                                            <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
+                                                 id="semester-{{ year }}-{{ semester }}" 
+                                                 role="tabpanel">
+                                                 
+                                                <div class="row">
+                                                    {% for unit in units %}
+                                                        <div class="col-md-6 mb-3">
+                                                            <div class="card {% if selected_unit and selected_unit.id == unit.id %}border-university-primary border-2{% endif %}">
+                                                                <div class="card-body">
+                                                                    <div class="d-flex justify-content-between align-items-start">
+                                                                        <div>
+                                                                            <h6 class="card-title mb-1">
+                                                                                <a href="?programme={{ selected_programme.id }}&unit={{ unit.id }}" 
+                                                                                   class="text-decoration-none">
+                                                                                    {{ unit.unit.code }} - {{ unit.unit.name }}
+                                                                                </a>
+                                                                            </h6>
+                                                                            <small class="text-muted">
+                                                                                {{ unit.unit.credit_hours }} credit hours
+                                                                            </small>
+                                                                        </div>
+                                                                        <span class="badge bg-{% if unit.unit.is_core %}university-primary{% else %}secondary{% endif %}">
+                                                                            {% if unit.unit.is_core %}Core{% else %}Elective{% endif %}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    {% empty %}
+                                                        <div class="col-12">
+                                                            <div class="alert alert-info">No units offered in Year {{ year }} Semester {{ semester }}</div>
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if selected_unit and current_semester %}
+                    <!-- Enrollment Details -->
+                    <div class="mt-4">
+                        <h5 class="text-university mb-3">
+                            <i class="bi bi-people-fill me-2"></i>
+                            Students Enrolled in {{ selected_unit.unit.code }} - {{ selected_unit.unit.name }}
+                            <small class="text-muted">({{ current_semester }})</small>
+                        </h5>
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <span class="badge bg-university-secondary">
+                                    Year {{ selected_unit.year_of_study }} Semester {{ selected_unit.semester }}
+                                </span>
+                                <span class="badge bg-university-light text-university ms-2">
+                                    {{ selected_unit.programme.code }}
+                                </span>
+                            </div>
+                            <div>
+                                <span class="badge bg-success">
+                                    {{ enrollments|length }} enrolled
+                                </span>
+                            </div>
+                        </div>
+                        
+                        {% if enrollments %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="bg-university-primary text-white">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Student</th>
+                                        <th>Reg Number</th>
+                                        <th>Year</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for enrollment in enrollments %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>
+                                            <a href="{% url 'student_detail' enrollment.student.id %}" class="text-decoration-none">
+                                                {{ enrollment.student.get_full_name }}
+                                            </a>
+                                        </td>
+                                        <td>{{ enrollment.student.registration_number }}</td>
+                                        <td>Year {{ enrollment.student.current_year }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if enrollment.student.is_active %}success{% else %}secondary{% endif %}">
+                                                {{ enrollment.student.get_status_display }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-warning">
+                            No students enrolled in this unit for {{ current_semester }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-university-light">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Browse programme units and student enrollments by year and semester
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    :root {
+        --university-primary: #2E7D32; /* Dark green */
+        --university-secondary: #81C784; /* Light green */
+        --university-light: #E8F5E9; /* Very light green */
+    }
+    .bg-university-primary {
+        background-color: var(--university-primary) !important;
+    }
+    .bg-university-secondary {
+        background-color: var(--university-secondary) !important;
+    }
+    .bg-university-light {
+        background-color: var(--university-light) !important;
+    }
+    .btn-university {
+        background-color: var(--university-primary);
+        color: white;
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university {
+        color: var(--university-primary);
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university:hover {
+        background-color: var(--university-primary);
+        color: white;
+    }
+    .border-university-primary {
+        border-color: var(--university-primary) !important;
+    }
+    
+    .nav-tabs .nav-link {
+        color: var(--university-primary);
+    }
+    
+    .nav-tabs .nav-link.active {
+        color: white;
+        background-color: var(--university-primary);
+        border-color: var(--university-primary);
+    }
+    
+    .nav-pills .nav-link {
+        color: var(--university-primary);
+    }
+    
+    .nav-pills .nav-link.active {
+        color: white;
+        background-color: var(--university-primary);
+    }
+    
+    .card-title a {
+        color: inherit;
+    }
+    
+    .card-title a:hover {
+        color: var(--university-primary);
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
