@@ -48,6 +48,7 @@
                                                 <small class="text-muted">
                                                     {{ programme.department.name }}
                                                 </small>
+                                                
                                             </div>
                                         </div>
                                     </a>
@@ -163,11 +164,17 @@
                                 <span class="badge bg-university-light text-university ms-2">
                                     {{ selected_unit.programme.code }}
                                 </span>
+                                
                             </div>
                             <div>
-                                <span class="badge bg-success">
+                                <span class="badge bg-success me-2">
                                     {{ enrollments|length }} enrolled
                                 </span>
+                                <a href="{% url 'unit_student_list_pdf' selected_unit.programme.id selected_unit.year_of_study selected_unit.semester selected_unit.id %}" 
+                                class="btn btn-sm btn-university" 
+                                target="_blank">
+                                    <i class="bi bi-file-earmark-pdf me-1"></i>Download Student List
+                                </a>
                             </div>
                         </div>
                         

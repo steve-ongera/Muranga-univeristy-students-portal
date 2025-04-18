@@ -96,8 +96,6 @@ urlpatterns = [
     path('hostel/get-current-year/', views.get_current_year, name='get_current_year'),
     path('hostel-explorer/', views.HostelAllocationExplorer.as_view(), name='hostel_allocation_explorer'),
     path('programme-units/', views.ProgrammeUnitExplorer.as_view(), name='programme_unit_explorer'),
-
-
-
-
+    path('programme/<int:programme_id>/year/<int:year_of_study>/semester/<int:semester>/unit/<int:unit_id>/pdf/', 
+     views.UnitStudentListPDFView.as_view(), name='unit_student_list_pdf'),
 ]

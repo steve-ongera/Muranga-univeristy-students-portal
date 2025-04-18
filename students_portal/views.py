@@ -3886,3 +3886,57 @@ class ProgrammeUnitExplorer(View):
         }
         
         return render(request, self.template_name, context)
+    
+from django.http import HttpResponse
+from django.views import View
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from django.utils import timezone
+from .models import Programme, Student, ProgrammeUnit, Semester
+
+class UnitStudentListPDFView(View):
+    def get(self, request, programme_id, year_of_study, semester, unit_id):
+        # Get current semester if not specified
+        current_semester = Semester.objects.filter(is_current=True).first()
+        
+        # Get the programme
+        programme = Programme.objects.get(pk=programme_id)
+        
+        # Get the specific unit
+        unit = ProgrammeUnit.objects.get(
+            pk=unit_id,
+            programme=programme,
+            year_of_study=year_of_study,
+            semester=semester
+        )
+        
+        # Get all students in this programme/year/semester
+        students = Student.objects.filter(
+            programme=programme,
+            current_year=year_of_study,
+            current_semester=semester
+        ).order_by('last_name', 'first_name')
+        
+        context = {
+            'programme': programme,
+            'year_of_study': year_of_study,
+            'semester': semester,
+            'students': students,
+            'unit': unit,
+            'current_date': timezone.now().strftime("%d %b %Y"),
+        }
+        
+        # Render PDF
+        template = get_template('student_list_pdf.html')
+        html = template.render(context)
+        
+        response = HttpResponse(content_type='application/pdf')
+        filename = f"{programme.code}_Y{year_of_study}S{semester}_{unit.unit.code}_Student_List.pdf"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        # Generate PDF
+        pisa_status = pisa.CreatePDF(html, dest=response)
+        if pisa_status.err:
+            return HttpResponse('PDF generation error', status=500)
+        
+        return response

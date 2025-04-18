@@ -1,0 +1,180 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student List - {{ unit.unit.name }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 0.5cm;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 8pt;
+            line-height: 1.2;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #4CAF50;
+        }
+        .logo-container {
+            display: inline-block;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .logo {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            margin-bottom: 5px;
+        }
+        .header-text {
+            text-align: center;
+        }
+        .header h3 {
+            font-size: 12pt;
+            margin: 0;
+            color: #2E7D32;
+        }
+        .header .subtitle {
+            font-size: 10pt;
+            font-weight: bold;
+            margin: 3px 0;
+            color: #555;
+        }
+        .document-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 7pt;
+            padding: 5px;
+            background-color: #E8F5E9;
+            border-radius: 3px;
+        }
+        .unit-info {
+            text-align: center;
+            font-weight: bold;
+            margin: 8px 0;
+            font-size: 9pt;
+            background-color: #2E7D32;
+            color: white;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+            page-break-inside: auto;
+            font-size: 7pt;
+        }
+        th {
+            background-color: #2E7D32;
+            color: white;
+            font-weight: bold;
+            padding: 4px;
+            text-align: center;
+            border: 1px solid #ddd;
+            height: 20px;
+        }
+        td {
+            padding: 3px;
+            border: 1px solid #ddd;
+            vertical-align: middle;
+            height: 18px;
+        }
+        .serial-no {
+            width: 4%;
+            text-align: center;
+        }
+        .reg-number {
+            width: 18%;
+            text-align: center;
+            font-weight: bold;
+        }
+        .student-name {
+            width: 35%;
+            padding-left: 5px;
+        }
+        .marks-column {
+            width: 8%;
+            text-align: center;
+        }
+        .signature-column {
+            width: 15%;
+            text-align: center;
+        }
+        .footer {
+            text-align: center;
+            font-size: 6pt;
+            margin-top: 10px;
+            color: #666;
+            padding-top: 5px;
+            border-top: 1px solid #4CAF50;
+        }
+        tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+        tr:nth-child(even) {
+            background-color: #E8F5E9;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo-container">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTGPvECtDeuEprllPnxHH9Wdr7KFqOGZphK8Q&s" class="logo" alt="MUT Logo">
+        </div>
+        <div class="header-text">
+            <h3>MURANG'A UNIVERSITY OF TECHNOLOGY</h3>
+            <div class="subtitle">STUDENT ATTENDANCE/MARKS RECORD</div>
+        </div>
+    </div>
+
+    <div class="document-info">
+        <div><strong>Programme:</strong> {{ programme.name }} ({{ programme.code }})</div>
+        <div><strong>Year:</strong> {{ year_of_study }}, <strong>Semester:</strong> {{ semester }}</div>
+        <div><strong>Date:</strong> {{ current_date }}</div>
+    </div>
+
+    <div class="unit-info">
+        UNIT: {{ unit.unit.code }} - {{ unit.unit.name }}
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th class="serial-no">#</th>
+                <th class="reg-number">REG. NUMBER</th>
+                <th class="student-name">STUDENT NAME</th>
+                <th class="marks-column">CAT</th>
+                <th class="marks-column">EXAM</th>
+                <th class="signature-column">SIGN</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr>
+                <td class="serial-no">{{ forloop.counter }}</td>
+                <td class="reg-number">{{ student.registration_number }}</td>
+                <td class="student-name">{{ student.last_name|upper }} {{ student.first_name|upper }}</td>
+                <td class="marks-column"></td>
+                <td class="marks-column"></td>
+                <td class="signature-column"></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        Generated on {{ current_date }} | Murang'a University of Technology - Academic System
+    </div>
+</body>
+</html>
