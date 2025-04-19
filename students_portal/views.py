@@ -4169,7 +4169,7 @@ def student_clubs(request):
     # Create a dictionary to hold executive members for each club
     club_executives = {}
     for club in clubs:
-        club_executives[club.id] = club.members.filter(clubmembership__is_executive=True)
+        club_executives[club.id] = club.members.filter(is_executive=True)
     
     context = {
         'clubs': clubs,

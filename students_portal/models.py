@@ -996,3 +996,46 @@ class ClubMembership(models.Model):
     
     def __str__(self):
         return f"{self.student.username} in {self.club.name}"
+
+
+
+
+
+class ClubEvent(models.Model):
+    EVENT_STATUS_CHOICES = [
+        ('upcoming', 'Upcoming'),
+        ('ongoing', 'Ongoing'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    club = models.ForeignKey(StudentClub, on_delete=models.CASCADE, related_name='events')
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    start_datetime = models.DateTimeField()
+    end_datetime = models.DateTimeField()
+    location = models.CharField(max_length=100)
+    organizer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='organized_events')
+    status = models.CharField(max_length=20, choices=EVENT_STATUS_CHOICES, default='upcoming')
+    image = models.ImageField(upload_to='event_images/', blank=True, null=True)
+    registration_required = models.BooleanField(default=False)
+    max_participants = models.PositiveIntegerField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['start_datetime']
+        
+    def __str__(self):
+        return f"{self.title} - {self.club.name}"
+    
+    def save(self, *args, **kwargs):
+        # Automatically update status based on current time
+        now = timezone.now()
+        if self.start_datetime > now:
+            self.status = 'upcoming'
+        elif self.start_datetime <= now <= self.end_datetime:
+            self.status = 'ongoing'
+        elif self.end_datetime < now:
+            self.status = 'completed'
+        super().save(*args, **kwargs)
