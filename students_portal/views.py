@@ -4224,3 +4224,74 @@ def club_events(request, club_id=None):
     }
     
     return render(request, 'events/club_events.html', context)
+
+
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from students_portal.models import (
+    Student, 
+    FeesStructure, 
+    StudentFee, 
+    FeePayment,
+    AcademicYear,
+    Semester
+)
+
+@login_required
+def student_payment_history(request):
+    # Get the student profile for the logged-in user
+    # Get current student
+    try:
+        student = Student.objects.get(registration_number=request.user.username)
+    except Student.DoesNotExist:
+        messages.error(request, "Student record not found")
+        return redirect('student_dashboard')
+    
+    # Get all academic years since the student was admitted
+    admission_year = student.date_of_admission.year
+    academic_years = AcademicYear.objects.filter(
+        start_date__year__gte=admission_year
+    ).order_by('-start_date')
+    
+    # Get all semesters the student has been enrolled in
+    semesters = Semester.objects.filter(
+        academic_year__in=academic_years
+    ).order_by('-start_date')
+    
+    # Get all fee structures for the student's programme
+    fee_structures = FeesStructure.objects.filter(
+        programme=student.programme,
+        academic_year__in=academic_years,
+        year_of_study__lte=student.current_year
+    ).order_by('-academic_year__start_date', '-year_of_study', '-semester')
+    
+    # Get all fee records for the student
+    fee_records = StudentFee.objects.filter(
+        student=student
+    ).select_related('fee_structure').order_by('-fee_structure__academic_year__start_date')
+    
+    # Organize payments by academic year and semester
+    payment_history = []
+    for fee_record in fee_records:
+        payments = FeePayment.objects.filter(
+            student_fee=fee_record
+        ).order_by('-payment_date')
+        
+        payment_history.append({
+            'fee_structure': fee_record.fee_structure,
+            'total_amount': fee_record.fee_structure.amount,
+            'amount_paid': fee_record.amount_paid,
+            'balance': fee_record.balance,
+            'payments': payments,
+            'is_complete': fee_record.balance <= 0,
+        })
+    
+    context = {
+        'student': student,
+        'payment_history': payment_history,
+        'academic_years': academic_years,
+        'semesters': semesters,
+    }
+    
+    return render(request, 'payment/payment_history.html', context)

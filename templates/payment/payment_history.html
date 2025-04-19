@@ -1,0 +1,254 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="pagetitle">
+    <h1><i class="bi bi-credit-card me-2"></i>Payment History</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#"><i class="bi bi-house-door"></i> Home</a></li>
+            <li class="breadcrumb-item active">Payments</li>
+        </ol>
+    </nav>
+</div><!-- End Page Title -->
+
+<section class="section">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-university-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-clock-history me-2"></i>
+                            Payment History for {{ student.get_full_name }}
+                        </h5>
+                        <span class="badge bg-light text-dark">
+                            {{ student.registration_number }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Student Information Summary -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-header bg-university-light">
+                                    <h6 class="mb-0">Programme Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Programme:</span>
+                                            <span>{{ student.programme.name }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Current Year/Semester:</span>
+                                            <span>Year {{ student.current_year }} - Sem {{ student.current_semester }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Admission Date:</span>
+                                            <span>{{ student.date_of_admission|date:"M d, Y" }}</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-header bg-university-light">
+                                    <h6 class="mb-0">Fee Summary</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Total Fees Paid:</span>
+                                            <span class="fw-bold">Ksh. {{ total_paid|default:"0" }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Current Balance:</span>
+                                            <span class="fw-bold text-danger">Ksh. {{ current_balance|default:"0" }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Payment Records:</span>
+                                            <span>{{ payment_history|length }} semester{{ payment_history|length|pluralize }}</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-header bg-university-light">
+                                    <h6 class="mb-0">Quick Actions</h6>
+                                </div>
+                                <div class="card-body d-flex flex-column">
+                                    <a href="#" class="btn btn-university mb-2">
+                                        <i class="bi bi-printer me-2"></i> Print Statement
+                                    </a>
+                                    <a href="#" class="btn btn-outline-university mb-2">
+                                        <i class="bi bi-download me-2"></i> Download Receipts
+                                    </a>
+                                    <a href="#" class="btn btn-success">
+                                        <i class="bi bi-credit-card me-2"></i> Make Payment
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Payment History by Semester -->
+                    <div class="accordion" id="paymentHistoryAccordion">
+                        {% for record in payment_history %}
+                        <div class="accordion-item mb-3 border-0 shadow-sm">
+                            <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                                <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" 
+                                        type="button" 
+                                        data-bs-toggle="collapse" 
+                                        data-bs-target="#collapse{{ forloop.counter }}" 
+                                        aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" 
+                                        aria-controls="collapse{{ forloop.counter }}">
+                                    <div class="d-flex justify-content-between w-100 me-3">
+                                        <div>
+                                            <strong>{{ record.fee_structure.academic_year.name }}</strong>
+                                            <span class="badge bg-{% if record.is_complete %}success{% else %}warning{% endif %} ms-2">
+                                                Year {{ record.fee_structure.year_of_study }} - Sem {{ record.fee_structure.semester }}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span class="me-3">Total: Ksh. {{ record.fee_structure.amount }}</span>
+                                            <span class="{% if record.is_complete %}text-success{% else %}text-danger{% endif %}">
+                                                Balance: Ksh. {{ record.balance }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="collapse{{ forloop.counter }}" 
+                                 class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" 
+                                 aria-labelledby="heading{{ forloop.counter }}" 
+                                 data-bs-parent="#paymentHistoryAccordion">
+                                <div class="accordion-body">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <h5>Fee Structure Details</h5>
+                                            <ul class="list-group">
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span>Academic Year:</span>
+                                                    <span>{{ record.fee_structure.academic_year.name }}</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span>Year/Semester:</span>
+                                                    <span>Year {{ record.fee_structure.year_of_study }} - Semester {{ record.fee_structure.semester }}</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span>Fee Description:</span>
+                                                    <span>{{ record.fee_structure.description|default:"Standard programme fees" }}</span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h5>Payment Summary</h5>
+                                            <ul class="list-group">
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span>Total Fee Amount:</span>
+                                                    <span>Ksh. {{ record.fee_structure.amount }}</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span>Amount Paid:</span>
+                                                    <span class="text-success">Ksh. {{ record.amount_paid }}</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span>Balance:</span>
+                                                    <span class="{% if record.balance > 0 %}text-danger{% else %}text-success{% endif %}">
+                                                        Ksh. {{ record.balance }}
+                                                    </span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Payment Transactions Table -->
+                                    <h5 class="mt-4">Payment Transactions</h5>
+                                    {% if record.payments %}
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead class="bg-university-light">
+                                                <tr>
+                                                    <th>Receipt No.</th>
+                                                    <th>Date</th>
+                                                    <th>Amount</th>
+                                                    <th>Payment Method</th>
+                                                    <th>Recorded By</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for payment in record.payments %}
+                                                <tr>
+                                                    <td>{{ payment.receipt_number }}</td>
+                                                    <td>{{ payment.payment_date|date:"M d, Y" }}</td>
+                                                    <td>Ksh. {{ payment.amount }}</td>
+                                                    <td>{{ payment.payment_method }}</td>
+                                                    <td>{{ payment.recorded_by.get_full_name|default:"System" }}</td>
+                                                    <td>
+                                                        <a href="#" class="btn btn-sm btn-outline-university">
+                                                            <i class="bi bi-receipt"></i> Receipt
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    {% else %}
+                                    <div class="alert alert-info">
+                                        No payment records found for this semester.
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="alert alert-info">
+                            No payment history found for your account.
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-university-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            For any discrepancies in your payment records, please contact the finance office.
+                        </small>
+                        <span class="badge bg-university-primary">
+                            {% now "M d, Y" %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .accordion-button:not(.collapsed) {
+        background-color: rgba(0, 123, 255, 0.1);
+        color: #000;
+    }
+    
+    .accordion-button:focus {
+        box-shadow: none;
+        border-color: rgba(0, 0, 0, 0.125);
+    }
+    
+    .payment-status-badge {
+        font-size: 0.75rem;
+    }
+</style>
+
+{% endblock %}
