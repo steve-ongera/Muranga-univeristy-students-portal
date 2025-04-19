@@ -4193,3 +4193,34 @@ def leave_club(request, club_id):
     if membership:
         membership.delete()
     return redirect('student_clubs')
+
+# views.py
+from django.shortcuts import render
+from django.utils import timezone
+from .models import ClubEvent
+from students_portal.models import StudentClub
+
+def club_events(request, club_id=None):
+    now = timezone.now()
+    
+    # Get events based on club_id or all clubs
+    if club_id:
+        club = StudentClub.objects.get(id=club_id)
+        events = ClubEvent.objects.filter(club=club)
+    else:
+        club = None
+        events = ClubEvent.objects.all()
+    
+    # Categorize events
+    upcoming_events = events.filter(start_datetime__gt=now).order_by('start_datetime')
+    latest_events = events.filter(start_datetime__lte=now, end_datetime__gte=now).order_by('start_datetime')
+    past_events = events.filter(end_datetime__lt=now).order_by('-start_datetime')[:10]  # Last 10 past events
+    
+    context = {
+        'club': club,
+        'upcoming_events': upcoming_events,
+        'latest_events': latest_events,
+        'past_events': past_events,
+    }
+    
+    return render(request, 'events/club_events.html', context)
