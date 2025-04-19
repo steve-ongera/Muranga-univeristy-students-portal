@@ -448,6 +448,87 @@ class HostelAllocationAdmin(admin.ModelAdmin):
     search_fields = ('student__first_name', 'student__last_name', 'student__registration_number', 'hostel__name', 'room__room_number', 'bed__bed_number')
     ordering = ('-date_allocated',)
 
+from django.contrib import admin
+from django.utils.html import format_html
+from .models import DiscussionGroup, GroupMember, GroupMessage, NewsArticle
+
+class GroupMemberInline(admin.TabularInline):
+    model = GroupMember
+    extra = 1
+    fields = ['user', 'is_admin', 'joined_at']
+    readonly_fields = ['joined_at']
+
+class GroupMessageInline(admin.TabularInline):
+    model = GroupMessage
+    extra = 0
+    fields = ['sender', 'content', 'timestamp']
+    readonly_fields = ['timestamp']
+    max_num = 10
+    can_delete = True
+
+@admin.register(DiscussionGroup)
+class DiscussionGroupAdmin(admin.ModelAdmin):
+    list_display = ['name', 'created_by', 'created_at', 'is_public', 'member_count']
+    list_filter = ['is_public', 'created_at']
+    search_fields = ['name', 'description', 'created_by__username']
+    date_hierarchy = 'created_at'
+    inlines = [GroupMemberInline, GroupMessageInline]
+    
+    def member_count(self, obj):
+        return obj.members.count()
+    
+    member_count.short_description = 'Number of Members'
+
+@admin.register(GroupMember)
+class GroupMemberAdmin(admin.ModelAdmin):
+    list_display = ['user', 'group', 'joined_at', 'is_admin']
+    list_filter = ['is_admin', 'joined_at', 'group']
+    search_fields = ['user__username', 'group__name']
+    date_hierarchy = 'joined_at'
+
+@admin.register(GroupMessage)
+class GroupMessageAdmin(admin.ModelAdmin):
+    list_display = ['sender', 'group', 'short_content', 'timestamp']
+    list_filter = ['timestamp', 'group']
+    search_fields = ['content', 'sender__username', 'group__name']
+    date_hierarchy = 'timestamp'
+    
+    def short_content(self, obj):
+        return obj.content[:50] + '...' if len(obj.content) > 50 else obj.content
+    
+    short_content.short_description = 'Content'
+
+@admin.register(NewsArticle)
+class NewsArticleAdmin(admin.ModelAdmin):
+    list_display = ['title', 'category', 'author', 'publish_date', 'is_published', 'display_image']
+    list_filter = ['category', 'is_published', 'publish_date']
+    search_fields = ['title', 'summary', 'content', 'author__username']
+    date_hierarchy = 'publish_date'
+    readonly_fields = ['created_at', 'updated_at']
+    fieldsets = (
+        (None, {
+            'fields': ('title', 'author', 'category')
+        }),
+        ('Content', {
+            'fields': ('summary', 'content', 'image')
+        }),
+        ('Publication', {
+            'fields': ('publish_date', 'is_published')
+        }),
+        ('Metadata', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def display_image(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" width="50" height="50" />', obj.image.url)
+        return "No Image"
+    
+    display_image.short_description = 'Image'
+
+    
 admin.site.register(UserNotification, UserNotificationAdmin)
 admin.site.register(FeesStructure, FeesStructureAdmin)
 admin.site.register(StudentFee, StudentFeeAdmin)

@@ -925,3 +925,74 @@ class GroupMessage(models.Model):
     
     def __str__(self):
         return f"{self.sender.username} in {self.group.name}: {self.content[:50]}"
+
+
+
+
+class NewsArticle(models.Model):
+    CATEGORY_CHOICES = [
+        ('academic', 'Academic'),
+        ('event', 'Events'),
+        ('announcement', 'Announcements'),
+        ('sports', 'Sports'),
+        ('general', 'General'),
+    ]
+    
+    title = models.CharField(max_length=200)
+    summary = models.TextField()
+    content = models.TextField()
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='general')
+    image = models.ImageField(upload_to='news_images/', blank=True, null=True)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    publish_date = models.DateTimeField(default=timezone.now)
+    is_published = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return self.title
+    
+    class Meta:
+        ordering = ['-publish_date']
+        verbose_name = 'News Article'
+        verbose_name_plural = 'News Articles'
+
+
+
+class StudentClub(models.Model):
+    CATEGORY_CHOICES = [
+        ('academic', 'Academic'),
+        ('cultural', 'Cultural'),
+        ('sports', 'Sports'),
+        ('religious', 'Religious'),
+        ('social', 'Social'),
+    ]
+    
+    name = models.CharField(max_length=100)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    description = models.TextField()
+    chairperson = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='chaired_clubs')
+    contact_phone = models.CharField(max_length=15)
+    email = models.EmailField()
+    meeting_schedule = models.TextField()
+    membership_fee = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    logo = models.ImageField(upload_to='club_logos/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return self.name
+
+class ClubMembership(models.Model):
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='club_memberships')
+    club = models.ForeignKey(StudentClub, on_delete=models.CASCADE, related_name='members')
+    date_joined = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    is_executive = models.BooleanField(default=False)
+    position = models.CharField(max_length=50, blank=True, null=True)
+    
+    class Meta:
+        unique_together = ('student', 'club')
+    
+    def __str__(self):
+        return f"{self.student.username} in {self.club.name}"

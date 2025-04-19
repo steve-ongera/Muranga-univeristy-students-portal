@@ -1,5 +1,6 @@
 {% extends 'base/base.html'%}
 {% load static %}
+{% load tz %}
 
 {% block content %}
 <div class="pagetitle">
@@ -43,7 +44,7 @@
                                 
                                 <div class="flex-grow-1 {% if message.sender == request.user %}text-end{% else %}ms-3{% endif %}">
                                     <div class="card {% if message.sender == request.user %}bg-university-primary text-white{% else %}bg-light{% endif %}" 
-                                         style="max-width: 75%; display: inline-block;">
+                                         style="max-width: 75%; display: inline-block; position: relative;">
                                         <div class="card-body p-2">
                                             {% if message.sender != request.user %}
                                             <small class="text-{% if message.sender == request.user %}white{% else %}muted{% endif %}">
@@ -52,10 +53,19 @@
                                             {% endif %}
                                             <p class="mb-0">{{ message.content }}</p>
                                         </div>
+                                        <br>
+                                        <!-- Timestamp positioned at bottom right/left -->
+                                        <div class="position-absolute {% if message.sender == request.user %}bottom-0 end-0{% else %}bottom-0 start-0{% endif %} p-1">
+                                            <small class="text-{% if message.sender == request.user %}white{% else %}muted{% endif %}" style="font-size: 0.7rem;">
+                                                {% now "Y-m-d H:i" as current_time %}
+                                                {% if message.timestamp|date:"Y-m-d" == current_time|date:"Y-m-d" %}
+                                                    {{ message.timestamp|time:"g:i A" }}
+                                                {% else %}
+                                                    {{ message.timestamp|date:"M j, g:i A" }}
+                                                {% endif %}
+                                            </small>
+                                        </div>
                                     </div>
-                                    <small class="text-muted">
-                                        {{ message.timestamp|date:"M d, Y H:i" }}
-                                    </small>
                                 </div>
                                 
                                 {% if message.sender == request.user %}
@@ -202,10 +212,12 @@
     
     .user-message .card {
         border-bottom-right-radius: 0;
+        position: relative;
     }
     
     .other-message .card {
         border-bottom-left-radius: 0;
+        position: relative;
     }
     
     #chat-container::-webkit-scrollbar {
@@ -247,12 +259,14 @@ document.addEventListener('DOMContentLoaded', function() {
         messageDiv.innerHTML = `
             <div class="d-flex">
                 <div class="flex-grow-1 text-end">
-                    <div class="card bg-university-primary text-white" style="max-width: 75%; display: inline-block;">
+                    <div class="card bg-university-primary text-white" style="max-width: 75%; display: inline-block; position: relative;">
                         <div class="card-body p-2">
                             <p class="mb-0">${content}</p>
                         </div>
+                        <div class="position-absolute bottom-0 end-0 p-1">
+                            <small class="text-white" style="font-size: 0.7rem;">Just now</small>
+                        </div>
                     </div>
-                    <small class="text-muted">Sending...</small>
                 </div>
                 <div class="flex-shrink-0 ms-3">
                     <div class="avatar bg-university-primary text-white rounded-circle p-2" title="You">
@@ -280,15 +294,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Replace temporary message with actual one
                 const tempMessage = document.getElementById(tempId);
                 if (tempMessage) {
+                    const now = new Date();
+                    const hours = now.getHours();
+                    const minutes = now.getMinutes();
+                    const ampm = hours >= 12 ? 'PM' : 'AM';
+                    const formattedHours = hours % 12 || 12;
+                    const formattedTime = `${formattedHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+                    
                     tempMessage.innerHTML = `
                         <div class="d-flex">
                             <div class="flex-grow-1 text-end">
-                                <div class="card bg-university-primary text-white" style="max-width: 75%; display: inline-block;">
+                                <div class="card bg-university-primary text-white" style="max-width: 75%; display: inline-block; position: relative;">
                                     <div class="card-body p-2">
                                         <p class="mb-0">${content}</p>
                                     </div>
+                                    <div class="position-absolute bottom-0 end-0 p-1">
+                                        <small class="text-white" style="font-size: 0.7rem;">${formattedTime}</small>
+                                    </div>
                                 </div>
-                                <small class="text-muted">${data.timestamp}</small>
                             </div>
                             <div class="flex-shrink-0 ms-3">
                                 <div class="avatar bg-university-primary text-white rounded-circle p-2" title="You">

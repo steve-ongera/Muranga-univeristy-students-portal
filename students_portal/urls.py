@@ -107,6 +107,9 @@ urlpatterns = [
     path('forum/create/', views.create_group, name='create_group'),
     path('forum/join/<int:group_id>/', views.join_group, name='join_group'),
     path('forum/send/<int:group_id>/', views.send_message, name='send_message'),
-    
+    path('news/', views.student_news, name='student_news'),
+    path('clubs/', views.student_clubs, name='student_clubs'),
+    path('clubs/join/<int:club_id>/', views.join_club, name='join_club'),
+    path('clubs/leave/<int:club_id>/', views.leave_club, name='leave_club'),
 
 ]

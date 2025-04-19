@@ -4133,3 +4133,56 @@ def send_message(request, group_id):
         })
     
     return JsonResponse({'status': 'error', 'message': 'Empty message'}, status=400)
+
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .models import NewsArticle
+
+@login_required
+def student_news(request):
+    # Get all news articles, ordered by most recent first
+    news_articles = NewsArticle.objects.filter(is_published=True).order_by('-publish_date')
+    
+    context = {
+        'news_articles': news_articles,
+        'featured_article': news_articles.first() if news_articles.exists() else None,
+        'regular_articles': news_articles[1:4] if news_articles.count() > 1 else [],
+        'older_articles': news_articles[4:] if news_articles.count() > 4 else []
+    }
+    return render(request, 'news/student_news.html', context)
+
+
+
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .models import StudentClub, ClubMembership
+from .forms import *
+
+@login_required
+def student_clubs(request):
+    clubs = StudentClub.objects.filter(is_active=True).order_by('name')
+    user_memberships = ClubMembership.objects.filter(student=request.user, is_active=True)
+    
+    context = {
+        'clubs': clubs,
+        'user_memberships': user_memberships,
+        'categories': dict(StudentClub.CATEGORY_CHOICES)
+    }
+    return render(request, 'clubs/student_clubs.html', context)
+
+@login_required
+def join_club(request, club_id):
+    club = StudentClub.objects.get(id=club_id)
+    if not ClubMembership.objects.filter(student=request.user, club=club).exists():
+        ClubMembership.objects.create(student=request.user, club=club)
+    return redirect('student_clubs')
+
+@login_required
+def leave_club(request, club_id):
+    membership = ClubMembership.objects.filter(student=request.user, club_id=club_id).first()
+    if membership:
+        membership.delete()
+    return redirect('student_clubs')
