@@ -1,4 +1,5 @@
 {% extends 'base/base.html'%}
+{% load club_tags %}
 {% load static %}
 
 {% block content %}
@@ -152,9 +153,9 @@
                                                             </tr>
                                                         </thead>
                                                         <tbody>
-                                                            {% for member in club.members.filter(clubmembership__is_executive=True) %}
+                                                            {% for member in club_executives|get_item:club.id %}
                                                             <tr>
-                                                                <td>{{ member.clubmembership.position|default:"Member" }}</td>
+                                                                <td>{{ member.clubmembership_set.get.position|default:"Member" }}</td>
                                                                 <td>{{ member.get_full_name }}</td>
                                                                 <td>{{ member.profile.phone_number|default:"-" }}</td>
                                                             </tr>

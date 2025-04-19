@@ -4166,12 +4166,19 @@ def student_clubs(request):
     clubs = StudentClub.objects.filter(is_active=True).order_by('name')
     user_memberships = ClubMembership.objects.filter(student=request.user, is_active=True)
     
+    # Create a dictionary to hold executive members for each club
+    club_executives = {}
+    for club in clubs:
+        club_executives[club.id] = club.members.filter(clubmembership__is_executive=True)
+    
     context = {
         'clubs': clubs,
         'user_memberships': user_memberships,
-        'categories': dict(StudentClub.CATEGORY_CHOICES)
+        'categories': dict(StudentClub.CATEGORY_CHOICES),
+        'club_executives': club_executives
     }
     return render(request, 'clubs/student_clubs.html', context)
+
 
 @login_required
 def join_club(request, club_id):

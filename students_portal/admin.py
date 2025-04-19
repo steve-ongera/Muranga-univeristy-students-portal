@@ -528,7 +528,70 @@ class NewsArticleAdmin(admin.ModelAdmin):
     
     display_image.short_description = 'Image'
 
+
+from django.contrib import admin
+from django.utils.html import format_html
+from .models import StudentClub, ClubMembership
+
+class ClubMembershipInline(admin.TabularInline):
+    model = ClubMembership
+    extra = 1
+    fields = ['student', 'is_active', 'is_executive', 'position', 'date_joined']
+    readonly_fields = ['date_joined']
+    autocomplete_fields = ['student']
+
+@admin.register(StudentClub)
+class StudentClubAdmin(admin.ModelAdmin):
+    list_display = ['name', 'category', 'chairperson', 'membership_count', 'display_logo', 'is_active']
+    list_filter = ['category', 'is_active', 'created_at']
+    search_fields = ['name', 'description', 'chairperson__username', 'email']
+    date_hierarchy = 'created_at'
+    autocomplete_fields = ['chairperson']
+    inlines = [ClubMembershipInline]
     
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'category', 'chairperson')
+        }),
+        ('Details', {
+            'fields': ('description', 'meeting_schedule')
+        }),
+        ('Contact Information', {
+            'fields': ('contact_phone', 'email')
+        }),
+        ('Club Settings', {
+            'fields': ('membership_fee', 'logo', 'is_active')
+        }),
+    )
+    
+    def membership_count(self, obj):
+        return obj.members.count()
+    membership_count.short_description = 'Members'
+    
+    def display_logo(self, obj):
+        if obj.logo:
+            return format_html('<img src="{}" width="50" height="50" style="border-radius: 50%;" />', obj.logo.url)
+        return "No Logo"
+    display_logo.short_description = 'Logo'
+
+@admin.register(ClubMembership)
+class ClubMembershipAdmin(admin.ModelAdmin):
+    list_display = ['student', 'club', 'position', 'is_executive', 'is_active', 'date_joined']
+    list_filter = ['is_active', 'is_executive', 'date_joined', 'club']
+    search_fields = ['student__username', 'student__email', 'club__name', 'position']
+    date_hierarchy = 'date_joined'
+    autocomplete_fields = ['student', 'club']
+    list_editable = ['position', 'is_executive', 'is_active']
+    
+    fieldsets = (
+        (None, {
+            'fields': ('student', 'club')
+        }),
+        ('Membership Details', {
+            'fields': ('is_active', 'is_executive', 'position')
+        }),
+    )
+      
 admin.site.register(UserNotification, UserNotificationAdmin)
 admin.site.register(FeesStructure, FeesStructureAdmin)
 admin.site.register(StudentFee, StudentFeeAdmin)
