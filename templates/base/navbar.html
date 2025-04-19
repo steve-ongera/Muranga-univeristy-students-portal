@@ -107,7 +107,7 @@
             {% for message in messages %}
                 <li class="message-item">
                     {% if message.sender and message.sender.username %}
-                        <a href="{% url 'create_chat' message.sender.username %}">
+                        <a href="#">
                           {% if message.sender.profile.profile_pic %}
                             <img src="{{ message.sender.profile.profile_pic.url }}" alt="{{ message.sender.username }}" class="rounded-circle">
                           {% else %}

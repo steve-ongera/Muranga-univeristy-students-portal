@@ -1,0 +1,232 @@
+{% extends 'base/base.html'%}
+{% load custom_filters %}
+{% load static %}
+
+{% block content %}
+<div class="message-container" id="system-messages">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        <i class="bi {% if message.tags == 'success' %}bi-check-circle{% else %}bi-exclamation-triangle{% endif %} me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="pagetitle">
+    <h1><i class="bi bi-question-circle me-2"></i>Help & Support Center</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#"><i class="bi bi-house-door"></i> Home</a></li>
+            <li class="breadcrumb-item active">Help & Support</li>
+        </ol>
+    </nav>
+</div><!-- End Page Title -->
+
+<section class="section">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-university-primary text-white">
+                    <h5 class="card-title mb-0"><i class="bi bi-headset me-2"></i>Student Support Services</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Quick Help Section -->
+                    <div class="mb-5">
+                        <h5 class="text-university mb-3"><i class="bi bi-lightning-charge me-2"></i>Quick Help</h5>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-university">
+                                            <i class="bi bi-key me-2"></i>Password Issues
+                                        </h6>
+                                        <p class="card-text">
+                                            Reset your password or unlock your account through our automated system.
+                                        </p>
+                                        <a href="#" class="btn btn-sm btn-university">
+                                            <i class="bi bi-arrow-right-circle me-1"></i> Get Help
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-university">
+                                            <i class="bi bi-journal-bookmark me-2"></i>Academic Support
+                                        </h6>
+                                        <p class="card-text">
+                                            Contact your department for course registration, exams, and academic records.
+                                        </p>
+                                        <a href="#" class="btn btn-sm btn-university">
+                                            <i class="bi bi-arrow-right-circle me-1"></i> Contact
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-university">
+                                            <i class="bi bi-credit-card me-2"></i>Fee Payments
+                                        </h6>
+                                        <p class="card-text">
+                                            Questions about fee structures, payments, or payment verification.
+                                        </p>
+                                        <a href="#" class="btn btn-sm btn-university">
+                                            <i class="bi bi-arrow-right-circle me-1"></i> Finance Office
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ Section -->
+                    <div class="mb-5">
+                        <h5 class="text-university mb-3"><i class="bi bi-question-circle me-2"></i>Frequently Asked Questions</h5>
+                        <div class="accordion" id="faqAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                        How do I access my exam results?
+                                    </button>
+                                </h2>
+                                <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        Exam results are published on the student portal under <strong>Academic Records</strong> within 3 weeks after exams. Contact your department if results are missing.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                        Where can I find lecture notes?
+                                    </button>
+                                </h2>
+                                <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        Lecture notes are available on the <strong>Learning Management System</strong> (LMS) or from your course lecturer. Some departments maintain physical copies in the department office.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                        How do I apply for hostel accommodation?
+                                    </button>
+                                </h2>
+                                <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        Hostel applications are done online during the allocation period announced by the accommodation office. Priority is given to first-year and final-year students.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Section -->
+                    <div>
+                        <h5 class="text-university mb-3"><i class="bi bi-telephone me-2"></i>Contact Support</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <div class="card">
+                                    <div class="card-header bg-university-light">
+                                        <h6 class="mb-0"><i class="bi bi-building me-2"></i>Administrative Offices</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span>
+                                                    <i class="bi bi-person-vcard me-2 text-university"></i>
+                                                    Registrar's Office
+                                                </span>
+                                                <span class="badge bg-university-primary">Ext. 101</span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span>
+                                                    <i class="bi bi-mortarboard me-2 text-university"></i>
+                                                    Academic Affairs
+                                                </span>
+                                                <span class="badge bg-university-primary">Ext. 102</span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span>
+                                                    <i class="bi bi-credit-card me-2 text-university"></i>
+                                                    Finance Office
+                                                </span>
+                                                <span class="badge bg-university-primary">Ext. 103</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <div class="card">
+                                    <div class="card-header bg-university-light">
+                                        <h6 class="mb-0"><i class="bi bi-envelope me-2"></i>Email Support</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item">
+                                                <i class="bi bi-envelope-at me-2 text-university"></i>
+                                                <strong>General Inquiries:</strong> info@mut.ac.ke
+                                            </li>
+                                            <li class="list-group-item">
+                                                <i class="bi bi-pc-display me-2 text-university"></i>
+                                                <strong>ICT Helpdesk:</strong> icthelp@mut.ac.ke
+                                            </li>
+                                            <li class="list-group-item">
+                                                <i class="bi bi-book me-2 text-university"></i>
+                                                <strong>Library:</strong> library@mut.ac.ke
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Emergency Contacts -->
+                        <div class="alert alert-warning">
+                            <h6 class="alert-heading"><i class="bi bi-exclamation-triangle me-2"></i>Emergency Contacts</h6>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Security:</strong> +254 712 345 678</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Medical:</strong> +254 712 345 679</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-university-light">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        For urgent matters, visit the Administration Building Room 12 during working hours (8:00 AM - 5:00 PM)
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .accordion-button:not(.collapsed) {
+        background-color: rgba(46, 125, 50, 0.1);
+        color: var(--university-primary);
+    }
+    
+    .bg-university-light {
+        background-color: rgba(46, 125, 50, 0.05);
+    }
+</style>
+
+{% endblock %}

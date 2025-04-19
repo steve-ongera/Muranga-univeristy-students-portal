@@ -1,0 +1,288 @@
+{% extends 'base/base.html'%}
+{% load static %}
+
+{% block content %}
+<div class="message-container" id="system-messages">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        <i class="bi {% if message.tags == 'success' %}bi-check-circle{% else %}bi-exclamation-triangle{% endif %} me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="pagetitle">
+    <h1><i class="bi bi-robot me-2"></i>Virtual Assistant</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#"><i class="bi bi-house-door"></i> Home</a></li>
+            <li class="breadcrumb-item active">Assistant</li>
+        </ol>
+    </nav>
+</div><!-- End Page Title -->
+
+<section class="section">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-university-primary text-white">
+                    <h5 class="card-title mb-0"><i class="bi bi-headset me-2"></i>MUT Virtual Assistant</h5>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Chat Interface -->
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card mb-4" style="height: 400px;">
+                                <div class="card-header bg-university-light">
+                                    <h6 class="mb-0"><i class="bi bi-chat-left-text me-2"></i>Chat with MUT Assistant</h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div id="chat-container" class="p-3" style="height: 300px; overflow-y: auto;">
+                                        <!-- Chat messages will appear here -->
+                                        <div class="assistant-message mb-3">
+                                            <div class="d-flex">
+                                                <div class="flex-shrink-0">
+                                                    <div class="avatar bg-university-primary text-white rounded-circle p-2">
+                                                        <i class="bi bi-robot fs-5"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1 ms-3">
+                                                    <div class="card bg-light">
+                                                        <div class="card-body p-2">
+                                                            <p class="mb-0">Hello {% if user.first_name %}{{ user.first_name }}{% else %}there{% endif %}! I'm the MUT Virtual Assistant. How can I help you today?</p>
+                                                        </div>
+                                                    </div>
+                                                    <small class="text-muted">Just now</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="p-3 border-top">
+                                        <div class="input-group">
+                                            <input type="text" id="user-query" class="form-control" placeholder="Ask me anything..." aria-label="Ask question">
+                                            <button class="btn btn-university" id="send-query">
+                                                <i class="bi bi-send"></i> Send
+                                            </button>
+                                        </div>
+                                        <small class="text-muted">Try asking about results, fees, hostels, or library services</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Help Section -->
+                        <div class="col-md-4">
+                            <div class="card mb-4">
+                                <div class="card-header bg-university-light">
+                                    <h6 class="mb-0"><i class="bi bi-lightning me-2"></i>Quick Help</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="list-group">
+                                        {% for link in quick_links %}
+                                        <a href="{{ link.url }}" class="list-group-item list-group-item-action">
+                                            <i class="bi {{ link.icon }} me-2"></i> {{ link.title }}
+                                        </a>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header bg-university-light">
+                                    <h6 class="mb-0"><i class="bi bi-question-circle me-2"></i>Common Questions</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="accordion" id="faqAccordion">
+                                        {% for item in common_questions %}
+                                        <div class="accordion-item border-0">
+                                            <h2 class="accordion-header">
+                                                <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#faq{{ forloop.counter }}">
+                                                    {{ item.question }}
+                                                </button>
+                                            </h2>
+                                            <div id="faq{{ forloop.counter }}" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                                <div class="accordion-body">
+                                                    {{ item.answer }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-university-light">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        The virtual assistant can help with academic, administrative, and general university inquiries
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    :root {
+        --university-primary: #2E7D32; /* Dark green */
+        --university-secondary: #81C784; /* Light green */
+        --university-light: #E8F5E9; /* Very light green */
+    }
+    .bg-university-primary {
+        background-color: var(--university-primary) !important;
+    }
+    .bg-university-secondary {
+        background-color: var(--university-secondary) !important;
+    }
+    .bg-university-light {
+        background-color: var(--university-light) !important;
+    }
+    .btn-university {
+        background-color: var(--university-primary);
+        color: white;
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university {
+        color: var(--university-primary);
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university:hover {
+        background-color: var(--university-primary);
+        color: white;
+    }
+    .border-university-primary {
+        border-color: var(--university-primary) !important;
+    }
+    .avatar {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .user-message .card {
+        background-color: #e3f2fd;
+    }
+    
+    .assistant-message .card {
+        background-color: #f8f9fa;
+    }
+    
+    #chat-container {
+        background-color: #f8f9fa;
+    }
+    
+    .accordion-button:not(.collapsed) {
+        background-color: rgba(46, 125, 50, 0.1);
+        color: var(--university-primary);
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatContainer = document.getElementById('chat-container');
+    const userQuery = document.getElementById('user-query');
+    const sendButton = document.getElementById('send-query');
+    
+    function addMessage(sender, message) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `${sender}-message mb-3`;
+        
+        const messageHTML = `
+            <div class="d-flex">
+                <div class="flex-shrink-0">
+                    <div class="avatar ${sender === 'user' ? 'bg-primary' : 'bg-university-primary'} text-white rounded-circle p-2">
+                        <i class="bi ${sender === 'user' ? 'bi-person' : 'bi-robot'} fs-5"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <div class="card ${sender === 'user' ? 'bg-primary text-white' : 'bg-light'}">
+                        <div class="card-body p-2">
+                            <p class="mb-0">${message}</p>
+                        </div>
+                    </div>
+                    <small class="text-muted">Just now</small>
+                </div>
+            </div>
+        `;
+        
+        messageDiv.innerHTML = messageHTML;
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+    
+    function processQuery() {
+        const query = userQuery.value.trim();
+        if (query === '') return;
+        
+        // Add user message to chat
+        addMessage('user', query);
+        userQuery.value = '';
+        
+        // Show typing indicator
+        const typingIndicator = document.createElement('div');
+        typingIndicator.className = 'assistant-message mb-3';
+        typingIndicator.innerHTML = `
+            <div class="d-flex">
+                <div class="flex-shrink-0">
+                    <div class="avatar bg-university-primary text-white rounded-circle p-2">
+                        <i class="bi bi-robot fs-5"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <div class="card bg-light">
+                        <div class="card-body p-2">
+                            <p class="mb-0"><i>Assistant is typing...</i></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        chatContainer.appendChild(typingIndicator);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        
+        // Send query to server
+        fetch('{% url "process_assistant_query" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({query: query})
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Remove typing indicator
+            chatContainer.removeChild(typingIndicator);
+            
+            // Add assistant response
+            if (data.response) {
+                addMessage('assistant', data.response);
+            } else if (data.error) {
+                addMessage('assistant', 'Sorry, I encountered an error. Please try again later.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            chatContainer.removeChild(typingIndicator);
+            addMessage('assistant', 'Sorry, I encountered an error. Please try again later.');
+        });
+    }
+    
+    // Event listeners
+    sendButton.addEventListener('click', processQuery);
+    userQuery.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            processQuery();
+        }
+    });
+});
+</script>
+
+{% endblock %}

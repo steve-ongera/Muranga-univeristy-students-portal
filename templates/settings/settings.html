@@ -1,0 +1,313 @@
+{% extends 'base/base.html'%}
+{% load static %}
+
+{% block content %}
+<div class="message-container" id="system-messages">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        <i class="bi {% if message.tags == 'success' %}bi-check-circle{% else %}bi-exclamation-triangle{% endif %} me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="pagetitle">
+    <h1><i class="bi bi-gear me-2"></i>Account Settings</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#"><i class="bi bi-house-door"></i> Home</a></li>
+            <li class="breadcrumb-item active">Settings</li>
+        </ol>
+    </nav>
+</div><!-- End Page Title -->
+
+<section class="section">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-university-primary text-white">
+                    <h5 class="card-title mb-0"><i class="bi bi-sliders me-2"></i>Manage Your Preferences</h5>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Settings Navigation -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="list-group">
+                                <a href="#profile" class="list-group-item list-group-item-action active" data-bs-toggle="tab">
+                                    <i class="bi bi-person me-2"></i> Profile
+                                </a>
+                                <a href="#notifications" class="list-group-item list-group-item-action" data-bs-toggle="tab">
+                                    <i class="bi bi-bell me-2"></i> Notifications
+                                </a>
+                                <a href="#privacy" class="list-group-item list-group-item-action" data-bs-toggle="tab">
+                                    <i class="bi bi-shield-lock me-2"></i> Privacy
+                                </a>
+                                <a href="#account" class="list-group-item list-group-item-action" data-bs-toggle="tab">
+                                    <i class="bi bi-lock me-2"></i> Account Security
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <!-- Settings Content -->
+                        <div class="col-md-9">
+                            <div class="tab-content">
+                                <!-- Profile Settings Tab -->
+                                <div class="tab-pane fade show active" id="profile">
+                                    <h5 class="text-university mb-4"><i class="bi bi-person-circle me-2"></i>Profile Information</h5>
+                                    
+                                    <form>
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label for="firstName" class="form-label">First Name</label>
+                                                <input type="text" class="form-control" id="firstName" value="{{ user.first_name }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="lastName" class="form-label">Last Name</label>
+                                                <input type="text" class="form-control" id="lastName" value="{{ user.last_name }}">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="email" class="form-label">Email Address</label>
+                                            <input type="email" class="form-control" id="email" value="{{ user.email }}">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="phone" class="form-label">Phone Number</label>
+                                            <input type="tel" class="form-control" id="phone" value="{{ user.phone_number|default:'Not set' }}">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="userType" class="form-label">Account Type</label>
+                                            <select class="form-select" id="userType" disabled>
+                                                {% for value, label in account_types %}
+                                                    <option value="{{ value }}" {% if user.user_type == value %}selected{% endif %}>{{ label }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <small class="text-muted">Account type cannot be changed</small>
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-university">
+                                            <i class="bi bi-save me-1"></i> Save Changes
+                                        </button>
+                                    </form>
+                                </div>
+                                
+                                <!-- Notification Settings Tab -->
+                                <div class="tab-pane fade" id="notifications">
+                                    <h5 class="text-university mb-4"><i class="bi bi-bell-fill me-2"></i>Notification Preferences</h5>
+                                    
+                                    <form>
+                                        <div class="mb-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="emailNotifications" 
+                                                       {% if notification_preferences.email %}checked{% endif %}>
+                                                <label class="form-check-label" for="emailNotifications">Email Notifications</label>
+                                            </div>
+                                            <small class="text-muted">Receive important updates via email</small>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="smsNotifications" 
+                                                       {% if notification_preferences.sms %}checked{% endif %}>
+                                                <label class="form-check-label" for="smsNotifications">SMS Notifications</label>
+                                            </div>
+                                            <small class="text-muted">Receive urgent alerts via text message</small>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="pushNotifications" 
+                                                       {% if notification_preferences.push %}checked{% endif %}>
+                                                <label class="form-check-label" for="pushNotifications">Push Notifications</label>
+                                            </div>
+                                            <small class="text-muted">Get instant notifications on your device</small>
+                                        </div>
+                                        
+                                        <h6 class="mt-4 text-university">Notification Types</h6>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="academicAlerts" checked>
+                                                    <label class="form-check-label" for="academicAlerts">Academic Alerts</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="feeReminders" checked>
+                                                    <label class="form-check-label" for="feeReminders">Fee Reminders</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="eventUpdates" checked>
+                                                    <label class="form-check-label" for="eventUpdates">Event Updates</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="systemMaintenance" checked>
+                                                    <label class="form-check-label" for="systemMaintenance">System Maintenance</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-university mt-3">
+                                            <i class="bi bi-save me-1"></i> Save Preferences
+                                        </button>
+                                    </form>
+                                </div>
+                                
+                                <!-- Privacy Settings Tab -->
+                                <div class="tab-pane fade" id="privacy">
+                                    <h5 class="text-university mb-4"><i class="bi bi-shield-check me-2"></i>Privacy Settings</h5>
+                                    
+                                    <form>
+                                        <div class="mb-3">
+                                            <label for="profileVisibility" class="form-label">Profile Visibility</label>
+                                            <select class="form-select" id="profileVisibility">
+                                                <option value="public" {% if privacy_settings.profile_visibility == 'public' %}selected{% endif %}>Public</option>
+                                                <option value="friends" {% if privacy_settings.profile_visibility == 'friends' %}selected{% endif %}>Friends Only</option>
+                                                <option value="private" {% if privacy_settings.profile_visibility == 'private' %}selected{% endif %}>Private</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="searchVisibility" 
+                                                       {% if privacy_settings.search_visibility %}checked{% endif %}>
+                                                <label class="form-check-label" for="searchVisibility">Include in Search Results</label>
+                                            </div>
+                                            <small class="text-muted">Allow others to find your profile in searches</small>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Data Sharing Preferences</label>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="shareAcademic" checked>
+                                                <label class="form-check-label" for="shareAcademic">Share academic data with faculty</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="shareResearch" checked>
+                                                <label class="form-check-label" for="shareResearch">Participate in research studies</label>
+                                            </div>
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-university">
+                                            <i class="bi bi-save me-1"></i> Update Privacy Settings
+                                        </button>
+                                    </form>
+                                </div>
+                                
+                                <!-- Account Security Tab -->
+                                <div class="tab-pane fade" id="account">
+                                    <h5 class="text-university mb-4"><i class="bi bi-lock-fill me-2"></i>Account Security</h5>
+                                    
+                                    <div class="card mb-4">
+                                        <div class="card-body">
+                                            <h6 class="card-title text-university">Change Password</h6>
+                                            <form>
+                                                <div class="mb-3">
+                                                    <label for="currentPassword" class="form-label">Current Password</label>
+                                                    <input type="password" class="form-control" id="currentPassword">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="newPassword" class="form-label">New Password</label>
+                                                    <input type="password" class="form-control" id="newPassword">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                                                    <input type="password" class="form-control" id="confirmPassword">
+                                                </div>
+                                                <button type="submit" class="btn btn-university">
+                                                    <i class="bi bi-key me-1"></i> Change Password
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title text-university">Two-Factor Authentication</h6>
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <div>
+                                                    <h6 class="mb-0">SMS Verification</h6>
+                                                    <small class="text-muted">Add an extra layer of security to your account</small>
+                                                </div>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" id="twoFactorSMS">
+                                                    <label class="form-check-label" for="twoFactorSMS"></label>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="mb-0">Authenticator App</h6>
+                                                    <small class="text-muted">Use an app like Google Authenticator</small>
+                                                </div>
+                                                <button class="btn btn-sm btn-outline-university">Set Up</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-university-light">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Last updated: {{ user.updated_at|date:"M d, Y H:i" }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    :root {
+        --university-primary: #2E7D32; /* Dark green */
+        --university-secondary: #81C784; /* Light green */
+        --university-light: #E8F5E9; /* Very light green */
+    }
+    .bg-university-primary {
+        background-color: var(--university-primary) !important;
+    }
+    .bg-university-secondary {
+        background-color: var(--university-secondary) !important;
+    }
+    .bg-university-light {
+        background-color: var(--university-light) !important;
+    }
+    .btn-university {
+        background-color: var(--university-primary);
+        color: white;
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university {
+        color: var(--university-primary);
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university:hover {
+        background-color: var(--university-primary);
+        color: white;
+    }
+    .border-university-primary {
+        border-color: var(--university-primary) !important;
+    }
+    .list-group-item.active {
+        background-color: var(--university-primary);
+        border-color: var(--university-primary);
+    }
+    
+    .form-switch .form-check-input:checked {
+        background-color: var(--university-primary);
+    }
+    
+    .tab-pane {
+        padding: 15px;
+    }
+</style>
+
+{% endblock %}

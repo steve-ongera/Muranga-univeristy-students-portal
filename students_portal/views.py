@@ -3940,3 +3940,196 @@ class UnitStudentListPDFView(View):
             return HttpResponse('PDF generation error', status=500)
         
         return response
+
+
+
+def help_support(request):
+    return render(request, 'help_support.html')
+
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def settings_view(request):
+    # Get the current user
+    user = request.user
+    
+    # Prepare context with user settings
+    context = {
+        'user': user,
+        'notification_preferences': {
+            'email': True,  # These would normally come from database
+            'sms': False,
+            'push': True,
+        },
+        'privacy_settings': {
+            'profile_visibility': 'friends',
+            'search_visibility': True,
+        },
+        'account_types': [
+            ('student', 'Student'),
+            ('lecturer', 'Lecturer'),
+            ('admin', 'Administrator'),
+        ]
+    }
+    
+    return render(request, 'settings/settings.html', context)
+
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+import json
+
+@login_required
+def virtual_assistant(request):
+    # Get the current user
+    user = request.user
+    
+    # Prepare context
+    context = {
+        'user': user,
+        'common_questions': [
+            {'question': 'How do I check my exam results?', 'answer': 'Exam results are available on the student portal under "Academic Records".'},
+            {'question': 'Where can I find lecture notes?', 'answer': 'Lecture notes are available on the LMS or from your course lecturer.'},
+            {'question': 'How do I apply for hostel accommodation?', 'answer': 'Hostel applications are done online during the allocation period.'},
+            {'question': 'What are the library opening hours?', 'answer': 'The library is open from 8:00 AM to 9:00 PM on weekdays and 9:00 AM to 4:00 PM on weekends.'},
+        ],
+        'quick_links': [
+            {'title': 'Student Portal', 'url': '#', 'icon': 'bi-person-circle'},
+            {'title': 'Learning Management System', 'url': '#', 'icon': 'bi-book'},
+            {'title': 'Fee Payment', 'url': '#', 'icon': 'bi-credit-card'},
+            {'title': 'Academic Calendar', 'url': '#', 'icon': 'bi-calendar-event'},
+        ]
+    }
+    
+    return render(request, 'assistant/virtual_assistant.html', context)
+
+@login_required
+@require_POST
+def process_assistant_query(request):
+    try:
+        data = json.loads(request.body)
+        query = data.get('query', '').lower()
+        
+        # Simple response logic - would normally integrate with NLP/AI
+        responses = {
+            'results': 'Exam results are available on the student portal under "Academic Records".',
+            'lecture': 'Lecture materials can be found on the LMS or by contacting your lecturer.',
+            'hostel': 'Hostel applications open twice a year. Check the accommodation office for dates.',
+            'fee': 'Fee payment can be made via MPesa or bank deposit. See the finance office for details.',
+            'library': 'The library is open from 8am to 9pm weekdays, 9am to 4pm weekends.',
+            'default': "I'm sorry, I didn't understand that. Could you rephrase your question?"
+        }
+        
+        response_text = responses['default']
+        for keyword in responses:
+            if keyword in query and keyword != 'default':
+                response_text = responses[keyword]
+                break
+        
+        return JsonResponse({'response': response_text})
+    
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+    
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+import json
+from .models import DiscussionGroup, GroupMember, GroupMessage
+from .forms import GroupCreationForm
+
+@login_required
+def discussion_forum(request):
+    # Get all public groups and groups the user is member of
+    public_groups = DiscussionGroup.objects.filter(is_public=True).exclude(
+        members__user=request.user
+    )
+    user_groups = DiscussionGroup.objects.filter(members__user=request.user)
+    
+    context = {
+        'public_groups': public_groups,
+        'user_groups': user_groups,
+        'form': GroupCreationForm()
+    }
+    return render(request, 'forum/discussion_forum.html', context)
+
+@login_required
+def group_chat(request, group_id):
+    group = get_object_or_404(DiscussionGroup, id=group_id)
+    is_member = GroupMember.objects.filter(group=group, user=request.user).exists()
+    
+    if not is_member and not group.is_public:
+        return redirect('discussion_forum')
+    
+    messages = GroupMessage.objects.filter(group=group).order_by('timestamp')[:100]
+    members = group.members.all().select_related('user')
+    
+    context = {
+        'group': group,
+        'messages': messages,
+        'members': members,
+        'is_member': is_member,
+        'user_groups': DiscussionGroup.objects.filter(members__user=request.user)
+    }
+    return render(request, 'forum/group_chat.html', context)
+
+@login_required
+@require_POST
+def create_group(request):
+    form = GroupCreationForm(request.POST)
+    if form.is_valid():
+        group = form.save(commit=False)
+        group.created_by = request.user
+        group.save()
+        
+        # Add creator as admin member
+        GroupMember.objects.create(
+            group=group,
+            user=request.user,
+            is_admin=True
+        )
+        return redirect('group_chat', group_id=group.id)
+    return redirect('discussion_forum')
+
+@login_required
+@require_POST
+def join_group(request, group_id):
+    group = get_object_or_404(DiscussionGroup, id=group_id)
+    if not GroupMember.objects.filter(group=group, user=request.user).exists():
+        GroupMember.objects.create(group=group, user=request.user)
+    return redirect('group_chat', group_id=group.id)
+
+@login_required
+@require_POST
+def send_message(request, group_id):
+    group = get_object_or_404(DiscussionGroup, id=group_id)
+    if not GroupMember.objects.filter(group=group, user=request.user).exists():
+        return JsonResponse({'status': 'error', 'message': 'Not a member'}, status=403)
+    
+    data = json.loads(request.body)
+    content = data.get('content', '').strip()
+    
+    if content:
+        message = GroupMessage.objects.create(
+            group=group,
+            sender=request.user,
+            content=content
+        )
+        return JsonResponse({
+            'status': 'success',
+            'sender': request.user.username,
+            'content': content,
+            'timestamp': message.timestamp.strftime("%b %d, %Y %I:%M %p")
+        })
+    
+    return JsonResponse({'status': 'error', 'message': 'Empty message'}, status=400)

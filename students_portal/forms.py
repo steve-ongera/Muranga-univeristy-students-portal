@@ -354,3 +354,16 @@ class HostelAllocationForm(forms.ModelForm):
             self.add_error('bed', 'Bed must belong to the selected room')
             
         return cleaned_data
+    
+
+
+from django import forms
+from .models import DiscussionGroup
+
+class GroupCreationForm(forms.ModelForm):
+    class Meta:
+        model = DiscussionGroup
+        fields = ['name', 'description', 'is_public']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+        }

@@ -98,4 +98,15 @@ urlpatterns = [
     path('programme-units/', views.ProgrammeUnitExplorer.as_view(), name='programme_unit_explorer'),
     path('programme/<int:programme_id>/year/<int:year_of_study>/semester/<int:semester>/unit/<int:unit_id>/pdf/', 
      views.UnitStudentListPDFView.as_view(), name='unit_student_list_pdf'),
+    path('hep-support/', views.help_support, name='help_support'),
+    path('settings/', views.settings_view, name='settings_view'),
+    path('virtual-assistant/', views.virtual_assistant, name='virtual_assistant'),
+    path('process-query/', views.process_assistant_query, name='process_assistant_query'),
+    path('forum/', views.discussion_forum, name='discussion_forum'),
+    path('forum/group/<int:group_id>/', views.group_chat, name='group_chat'),
+    path('forum/create/', views.create_group, name='create_group'),
+    path('forum/join/<int:group_id>/', views.join_group, name='join_group'),
+    path('forum/send/<int:group_id>/', views.send_message, name='send_message'),
+    
+
 ]

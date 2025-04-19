@@ -1,0 +1,152 @@
+{% extends 'base/base.html'%}
+{% load static %}
+
+{% block content %}
+<div class="pagetitle">
+    <h1><i class="bi bi-people-fill me-2"></i>Discussion Forum</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}"><i class="bi bi-house-door"></i> Home</a></li>
+            <li class="breadcrumb-item active">Forum</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-university-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0"><i class="bi bi-chat-square-text me-2"></i>Group Discussions</h5>
+                        <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#createGroupModal">
+                            <i class="bi bi-plus-circle me-1"></i> Create Group
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Your Groups -->
+                    <div class="mb-5">
+                        <h5 class="text-university mb-3"><i class="bi bi-collection me-2"></i>Your Groups</h5>
+                        {% if user_groups %}
+                        <div class="row">
+                            {% for group in user_groups %}
+                            <div class="col-md-4 mb-3">
+                                <a href="{% url 'group_chat' group.id %}" class="card text-decoration-none h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title">{{ group.name }}</h6>
+                                        <p class="card-text text-muted small">{{ group.description|default:"No description" }}</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge bg-{% if group.is_public %}success{% else %}warning{% endif %}">
+                                                {% if group.is_public %}Public{% else %}Private{% endif %}
+                                            </span>
+                                            <small class="text-muted">{{ group.members.count }} members</small>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">You haven't joined any groups yet.</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Public Groups -->
+                    <div>
+                        <h5 class="text-university mb-3"><i class="bi bi-globe me-2"></i>Public Groups</h5>
+                        {% if public_groups %}
+                        <div class="row">
+                            {% for group in public_groups %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title">{{ group.name }}</h6>
+                                        <p class="card-text text-muted small">{{ group.description|default:"No description" }}</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge bg-success">Public</span>
+                                            <small class="text-muted">{{ group.members.count }} members</small>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-transparent">
+                                        <a href="{% url 'join_group' group.id %}" class="btn btn-sm btn-university w-100">
+                                            <i class="bi bi-door-open me-1"></i> Join Group
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">No public groups available at the moment.</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Create Group Modal -->
+<div class="modal fade" id="createGroupModal" tabindex="-1" aria-labelledby="createGroupModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-university-primary text-white">
+                <h5 class="modal-title" id="createGroupModalLabel"><i class="bi bi-plus-circle me-2"></i>Create New Group</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'create_group' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    {{ form.as_p }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-university">Create Group</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --university-primary: #2E7D32; /* Dark green */
+        --university-secondary: #81C784; /* Light green */
+        --university-light: #E8F5E9; /* Very light green */
+    }
+    .bg-university-primary {
+        background-color: var(--university-primary) !important;
+    }
+    .bg-university-secondary {
+        background-color: var(--university-secondary) !important;
+    }
+    .bg-university-light {
+        background-color: var(--university-light) !important;
+    }
+    .btn-university {
+        background-color: var(--university-primary);
+        color: white;
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university {
+        color: var(--university-primary);
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university:hover {
+        background-color: var(--university-primary);
+        color: white;
+    }
+    .border-university-primary {
+        border-color: var(--university-primary) !important;
+    }
+    .card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}

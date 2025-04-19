@@ -888,3 +888,40 @@ class HostelAllocation(models.Model):
     
     def __str__(self):
         return f"{self.student} - {self.hostel} ({self.academic_year})"
+    
+
+from django.utils import timezone
+
+class DiscussionGroup(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_groups')
+    created_at = models.DateTimeField(default=timezone.now)
+    is_public = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return self.name
+
+class GroupMember(models.Model):
+    group = models.ForeignKey(DiscussionGroup, on_delete=models.CASCADE, related_name='members')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='group_memberships')
+    joined_at = models.DateTimeField(default=timezone.now)
+    is_admin = models.BooleanField(default=False)
+    
+    class Meta:
+        unique_together = ('group', 'user')
+    
+    def __str__(self):
+        return f"{self.user.username} in {self.group.name}"
+
+class GroupMessage(models.Model):
+    group = models.ForeignKey(DiscussionGroup, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='group_messages')
+    content = models.TextField()
+    timestamp = models.DateTimeField(default=timezone.now)
+    
+    class Meta:
+        ordering = ['timestamp']
+    
+    def __str__(self):
+        return f"{self.sender.username} in {self.group.name}: {self.content[:50]}"
