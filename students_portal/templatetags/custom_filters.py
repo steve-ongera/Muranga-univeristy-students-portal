@@ -44,3 +44,18 @@ def percentage(value, arg):
         return f"{int((float(value) / float(arg)) * 100)}"
     except (ValueError, ZeroDivisionError):
         return "0"
+    
+
+from django import template
+
+register = template.Library()
+
+@register.filter
+def get_item(dictionary, key):
+    """
+    Filter to access dictionary values by key in Django templates
+    Usage: {{ my_dict|get_item:my_key }}
+    """
+    if dictionary is None:
+        return None
+    return dictionary.get(key)
