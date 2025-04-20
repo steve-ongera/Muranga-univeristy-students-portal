@@ -23,36 +23,55 @@
         background-color: var(--bg-light);
         color: var(--text-dark);
         line-height: 1.6;
+        font-size: 16px;
+        -webkit-text-size-adjust: 100%;
+    }
+
+    * {
+        box-sizing: border-box;
     }
 
     .section {
-        padding: 1.5rem;
+        padding: 0.75rem;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
     }
 
     /* Dashboard Header */
     .dashboard-header {
-        margin-bottom: 2rem;
+        margin-bottom: 1rem;
+        width: 100%;
     }
 
     /* Navigation Tabs */
     .nav-tabs {
         display: flex;
         border-bottom: 1px solid #E0E0E0;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
         overflow-x: auto;
         white-space: nowrap;
         -webkit-overflow-scrolling: touch;
+        width: 100%;
+        padding-bottom: 4px;
+        scrollbar-width: none; /* Firefox */
+    }
+    
+    .nav-tabs::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Edge */
     }
 
     .nav-tab {
-        padding: 0.75rem 1.5rem;
+        padding: 0.6rem 0.8rem;
         font-weight: 500;
         color: #616161;
         border-bottom: 3px solid transparent;
         transition: var(--transition);
         cursor: pointer;
         text-align: center;
-        min-width: 120px;
+        flex: 0 0 auto;
+        min-width: 90px;
+        font-size: 0.85rem;
     }
 
     .nav-tab:hover {
@@ -66,56 +85,49 @@
     }
 
     .nav-tab i {
-        margin-right: 0.5rem;
+        margin-right: 0.35rem;
     }
 
     /* Welcome Card */
     .welcome-card {
         background: white;
         border-radius: var(--border-radius);
-        padding: 2rem;
-        margin-bottom: 2rem;
-        display: flex;
-        flex-direction: column;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
         box-shadow: var(--box-shadow);
         border-left: 4px solid var(--primary-color);
+        width: 100%;
     }
 
     .welcome-content {
         display: flex;
         flex-direction: column;
-        gap: 1.5rem;
-    }
-
-    @media (min-width: 768px) {
-        .welcome-content {
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: center;
-        }
+        gap: 1rem;
+        align-items: center;
+        text-align: center;
     }
 
     .welcome-text h2 {
         color: var(--primary-dark);
         margin: 0 0 0.5rem 0;
-        font-size: 1.5rem;
+        font-size: 1.1rem;
         font-weight: 600;
     }
 
     .welcome-text p {
         color: #616161;
         margin: 0;
-        max-width: 600px;
+        font-size: 0.85rem;
     }
 
     .welcome-image {
-        flex-shrink: 0;
-        text-align: center;
+        display: flex;
+        justify-content: center;
     }
 
     .welcome-image img {
-        width: 120px;
-        height: 120px;
+        width: 70px;
+        height: 70px;
         border-radius: 50%;
         object-fit: cover;
         border: 3px solid var(--primary-light);
@@ -126,46 +138,39 @@
     .dashboard-grid {
         display: grid;
         grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
-
-    @media (min-width: 768px) {
-        .dashboard-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    .dashboard-full-width {
-        grid-column: 1 / -1;
+        gap: 1rem;
+        width: 100%;
     }
 
     /* Cards */
     .dashboard-card {
         background: white;
         border-radius: var(--border-radius);
-        padding: 1.5rem;
+        padding: 1rem;
         box-shadow: var(--box-shadow);
         transition: var(--transition);
+        width: 100%;
     }
 
     .dashboard-card:hover {
         box-shadow: var(--box-shadow-hover);
-        transform: translateY(-2px);
     }
 
     .card-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 1.25rem;
-        padding-bottom: 0.75rem;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
         border-bottom: 1px solid #F0F0F0;
+        flex-wrap: wrap;
+        gap: 0.5rem;
     }
 
     .card-title {
         color: var(--primary-dark);
         margin: 0;
-        font-size: 1.125rem;
+        font-size: 0.95rem;
         font-weight: 600;
         display: flex;
         align-items: center;
@@ -178,10 +183,11 @@
 
     .card-link {
         color: var(--primary-color);
-        font-size: 0.875rem;
+        font-size: 0.8rem;
         font-weight: 500;
         text-decoration: none;
         transition: var(--transition);
+        white-space: nowrap;
     }
 
     .card-link:hover {
@@ -194,6 +200,7 @@
         color: white;
         position: relative;
         overflow: hidden;
+        text-align: center;
     }
 
     .finance-card::before {
@@ -213,29 +220,31 @@
     }
 
     .finance-icon {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
         opacity: 0.9;
     }
 
     .finance-amount {
-        font-size: 2rem;
+        font-size: 1.5rem;
         font-weight: 700;
-        margin: 1rem 0;
+        margin: 0.5rem 0;
     }
 
     .finance-btn {
         background: white;
         color: var(--primary-dark);
         border: none;
-        padding: 0.75rem 1.5rem;
+        padding: 0.5rem 1rem;
         border-radius: 50px;
         font-weight: 600;
         cursor: pointer;
         transition: var(--transition);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         width: 100%;
-        max-width: 200px;
+        max-width: 150px;
+        margin: 0 auto;
+        font-size: 0.85rem;
     }
 
     .finance-btn:hover {
@@ -255,30 +264,34 @@
     }
 
     .semester-title {
-        font-size: 1.125rem;
+        font-size: 0.9rem;
         font-weight: 600;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.25rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .semester-subtitle {
         opacity: 0.9;
-        margin-bottom: 1.5rem;
-        font-size: 0.875rem;
+        margin-bottom: 0.75rem;
+        font-size: 0.8rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .progress-container {
-        margin: 1.5rem 0;
+        margin: 0.75rem 0;
     }
 
     .progress-label {
         display: flex;
         justify-content: space-between;
-        margin-bottom: 0.5rem;
-        font-size: 0.875rem;
+        margin-bottom: 0.35rem;
+        font-size: 0.75rem;
     }
 
     .progress-bar {
-        height: 8px;
+        height: 6px;
         background: rgba(255, 255, 255, 0.2);
         border-radius: 4px;
         overflow: hidden;
@@ -292,25 +305,36 @@
     }
 
     /* Units Table */
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 1rem;
+        border-radius: var(--border-radius);
+    }
+
     .units-table {
         width: 100%;
         border-collapse: collapse;
+        min-width: 500px; /* Prevent table from becoming too narrow */
     }
 
     .units-table th {
         background: #F5F9F5;
         text-align: left;
-        padding: 0.75rem 1rem;
+        padding: 0.65rem 0.75rem;
         color: var(--primary-dark);
         font-weight: 600;
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.3px;
+        white-space: nowrap;
     }
 
     .units-table td {
-        padding: 1rem;
+        padding: 0.65rem 0.75rem;
         border-bottom: 1px solid #F0F0F0;
+        font-size: 0.85rem;
     }
 
     .units-table tr:last-child td {
@@ -324,10 +348,11 @@
     .status-badge {
         display: inline-flex;
         align-items: center;
-        padding: 0.25rem 0.75rem;
+        padding: 0.2rem 0.6rem;
         border-radius: 50px;
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         font-weight: 500;
+        white-space: nowrap;
     }
 
     .status-pending {
@@ -341,34 +366,36 @@
     }
 
     .hostel-icon {
-        font-size: 2.5rem;
+        font-size: 1.75rem;
         color: var(--primary-color);
         background: #E8F5E9;
-        width: 80px;
-        height: 80px;
-        line-height: 80px;
+        width: 60px;
+        height: 60px;
+        line-height: 60px;
         border-radius: 50%;
-        margin: 0 auto 1rem;
+        margin: 0 auto 0.75rem;
     }
 
     .hostel-info {
         font-weight: 500;
-        margin-bottom: 1rem;
+        margin-bottom: 0.75rem;
+        font-size: 0.85rem;
     }
 
     .hostel-details {
         background: #F5F9F5;
-        padding: 1rem;
+        padding: 0.75rem;
         border-radius: var(--border-radius);
-        margin-top: 1rem;
+        margin-top: 0.75rem;
     }
 
     .hostel-detail {
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 0.5rem;
-        margin: 0.5rem 0;
+        gap: 0.4rem;
+        margin: 0.4rem 0;
+        font-size: 0.8rem;
     }
 
     .hostel-detail i {
@@ -378,34 +405,234 @@
     /* Empty State */
     .empty-state {
         text-align: center;
-        padding: 2rem;
+        padding: 1rem;
         color: #9E9E9E;
     }
 
     .empty-state i {
-        font-size: 2rem;
-        margin-bottom: 1rem;
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
     }
 
-    /* Responsive Adjustments */
-    @media (max-width: 576px) {
+    .empty-state p {
+        font-size: 0.85rem;
+        margin: 0;
+    }
+
+    /* Media Queries for Responsive Layout */
+    @media (min-width: 576px) {
         .section {
             padding: 1rem;
         }
-
+        
         .welcome-card {
             padding: 1.5rem;
+            margin-bottom: 1.5rem;
         }
-
+        
+        .dashboard-card {
+            padding: 1.25rem;
+        }
+        
+        .dashboard-grid {
+            gap: 1.25rem;
+        }
+        
+        .nav-tab {
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .welcome-text h2 {
+            font-size: 1.25rem;
+        }
+        
+        .welcome-text p {
+            font-size: 0.9rem;
+        }
+        
         .welcome-image img {
             width: 80px;
             height: 80px;
         }
-
-        .units-table th, 
-        .units-table td {
-            padding: 0.75rem;
+        
+        .finance-icon {
+            font-size: 2rem;
         }
+        
+        .finance-amount {
+            font-size: 1.75rem;
+        }
+        
+        .finance-btn {
+            padding: 0.6rem 1.25rem;
+            font-size: 0.9rem;
+            max-width: 160px;
+        }
+        
+        .semester-title {
+            font-size: 1rem;
+        }
+        
+        .semester-subtitle {
+            font-size: 0.85rem;
+        }
+        
+        .progress-bar {
+            height: 7px;
+        }
+        
+        .hostel-icon {
+            font-size: 2rem;
+            width: 70px;
+            height: 70px;
+            line-height: 70px;
+        }
+        
+        .units-table th {
+            padding: 0.7rem 0.9rem;
+            font-size: 0.75rem;
+        }
+        
+        .units-table td {
+            padding: 0.7rem 0.9rem;
+            font-size: 0.9rem;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .section {
+            padding: 1.5rem;
+        }
+        
+        .dashboard-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+        
+        .welcome-content {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            text-align: left;
+        }
+        
+        .welcome-text h2 {
+            font-size: 1.4rem;
+        }
+        
+        .welcome-text p {
+            font-size: 1rem;
+            max-width: 600px;
+        }
+        
+        .welcome-image img {
+            width: 100px;
+            height: 100px;
+        }
+        
+        .card-title {
+            font-size: 1.1rem;
+        }
+        
+        .card-link {
+            font-size: 0.875rem;
+        }
+        
+        .nav-tab {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            min-width: 120px;
+        }
+        
+        .finance-icon {
+            font-size: 2.25rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .finance-amount {
+            font-size: 1.9rem;
+            margin: 0.75rem 0;
+        }
+        
+        .finance-btn {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            max-width: 180px;
+        }
+        
+        .semester-title {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .semester-subtitle {
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        
+        .progress-container {
+            margin: 1rem 0;
+        }
+        
+        .progress-bar {
+            height: 8px;
+        }
+        
+        .hostel-icon {
+            width: 80px;
+            height: 80px;
+            line-height: 80px;
+            font-size: 2.25rem;
+            margin-bottom: 1rem;
+        }
+        
+        .hostel-info {
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+        
+        .hostel-details {
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .hostel-detail {
+            font-size: 0.9rem;
+            margin: 0.5rem 0;
+            gap: 0.5rem;
+        }
+    }
+
+    @media (min-width: 992px) {
+        .welcome-text h2 {
+            font-size: 1.5rem;
+        }
+        
+        .welcome-image img {
+            width: 120px;
+            height: 120px;
+        }
+        
+        .finance-icon {
+            font-size: 2.5rem;
+        }
+        
+        .finance-amount {
+            font-size: 2rem;
+        }
+        
+        .hostel-icon {
+            width: 80px;
+            height: 80px;
+            line-height: 80px;
+            font-size: 2.5rem;
+        }
+    }
+
+    /* Full width for some cards on all screen sizes */
+    .dashboard-full-width {
+        grid-column: 1 / -1;
     }
 </style>
 
@@ -490,48 +717,50 @@
             </div>
             
             <div class="card-body">
-                <table class="units-table">
-                    <thead>
-                        <tr>
-                            <th>Unit Name</th>
-                            <th>Unit Code</th>
-                            <th>Lecturer</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for enrollment in enrolled_units %}
-                        <tr>
-                            <td>{{ enrollment.programme_unit.unit.name }}</td>
-                            <td>{{ enrollment.programme_unit.unit.code }}</td>
-                            <td>
-                                {% with allocation=enrollment.programme_unit.unit_allocations.first %}
-                                    {% if allocation %}
-                                        {{ allocation.lecturer.get_full_name }}
-                                    {% else %}
-                                        <span style="color: #F57C00;">Not Assigned</span>
-                                    {% endif %}
-                                {% endwith %}
-                            </td>
-                            <td>
-                                <span class="status-badge status-pending">
-                                    <i class="fas fa-circle-notch fa-spin" style="margin-right: 0.5rem;"></i>
-                                    Registered
-                                </span>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="4">
-                                <div class="empty-state">
-                                    <i class="fas fa-info-circle"></i>
-                                    <p>No units registered for current semester</p>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="units-table">
+                        <thead>
+                            <tr>
+                                <th>Unit Name</th>
+                                <th>Unit Code</th>
+                                <th>Lecturer</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for enrollment in enrolled_units %}
+                            <tr>
+                                <td>{{ enrollment.programme_unit.unit.name }}</td>
+                                <td>{{ enrollment.programme_unit.unit.code }}</td>
+                                <td>
+                                    {% with allocation=enrollment.programme_unit.unit_allocations.first %}
+                                        {% if allocation %}
+                                            {{ allocation.lecturer.get_full_name }}
+                                        {% else %}
+                                            <span style="color: #F57C00;">Not Assigned</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    <span class="status-badge status-pending">
+                                        <i class="fas fa-circle-notch fa-spin" style="margin-right: 0.5rem;"></i>
+                                        Registered
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4">
+                                    <div class="empty-state">
+                                        <i class="fas fa-info-circle"></i>
+                                        <p>No units registered for current semester</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
