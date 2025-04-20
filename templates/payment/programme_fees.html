@@ -1,0 +1,216 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="pagetitle">
+    <h1><i class="bi bi-cash-stack me-2"></i>My Programme Fees</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#"><i class="bi bi-house-door"></i> Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'payment_history' %}">Payments</a></li>
+            <li class="breadcrumb-item active">Fee Structure</li>
+        </ol>
+    </nav>
+</div><!-- End Page Title -->
+
+<section class="section">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-university-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-list-check me-2"></i>
+                            Fee Structure for {{ student.programme.name }} ({{ current_academic_year.name }})
+                        </h5>
+                        <span class="badge bg-light text-dark">
+                            Current: Year {{ student.current_year }} - Sem {{ student.current_semester }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Student Information Summary -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-header bg-university-light">
+                                    <h6 class="mb-0">My Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Registration Number:</span>
+                                            <span class="fw-bold">{{ student.registration_number }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Programme:</span>
+                                            <span>{{ student.programme.name }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Current Year/Semester:</span>
+                                            <span>Year {{ student.current_year }} - Sem {{ student.current_semester }}</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-header bg-university-light">
+                                    <h6 class="mb-0">Academic Year Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Academic Year:</span>
+                                            <span>{{ current_academic_year.name }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Duration:</span>
+                                            <span>
+                                                {{ current_academic_year.start_date|date:"M d, Y" }} to 
+                                                {{ current_academic_year.end_date|date:"M d, Y" }}
+                                            </span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Total Semesters:</span>
+                                            <span>{{ student.programme.semesters_per_year }} per year</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Fee Structure Table -->
+                    <h5 class="mb-3">Fee Structure Breakdown</h5>
+                    
+                    {% if fee_structures %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="bg-university-light">
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Semester</th>
+                                    <th>Amount (Ksh)</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for fee in fee_structures %}
+                                <tr class="{% if fee.year_of_study == student.current_year and fee.semester == student.current_semester %}table-primary{% endif %}">
+                                    <td>
+                                        Year {{ fee.year_of_study }}
+                                        {% if fee.year_of_study == student.current_year %}
+                                        <span class="badge bg-success ms-2">Current</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        Semester {{ fee.semester }}
+                                        {% if fee.semester == student.current_semester and fee.year_of_study == student.current_year %}
+                                        <span class="badge bg-success ms-2">Current</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="fw-bold">{{ fee.amount }}</td>
+                                    <td>{{ fee.description|default:"Standard programme fees" }}</td>
+                                    <td>
+                                        {% if fee.year_of_study == student.current_year and fee.semester == student.current_semester %}
+                                        <span class="badge bg-primary">Pay Now</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Not Current</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Your current fees for Year {{ student.current_year }} - Semester {{ student.current_semester }} 
+                        are highlighted in blue.
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        No fee structure found for your programme in the current academic year.
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Payment Information -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-university-light">
+                                    <h6 class="mb-0">Payment Instructions</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ol class="list-group list-group-numbered">
+                                        <li class="list-group-item border-0">Check your current fees above</li>
+                                        <li class="list-group-item border-0">Make payment through approved channels</li>
+                                        <li class="list-group-item border-0">Upload payment confirmation if required</li>
+                                        <li class="list-group-item border-0">Payment reflects within 24-48 hours</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-university-light">
+                                    <h6 class="mb-0">Quick Actions</h6>
+                                </div>
+                                <div class="card-body d-flex flex-column">
+                                    <a href="#" class="btn btn-university mb-2">
+                                        <i class="bi bi-credit-card me-2"></i> Pay Current Fees
+                                    </a>
+                                    <a href="{% url 'payment_history' %}" class="btn btn-outline-university mb-2">
+                                        <i class="bi bi-clock-history me-2"></i> View Payment History
+                                    </a>
+                                    <a href="#" class="btn btn-outline-secondary">
+                                        <i class="bi bi-download me-2"></i> Download Fee Structure
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-university-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            For any fee-related inquiries, contact the finance office.
+                        </small>
+                        <span class="badge bg-university-primary">
+                            {% now "M d, Y" %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .table-primary {
+        --bs-table-bg: rgba(13, 110, 253, 0.1);
+        --bs-table-striped-bg: rgba(13, 110, 253, 0.05);
+        --bs-table-striped-color: #000;
+        --bs-table-active-bg: rgba(13, 110, 253, 0.1);
+        --bs-table-active-color: #000;
+        --bs-table-hover-bg: rgba(13, 110, 253, 0.075);
+        --bs-table-hover-color: #000;
+        color: #000;
+        border-color: #dee2e6;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+</style>
+
+{% endblock %}

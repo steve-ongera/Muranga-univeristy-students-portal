@@ -4295,3 +4295,119 @@ def student_payment_history(request):
     }
     
     return render(request, 'payment/payment_history.html', context)
+
+
+
+# views.py
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from students_portal.models import (
+    Student, 
+    FeesStructure, 
+    AcademicYear,
+    Semester
+)
+
+@login_required
+def my_programme_fees(request):
+    # Get the student profile for the logged-in user
+    try:
+        student = Student.objects.get(registration_number=request.user.username)
+    except Student.DoesNotExist:
+        messages.error(request, "Student record not found")
+        return redirect('student_dashboard')
+    
+    # Get current academic year (assuming you have a way to identify this)
+    current_academic_year = AcademicYear.objects.filter(is_current=True).first()
+    
+    if not current_academic_year:
+        return render(request, 'students_portal/error.html', {
+            'message': 'No current academic year configured'
+        })
+    
+    # Get all fee structures for the student's programme in current academic year
+    fee_structures = FeesStructure.objects.filter(
+        programme=student.programme,
+        academic_year=current_academic_year
+    ).order_by('year_of_study', 'semester')
+    
+    context = {
+        'student': student,
+        'current_academic_year': current_academic_year,
+        'fee_structures': fee_structures,
+        'current_year': student.current_year,
+        'current_semester': student.current_semester,
+    }
+    
+    return render(request, 'payment/programme_fees.html', context)
+
+
+# views.py
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.db.models import Sum
+from students_portal.models import (
+    Student, 
+    FeesStructure, 
+    StudentFee, 
+    FeePayment,
+    AcademicYear
+)
+
+@login_required
+def fee_statement(request):
+    # Get the student profile for the logged-in user
+    try:
+        student = Student.objects.get(registration_number=request.user.username)
+    except Student.DoesNotExist:
+        messages.error(request, "Student record not found")
+        return redirect('student_dashboard')
+    
+    # Get all academic years since admission
+    admission_year = student.date_of_admission.year
+    academic_years = AcademicYear.objects.filter(
+        start_date__year__gte=admission_year
+    ).order_by('start_date')
+    
+    # Get all fee records for the student
+    fee_records = StudentFee.objects.filter(
+        student=student
+    ).select_related('fee_structure').order_by('fee_structure__academic_year__start_date')
+    
+    # Calculate totals
+    total_amount_due = fee_records.aggregate(total=Sum('fee_structure__amount'))['total'] or 0
+    total_paid = fee_records.aggregate(total=Sum('amount_paid'))['total'] or 0
+    total_balance = fee_records.aggregate(total=Sum('balance'))['total'] or 0
+    
+    # Prepare statement data
+    statement = []
+    for record in fee_records:
+        payments = FeePayment.objects.filter(
+            student_fee=record
+        ).order_by('payment_date')
+        
+        statement.append({
+            'academic_year': record.fee_structure.academic_year,
+            'year': record.fee_structure.year_of_study,
+            'semester': record.fee_structure.semester,
+            'amount_due': record.fee_structure.amount,
+            'amount_paid': record.amount_paid,
+            'balance': record.balance,
+            'payments': payments,
+            'is_current': (
+                record.fee_structure.year_of_study == student.current_year and
+                record.fee_structure.semester == student.current_semester
+            ),
+            'is_complete': record.balance <= 0,
+        })
+    
+    context = {
+        'student': student,
+        'statement': statement,
+        'total_amount_due': total_amount_due,
+        'total_paid': total_paid,
+        'total_balance': total_balance,
+        'academic_years': academic_years,
+    }
+    
+    return render(request, 'payment/fee_statement.html', context)

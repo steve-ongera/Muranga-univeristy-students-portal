@@ -1,0 +1,245 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="pagetitle">
+    <h1><i class="bi bi-file-text me-2"></i>Fee Statement</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#"><i class="bi bi-house-door"></i> Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'payment_history' %}">Payments</a></li>
+            <li class="breadcrumb-item active">Statement</li>
+        </ol>
+    </nav>
+</div><!-- End Page Title -->
+
+<section class="section">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-university-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-receipt-cutoff me-2"></i>
+                            Fee Statement for {{ student.get_full_name }}
+                        </h5>
+                        <span class="badge bg-light text-dark">
+                            {{ student.registration_number }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Summary Card -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-muted">Total Amount Due</h6>
+                                    <h3 class="text-primary">Ksh. {{ total_amount_due|floatformat:2 }}</h3>
+                                    <small class="text-muted">Since {{ student.date_of_admission|date:"M Y" }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-muted">Total Paid</h6>
+                                    <h3 class="text-success">Ksh. {{ total_paid|floatformat:2 }}</h3>
+                                    <small class="text-muted">Across all semesters</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-muted">Outstanding Balance</h6>
+                                    <h3 class="{% if total_balance > 0 %}text-danger{% else %}text-success{% endif %}">
+                                        Ksh. {{ total_balance|floatformat:2 }}
+                                    </h3>
+                                    <small class="text-muted">{% if total_balance > 0 %}Payment due{% else %}All clear{% endif %}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Detailed Statement -->
+                    <h5 class="mb-3">Detailed Fee Breakdown</h5>
+                    
+                    {% for item in statement %}
+                    <div class="card mb-4 border-0 shadow-sm {% if item.is_current %}border-primary border-2{% endif %}">
+                        <div class="card-header bg-university-light d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ item.academic_year.name }}</strong>
+                                <span class="badge bg-{% if item.is_current %}primary{% else %}secondary{% endif %} ms-2">
+                                    Year {{ item.year }} - Semester {{ item.semester }}
+                                    {% if item.is_current %}(Current){% endif %}
+                                </span>
+                            </div>
+                            <div>
+                                <span class="me-3">Due: Ksh. {{ item.amount_due|floatformat:2 }}</span>
+                                <span class="{% if item.balance > 0 %}text-danger{% else %}text-success{% endif %}">
+                                    Balance: Ksh. {{ item.balance|floatformat:2 }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Amount Due:</span>
+                                        <span class="fw-bold">Ksh. {{ item.amount_due|floatformat:2 }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Amount Paid:</span>
+                                        <span class="text-success">Ksh. {{ item.amount_paid|floatformat:2 }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span>Balance:</span>
+                                        <span class="{% if item.balance > 0 %}text-danger{% else %}text-success{% endif %}">
+                                            Ksh. {{ item.balance|floatformat:2 }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-8">
+                                    <div class="progress mb-3" style="height: 25px;">
+                                        {% widthratio item.amount_paid item.amount_due 100 as payment_percent %}
+                                        <div class="progress-bar bg-success" role="progressbar" 
+                                             style="width: {{ payment_percent }}%" 
+                                             aria-valuenow="{{ payment_percent }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                            {{ payment_percent }}% Paid
+                                        </div>
+                                    </div>
+                                    
+                                    {% if item.balance > 0 %}
+                                    <div class="alert alert-warning py-2">
+                                        <i class="bi bi-exclamation-triangle me-2"></i>
+                                        Outstanding balance of Ksh. {{ item.balance|floatformat:2 }} for this semester
+                                    </div>
+                                    {% else %}
+                                    <div class="alert alert-success py-2">
+                                        <i class="bi bi-check-circle me-2"></i>
+                                        Fees fully paid for this semester
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Payment Transactions -->
+                            <h6 class="mb-3">Payment Transactions</h6>
+                            
+                            {% if item.payments %}
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Receipt No.</th>
+                                            <th>Amount</th>
+                                            <th>Method</th>
+                                            <th>Recorded By</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for payment in item.payments %}
+                                        <tr>
+                                            <td>{{ payment.payment_date|date:"M d, Y" }}</td>
+                                            <td>{{ payment.receipt_number }}</td>
+                                            <td>Ksh. {{ payment.amount|floatformat:2 }}</td>
+                                            <td>{{ payment.payment_method }}</td>
+                                            <td>{{ payment.recorded_by.get_full_name|default:"System" }}</td>
+                                            <td>
+                                                <a href="#" class="btn btn-sm btn-outline-university">
+                                                    <i class="bi bi-download"></i> Receipt
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-info">
+                                No payment records found for this semester.
+                            </div>
+                            {% endif %}
+                            
+                            {% if item.balance > 0 and item.is_current %}
+                            <div class="text-end mt-3">
+                                <a href="#" class="btn btn-university">
+                                    <i class="bi bi-credit-card me-2"></i> Pay Balance
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="alert alert-info">
+                        No fee records found for your account.
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Statement Footer -->
+                <div class="card-footer bg-university-light">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-between">
+                                <span class="fw-bold">Grand Total Due:</span>
+                                <span class="fw-bold">Ksh. {{ total_amount_due|floatformat:2 }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="fw-bold">Total Paid:</span>
+                                <span class="text-success fw-bold">Ksh. {{ total_paid|floatformat:2 }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="fw-bold">Overall Balance:</span>
+                                <span class="{% if total_balance > 0 %}text-danger{% else %}text-success{% endif %} fw-bold">
+                                    Ksh. {{ total_balance|floatformat:2 }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <a href="#" class="btn btn-outline-university me-2">
+                                <i class="bi bi-printer me-2"></i> Print Statement
+                            </a>
+                            <a href="#" class="btn btn-university">
+                                <i class="bi bi-download me-2"></i> Download PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .progress {
+        background-color: #e9ecef;
+        border-radius: 0.25rem;
+    }
+    
+    .progress-bar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: bold;
+    }
+    
+    .card {
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+</style>
+
+{% endblock %}

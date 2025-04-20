@@ -56,8 +56,10 @@ urlpatterns = [
 
 
     path('promote-students/', views.promote_students, name='promote_students'),
-    path('fee-history/', views.student_fee_history, name='student_fee_history'),
+    # path('fee-history/', views.student_fee_history, name='student_fee_history'),
     path('payment-history/', views.student_payment_history, name='payment_history'),
+    path('my_programme_fees/', views.my_programme_fees, name='my_programme_fees'),
+    path('fee_statement/', views.fee_statement, name='fee_statement'),
     
     path('comments/', views.student_comments, name='student_comments'),
     path('admins/comments/', views.admin_comment_dashboard, name='admin_comment_dashboard'),
