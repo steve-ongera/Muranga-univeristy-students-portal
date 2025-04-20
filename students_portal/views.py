@@ -1726,7 +1726,6 @@ def programme_detail(request, programme_id):
         'semesters': semesters,
     }
     return render(request, 'academics/programme_detail.html', context)
-
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -1753,12 +1752,33 @@ def promote_students(request):
                     messages.error(request, "Current academic year or semester not set in system")
                     return redirect('promote_students')
                 
+                # Get all active students grouped by programme
                 active_students = Student.objects.filter(status='active').select_related('programme')
                 
+                # Group students by programme to check if all are in the final semester
+                programme_students = {}
+                for student in active_students:
+                    programme_id = student.programme.id
+                    if programme_id not in programme_students:
+                        programme_students[programme_id] = {
+                            'programme': student.programme,
+                            'students': [],
+                            'semesters_per_year': student.programme.semesters_per_year,
+                            'all_in_final_semester': True  # Will be set to False if any student is not in final semester
+                        }
+                    
+                    programme_students[programme_id]['students'].append(student)
+                    
+                    # Check if this student is not in the final semester of their current year
+                    if student.current_semester != student.programme.semesters_per_year:
+                        programme_students[programme_id]['all_in_final_semester'] = False
+                
+                # Process each student
                 for student in active_students:
                     programme = student.programme
                     current_year = student.current_year
                     current_semester = student.current_semester
+                    programme_id = programme.id
                     
                     failed_units = StudentUnitGrade.objects.filter(
                         enrollment__student=student,
@@ -1780,6 +1800,7 @@ def promote_students(request):
                     }
                     
                     if failed_units <= 3 and not has_balance:
+                        # Check if the student is in the final year and final semester
                         if current_year == programme.duration_years and current_semester == programme.semesters_per_year:
                             # Graduation logic
                             student.status = 'graduated'
@@ -1791,23 +1812,38 @@ def promote_students(request):
                                 'completion': f"Year {current_year} Semester {current_semester}"
                             })
                         else:
-                            # Promotion logic
+                            # Determine if promotion is to next semester or next year
                             new_year = current_year
                             new_semester = current_semester + 1
                             
+                            # If student is in final semester of the year, check if all students in the programme
+                            # are also in their final semester before promoting to next year
+                            next_academic_year = False
                             if new_semester > programme.semesters_per_year:
-                                new_year += 1
-                                new_semester = 1
+                                # Only promote to next year if all students in this programme are in final semester
+                                if programme_students[programme_id]['all_in_final_semester']:
+                                    new_year += 1
+                                    new_semester = 1
+                                    next_academic_year = True
+                                else:
+                                    # Don't promote if not all students are in final semester
+                                    not_promoted_students.append({
+                                        **student_data,
+                                        'reason': "Waiting for all students in programme to complete their final semester"
+                                    })
+                                    continue
                             
                             student.current_year = new_year
                             student.current_semester = new_semester
                             student.save()
                             
-                            # Create fee record for the new semester
+                            # Create fee record for the new semester/year
                             try:
                                 fee_structure = FeesStructure.objects.get(
                                     programme=programme,
-                                    academic_year=current_academic_year,
+                                    academic_year=current_academic_year if not next_academic_year else AcademicYear.objects.get(
+                                        start_date__gt=current_academic_year.end_date
+                                    ),
                                     year_of_study=new_year,
                                     semester=new_semester
                                 )
@@ -1823,12 +1859,15 @@ def promote_students(request):
                                 fee_created = True
                             except FeesStructure.DoesNotExist:
                                 fee_created = False
+                            except AcademicYear.DoesNotExist:
+                                fee_created = False
                             
                             promoted_students.append({
                                 **student_data,
                                 'new_year': new_year,
                                 'new_semester': new_semester,
-                                'fee_created': fee_created
+                                'fee_created': fee_created,
+                                'next_academic_year': next_academic_year
                             })
                     else:
                         # Not promoted logic
@@ -1846,17 +1885,21 @@ def promote_students(request):
                 promoted_by_programme = {}
                 for student in promoted_students:
                     programme_name = student['programme']
-                    if programme_name not in promoted_by_programme:
-                        promoted_by_programme[programme_name] = {
+                    promotion_key = f"{programme_name}_Y{student['current_year']}S{student['current_semester']}_to_Y{student['new_year']}S{student['new_semester']}"
+                    
+                    if promotion_key not in promoted_by_programme:
+                        promoted_by_programme[promotion_key] = {
+                            'programme': programme_name,
                             'students': [],
                             'from': f"Y{student['current_year']}S{student['current_semester']}",
                             'to': f"Y{student['new_year']}S{student['new_semester']}",
+                            'next_academic_year': student.get('next_academic_year', False),
                             'fee_status': "Created" if student['fee_created'] else "Not created (no fee structure)"
                         }
-                    promoted_by_programme[programme_name]['students'].append(student)
+                    promoted_by_programme[promotion_key]['students'].append(student)
                 
                 context = {
-                    'promoted_by_programme': promoted_by_programme,
+                    'promoted_by_programme': promoted_by_programme.values(),
                     'graduated_students': graduated_students,
                     'not_promoted_students': not_promoted_students,
                     'total_promoted': len(promoted_students),
