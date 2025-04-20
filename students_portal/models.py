@@ -265,6 +265,7 @@ class Semester(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     is_current = models.BooleanField(default=False)
+    is_special = models.BooleanField(default=False)
 
     current_week = models.PositiveSmallIntegerField(
         default=1,
