@@ -52,8 +52,10 @@ def login_view(request):
             
             # Check user_type from User model first
             if user.user_type == 'admin':
+                messages.success(request, "Logged in successfully to your account.")
                 return redirect('admin_dashboard')
             elif user.user_type == 'staff':
+                messages.success(request, "Logged in successfully to your account.")
                 return redirect('staff_dashboard')
             elif user.user_type == 'finance':
                 return redirect('finance_dashboard')
@@ -72,6 +74,7 @@ def login_view(request):
                     # Update session with current lecturer info
                     request.session['user_type'] = 'lecturer'
                     request.session['lecturer_id'] = lecturer.id
+                    messages.success(request, "Logged in successfully to your account.")
                     return redirect('lecturer_dashboard')
                 except Lecturer.DoesNotExist:
                     # Admin/staff users won't have student/lecturer records
@@ -540,8 +543,15 @@ def prepare_gender_data_by_academic_year(academic_year_id):
     ]
 
 
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.http import HttpResponseForbidden
+from django.core.exceptions import PermissionDenied
+
 @login_required
 def admin_dashboard(request):
+    if not (request.user.is_superuser or request.user.is_staff):
+        # Raise 403 Forbidden error
+        raise PermissionDenied
     # Get all academic years ordered chronologically
     academic_years = AcademicYear.objects.order_by('start_date')
     

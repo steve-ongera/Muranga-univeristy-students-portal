@@ -13,7 +13,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-5yaf(dgr^9364+z89=x1(u6u(sab#p5n_dqp&mnykp67(3v7x@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = True # 404 page only shows in production
 
 ALLOWED_HOSTS = ['*','https://43fd-2c0f-6300-d09-fd00-f126-c225-9052-8cce.ngrok-free.app']
 
