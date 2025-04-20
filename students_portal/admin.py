@@ -82,7 +82,7 @@ class SemesterAdmin(admin.ModelAdmin):
     list_display = ('academic_year', 'name', 'number', 'start_date', 'end_date', 'is_current')
     search_fields = ('academic_year__name', 'name', 'number')
     list_filter = ('academic_year', 'number', 'is_current')
-    readonly_fields = ('start_date', 'end_date')
+    #readonly_fields = ('start_date', 'end_date')
 
 
 

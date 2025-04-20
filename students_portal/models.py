@@ -464,6 +464,7 @@ class FeesStructure(models.Model):
     semester = models.IntegerField()
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField(blank=True, null=True)
+    is_special = models.BooleanField(default=False)
     
     class Meta:
         unique_together = ('programme', 'academic_year', 'year_of_study', 'semester')
