@@ -1726,6 +1726,19 @@ def programme_detail(request, programme_id):
         'semesters': semesters,
     }
     return render(request, 'academics/programme_detail.html', context)
+
+# This view handles batch student promotion/graduation for staff users via POST request. It:
+# 1. Verifies current academic year/semester are set before processing
+# 2. Groups active students by programme to coordinate year-level promotions
+# 3. Evaluates each student's eligibility based on failed units (<=3 allowed) and fee balances
+# 4. Graduates students who complete their final semester in the final year
+# 5. Promotes eligible students either to next semester or next academic year
+# 6. Handles year transitions only when all programme students reach final semester
+# 7. Automatically creates fee records for promoted students if structure exists
+# 8. Categorizes results into promoted, graduated, and not-promoted groups
+# 9. Organizes promoted students by programme and transition path for reporting
+# 10. Uses atomic transaction to ensure data consistency during batch processing
+
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
