@@ -1043,22 +1043,25 @@ Displays academic results for logged-in students, fetching only years since admi
 Organizes results hierarchically by academic years and semesters with detailed unit grades.
 Shows complete grade information when available or marks courses as "Pending" when grades aren't finalized.
 """
-
 @login_required
 def student_results_view(request):
     """
     View for students to see their academic results by year and semester.
+    Only shows semesters according to their programme's structure.
     """
     # Get the student profile associated with the logged-in user
     try:
-        student = Student.objects.get(
+        student = Student.objects.select_related('programme').get(
             registration_number=request.user.username
         )
     except Student.DoesNotExist:
         messages.error(request, "No student profile found for your account.")
         return render(request, 'students/no_profile.html')
 
-    # **Fetch only academic years where the student has enrollments**
+    # Get the number of semesters per year for this student's programme
+    semesters_per_year = student.programme.semesters_per_year
+
+    # Fetch only academic years where the student has enrollments
     enrolled_semester_ids = StudentEnrollment.objects.filter(
         student=student
     ).values_list('semester_id', flat=True).distinct()
@@ -1067,13 +1070,15 @@ def student_results_view(request):
     academic_years = AcademicYear.objects.filter(
         semesters__id__in=enrolled_semester_ids
     ).distinct().order_by('-start_date')
+
     # Initialize data structure to hold results
     results_by_year = {}
 
     for academic_year in academic_years:
-        # Get semesters for this academic year
+        # Get semesters for this academic year (limited by programme's semesters_per_year)
         semesters = Semester.objects.filter(
-            academic_year=academic_year
+            academic_year=academic_year,
+            number__lte=semesters_per_year  # Only show up to programme's semesters
         ).order_by('number')
 
         # Initialize semester results
@@ -1124,25 +1129,28 @@ def student_results_view(request):
 
                 units_results.append(unit_result)
 
-            # Add results to semester
-            semester_results[semester.number] = {
-                'semester_name': semester.name,
-                'units': units_results,
-            }
+            # Add results to semester (only if there are results)
+            if units_results:
+                semester_results[semester.number] = {
+                    'semester_name': semester.name,
+                    'units': units_results,
+                }
 
-        # Add semester results to the academic year
-        results_by_year[academic_year.name] = {
-            'semesters': semester_results,
-            'year_name': academic_year.name,
-        }
+        # Only add academic year if it has semester results
+        if semester_results:
+            results_by_year[academic_year.name] = {
+                'semesters': semester_results,
+                'year_name': academic_year.name,
+                'semesters_per_year': semesters_per_year,
+            }
 
     context = {
         'student': student,
         'results_by_year': results_by_year,
+        'programme_semesters': semesters_per_year,
     }
 
     return render(request, 'students/academic_results.html', context)
-
 
 from django.http import HttpResponse
 from django.conf import settings
