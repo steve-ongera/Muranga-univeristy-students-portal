@@ -694,16 +694,53 @@ def database_students_list(request):
 
 
 @login_required
-
 def student_create(request):
     if request.method == 'POST':
         form = StudentForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, "student record created successfully.")
-            return redirect('database_students_list')
+            with transaction.atomic():
+                student = form.save()
+                
+                # Get current academic year and semester
+                current_academic_year = AcademicYear.objects.filter(is_current=True).first()
+                current_semester = Semester.objects.filter(is_current=True).first()
+                
+                if current_academic_year and current_semester:
+                    try:
+                        # Get the fee structure for the student's programme
+                        fee_structure = FeesStructure.objects.get(
+                            programme=student.programme,
+                            academic_year=current_academic_year,
+                            year_of_study=student.current_year,
+                            semester=student.current_semester
+                        )
+                        
+                        # Create the initial fee record
+                        StudentFee.objects.create(
+                            student=student,
+                            fee_structure=fee_structure,
+                            amount_paid=0,
+                            balance=fee_structure.amount,
+                            last_payment_date=None
+                        )
+                        
+                        messages.success(request, "Student record and fee record created successfully.")
+                    except FeesStructure.DoesNotExist:
+                        messages.warning(
+                            request,
+                            f"Student record created, but no fee structure found for {student.programme.name} "
+                            f"in {current_academic_year.name}, Year {student.current_year}, Semester {student.current_semester}"
+                        )
+                else:
+                    messages.warning(
+                        request,
+                        "Student record created, but current academic year or semester is not set in system"
+                    )
+                
+                return redirect('database_students_list')
     else:
         form = StudentForm()
+    
     return render(request, 'students/student_form.html', {'form': form})
 
 
