@@ -1743,7 +1743,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db import transaction
-from django.db.models import Count
+from django.db.models import Count, Max
 from .models import Student, StudentUnitGrade, StudentFee, Programme, FeesStructure, AcademicYear, Semester
 from datetime import date
 
@@ -1768,8 +1768,22 @@ def promote_students(request):
                 # Get all active students grouped by programme
                 active_students = Student.objects.filter(status='active').select_related('programme')
                 
-                # Group students by programme to check if all are in the final semester
+                # Group students by programme and check semester status
                 programme_students = {}
+                
+                # First, identify all programmes with 3 semesters per year
+                has_three_semester_programmes = Programme.objects.filter(semesters_per_year=3).exists()
+                
+                # Second, check if any programme with 3 semesters has students not in their final semester
+                three_semester_programmes_ready = True
+                if has_three_semester_programmes:
+                    # Check if students in 3-semester programmes have reached their final semester
+                    for student in active_students:
+                        if student.programme.semesters_per_year == 3 and student.current_semester < 3:
+                            three_semester_programmes_ready = False
+                            break
+                
+                # Group students by programme and track if all are in final semester of their programme
                 for student in active_students:
                     programme_id = student.programme.id
                     if programme_id not in programme_students:
@@ -1829,20 +1843,34 @@ def promote_students(request):
                             new_year = current_year
                             new_semester = current_semester + 1
                             
-                            # If student is in final semester of the year, check if all students in the programme
-                            # are also in their final semester before promoting to next year
+                            # If student is in final semester of the year, check global condition for year promotion
                             next_academic_year = False
                             if new_semester > programme.semesters_per_year:
-                                # Only promote to next year if all students in this programme are in final semester
-                                if programme_students[programme_id]['all_in_final_semester']:
+                                # For programmes with 2 semesters, we need to check if 3-semester programmes are ready
+                                # For programmes with 3 semesters, we need to check if all students reached semester 3
+                                promotion_allowed = True
+                                
+                                # If there are 3-semester programmes and this programme has 2 semesters,
+                                # only allow promotion if 3-semester programmes are ready
+                                if has_three_semester_programmes and programme.semesters_per_year < 3:
+                                    promotion_allowed = three_semester_programmes_ready
+                                
+                                # Always check if all students in the current programme are in final semester
+                                promotion_allowed = promotion_allowed and programme_students[programme_id]['all_in_final_semester']
+                                
+                                if promotion_allowed:
                                     new_year += 1
                                     new_semester = 1
                                     next_academic_year = True
                                 else:
-                                    # Don't promote if not all students are in final semester
+                                    # Define reason for not promoting
+                                    reason = "Waiting for all students in programme to complete their final semester"
+                                    if has_three_semester_programmes and not three_semester_programmes_ready and programme.semesters_per_year < 3:
+                                        reason = "Waiting for 3-semester programmes to reach their final semester"
+                                    
                                     not_promoted_students.append({
                                         **student_data,
-                                        'reason': "Waiting for all students in programme to complete their final semester"
+                                        'reason': reason
                                     })
                                     continue
                             
