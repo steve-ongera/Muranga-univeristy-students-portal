@@ -480,9 +480,33 @@ class StudentFee(models.Model):
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     balance = models.DecimalField(max_digits=10, decimal_places=2)
     last_payment_date = models.DateField(blank=True, null=True)
+
+    carried_forward_amount = models.DecimalField(max_digits=10, decimal_places=2,  default=0)
+    is_carry_forward = models.BooleanField(default=False,help_text="Indicates if this record was created from a carry forward")
     
     def __str__(self):
         return f"{self.student.registration_number} - {self.fee_structure} - Balance: {self.balance}"
+    
+    def save(self, *args, **kwargs):
+        # Automatically calculate balance based on amount_paid and carried_forward_amount
+        if not self.pk:  # New record
+            self.balance = (self.fee_structure.amount - 
+                          self.amount_paid - 
+                          self.carried_forward_amount)
+        super().save(*args, **kwargs)
+    
+    @property
+    def effective_balance(self):
+        """Returns balance that shows negative for overpayments"""
+        return self.fee_structure.amount - self.amount_paid - self.carried_forward_amount
+    
+    @property
+    def display_balance(self):
+        """Formatted balance showing negative for overpayments"""
+        balance = self.effective_balance
+        if balance < 0:
+            return f"-Ksh{abs(balance):,.2f}"
+        return f"Ksh{balance:,.2f}"
 
 
 class FeePayment(models.Model):
