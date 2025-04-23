@@ -1890,31 +1890,42 @@ def promote_students(request):
                             if next_year_promotion and next_academic_year:
                                 academic_year_for_fees = next_academic_year
                             
-                            # Create fee record for the new semester/year
+                            
+                            # Create fee record for the new semester/year using ONLY current academic year
                             try:
                                 fee_structure = FeesStructure.objects.get(
                                     programme=programme,
-                                    academic_year=academic_year_for_fees,
+                                    academic_year=current_academic_year,  # Always use current academic year
                                     year_of_study=new_year,
                                     semester=new_semester
                                 )
                                 
-                                StudentFee.objects.create(
+                                # Check if fee record already exists to avoid duplicates
+                                if not StudentFee.objects.filter(
                                     student=student,
-                                    fee_structure=fee_structure,
-                                    amount_paid=0,
-                                    balance=fee_structure.amount,
-                                    last_payment_date=None
-                                )
+                                    fee_structure=fee_structure
+                                ).exists():
+                                    StudentFee.objects.create(
+                                        student=student,
+                                        fee_structure=fee_structure,
+                                        amount_paid=0,
+                                        balance=fee_structure.amount,
+                                        last_payment_date=None
+                                    )
+                                    fee_created = True
+                                else:
+                                    fee_created = False
+                                    messages.warning(request, 
+                                        f"Fee record already exists for {student.registration_number} in "
+                                        f"{current_academic_year.name}, Year {new_year}, Semester {new_semester}"
+                                    )
                                 
-                                fee_created = True
                             except FeesStructure.DoesNotExist:
                                 fee_created = False
-                                # Log more detailed information about what wasn't found
                                 messages.warning(
                                     request, 
                                     f"Fee structure not found for {student.registration_number} in "
-                                    f"{academic_year_for_fees.name}, Year {new_year}, Semester {new_semester}"
+                                    f"{current_academic_year.name}, Year {new_year}, Semester {new_semester}"
                                 )
                             
                             promoted_students.append({
