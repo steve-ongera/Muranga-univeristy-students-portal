@@ -1852,14 +1852,28 @@ def promote_students(request):
                             
                             # Create fee record for the new semester/year
                             try:
-                                fee_structure = FeesStructure.objects.get(
-                                    programme=programme,
-                                    academic_year=current_academic_year if not next_academic_year else AcademicYear.objects.get(
+                                if next_academic_year:
+                                    # Fix: Get the next academic year by properly ordering results
+                                    next_year = AcademicYear.objects.filter(
                                         start_date__gt=current_academic_year.end_date
-                                    ),
-                                    year_of_study=new_year,
-                                    semester=new_semester
-                                )
+                                    ).order_by('start_date').first()
+                                    
+                                    if not next_year:
+                                        raise AcademicYear.DoesNotExist("No future academic year found")
+                                    
+                                    fee_structure = FeesStructure.objects.get(
+                                        programme=programme,
+                                        academic_year=next_year,
+                                        year_of_study=new_year,
+                                        semester=new_semester
+                                    )
+                                else:
+                                    fee_structure = FeesStructure.objects.get(
+                                        programme=programme,
+                                        academic_year=current_academic_year,
+                                        year_of_study=new_year,
+                                        semester=new_semester
+                                    )
                                 
                                 StudentFee.objects.create(
                                     student=student,
