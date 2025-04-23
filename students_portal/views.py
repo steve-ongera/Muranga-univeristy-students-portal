@@ -1765,6 +1765,11 @@ def promote_students(request):
                     messages.error(request, "Current academic year or semester not set in system")
                     return redirect('promote_students')
                 
+                # Get next academic year for potential use in fee structures
+                next_academic_year = AcademicYear.objects.filter(
+                    start_date__gt=current_academic_year.end_date
+                ).order_by('start_date').first()
+                
                 # Get all active students grouped by programme
                 active_students = Student.objects.filter(status='active').select_related('programme')
                 
@@ -1844,7 +1849,7 @@ def promote_students(request):
                             new_semester = current_semester + 1
                             
                             # If student is in final semester of the year, check global condition for year promotion
-                            next_academic_year = False
+                            next_year_promotion = False
                             if new_semester > programme.semesters_per_year:
                                 # For programmes with 2 semesters, we need to check if 3-semester programmes are ready
                                 # For programmes with 3 semesters, we need to check if all students reached semester 3
@@ -1861,7 +1866,7 @@ def promote_students(request):
                                 if promotion_allowed:
                                     new_year += 1
                                     new_semester = 1
-                                    next_academic_year = True
+                                    next_year_promotion = True
                                 else:
                                     # Define reason for not promoting
                                     reason = "Waiting for all students in programme to complete their final semester"
@@ -1878,30 +1883,21 @@ def promote_students(request):
                             student.current_semester = new_semester
                             student.save()
                             
+                            # Determine which academic year to use for the fee structure
+                            # For the next academic year transition, use the next_academic_year
+                            # For within-year semester changes, use the current_academic_year
+                            academic_year_for_fees = current_academic_year
+                            if next_year_promotion and next_academic_year:
+                                academic_year_for_fees = next_academic_year
+                            
                             # Create fee record for the new semester/year
                             try:
-                                if next_academic_year:
-                                    # Fix: Get the next academic year by properly ordering results
-                                    next_year = AcademicYear.objects.filter(
-                                        start_date__gt=current_academic_year.end_date
-                                    ).order_by('start_date').first()
-                                    
-                                    if not next_year:
-                                        raise AcademicYear.DoesNotExist("No future academic year found")
-                                    
-                                    fee_structure = FeesStructure.objects.get(
-                                        programme=programme,
-                                        academic_year=next_year,
-                                        year_of_study=new_year,
-                                        semester=new_semester
-                                    )
-                                else:
-                                    fee_structure = FeesStructure.objects.get(
-                                        programme=programme,
-                                        academic_year=current_academic_year,
-                                        year_of_study=new_year,
-                                        semester=new_semester
-                                    )
+                                fee_structure = FeesStructure.objects.get(
+                                    programme=programme,
+                                    academic_year=academic_year_for_fees,
+                                    year_of_study=new_year,
+                                    semester=new_semester
+                                )
                                 
                                 StudentFee.objects.create(
                                     student=student,
@@ -1914,15 +1910,20 @@ def promote_students(request):
                                 fee_created = True
                             except FeesStructure.DoesNotExist:
                                 fee_created = False
-                            except AcademicYear.DoesNotExist:
-                                fee_created = False
+                                # Log more detailed information about what wasn't found
+                                messages.warning(
+                                    request, 
+                                    f"Fee structure not found for {student.registration_number} in "
+                                    f"{academic_year_for_fees.name}, Year {new_year}, Semester {new_semester}"
+                                )
                             
                             promoted_students.append({
                                 **student_data,
                                 'new_year': new_year,
                                 'new_semester': new_semester,
                                 'fee_created': fee_created,
-                                'next_academic_year': next_academic_year
+                                'next_academic_year': next_year_promotion,
+                                'fee_academic_year': academic_year_for_fees.name if fee_created else "N/A"
                             })
                     else:
                         # Not promoted logic
@@ -1949,7 +1950,8 @@ def promote_students(request):
                             'from': f"Y{student['current_year']}S{student['current_semester']}",
                             'to': f"Y{student['new_year']}S{student['new_semester']}",
                             'next_academic_year': student.get('next_academic_year', False),
-                            'fee_status': "Created" if student['fee_created'] else "Not created (no fee structure)"
+                            'fee_status': "Created" if student['fee_created'] else "Not created (no fee structure)",
+                            'fee_academic_year': student.get('fee_academic_year', "N/A")
                         }
                     promoted_by_programme[promotion_key]['students'].append(student)
                 
