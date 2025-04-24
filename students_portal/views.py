@@ -4776,3 +4776,119 @@ def update_admin_security_settings(request):
     else:
         form = AdminSecuritySettingsForm(instance=profile)
     return render(request, 'admin/security_settings.html', {'form': form})
+
+
+
+from django.shortcuts import render
+from django.db.models import Count, Avg, Sum, Q, F, Case, When, FloatField
+from .models import Student, Programme, Department, StudentUnitGrade, FeesStructure, StudentFee, AcademicYear, Semester, StudentEnrollment
+
+def institutional_dashboard(request):
+    try:
+        current_academic_year = AcademicYear.objects.get(is_current=True)
+    except AcademicYear.DoesNotExist:
+        current_academic_year = AcademicYear.objects.order_by('-end_date').first()
+    
+    year_start = current_academic_year.start_date
+    year_end = current_academic_year.end_date
+
+    # Get current semester
+    try:
+        current_semester = Semester.objects.get(is_current=True)
+    except Semester.DoesNotExist:
+        current_semester = Semester.objects.filter(
+            academic_year=current_academic_year
+        ).order_by('-end_date').first()
+
+    # Student statistics
+    total_students = Student.objects.filter(
+        date_of_admission__lte=year_end
+    ).filter(
+        Q(expected_graduation_date__gte=year_start) | Q(expected_graduation_date__isnull=True)
+    ).count()
+
+    active_students = Student.objects.filter(
+        status='active',
+        date_of_admission__lte=year_end
+    ).filter(
+        Q(expected_graduation_date__gte=year_start) | Q(expected_graduation_date__isnull=True)
+    ).count()
+
+    gender_data = Student.objects.filter(
+        date_of_admission__lte=year_end
+    ).filter(
+        Q(expected_graduation_date__gte=year_start) | Q(expected_graduation_date__isnull=True)
+    ).values('gender').annotate(count=Count('id'))
+
+    gender_distribution = []
+    for item in gender_data:
+        percentage = (item['count'] / total_students) * 100 if total_students > 0 else 0
+        gender_distribution.append({
+            'gender': item['gender'],
+            'count': item['count'],
+            'percentage': percentage
+        })
+
+    # Academic performance - using StudentUnitGrade through StudentEnrollment
+    avg_grades = StudentUnitGrade.objects.filter(
+        enrollment__semester__academic_year=current_academic_year
+    ).aggregate(
+        avg_score=Avg('total_score'),
+        pass_rate=Avg(Case(When(is_pass=True, then=1), default=0, output_field=FloatField())) * 100
+    )
+
+    # Financial metrics
+    fee_data = FeesStructure.objects.filter(
+        academic_year=current_academic_year
+    ).aggregate(
+        total_billed=Sum('amount')
+    )
+
+    collected = StudentFee.objects.filter(
+        fee_structure__academic_year=current_academic_year
+    ).aggregate(
+        total_collected=Sum('amount_paid')
+    )
+
+    fee_data['total_collected'] = collected['total_collected'] or 0
+    fee_data['collection_rate'] = (
+        (fee_data['total_collected'] / fee_data['total_billed']) * 100
+        if fee_data.get('total_billed') and fee_data['total_billed'] > 0
+        else 0
+    )
+
+    # Programme statistics - corrected query path
+    top_programmes = Programme.objects.annotate(
+        student_count=Count(
+            'students',
+            filter=Q(
+                students__status='active',
+                students__date_of_admission__lte=year_end
+            ) & (Q(students__expected_graduation_date__gte=year_start) | Q(students__expected_graduation_date__isnull=True))
+        ),
+        avg_grade=Avg(
+            'students__enrollments__final_grade__total_score',
+            filter=Q(students__enrollments__semester__academic_year=current_academic_year)
+        ),
+        pass_rate=Avg(
+            Case(
+                When(students__enrollments__final_grade__is_pass=True, then=1),
+                default=0,
+                output_field=FloatField()
+            ),
+            filter=Q(students__enrollments__semester__academic_year=current_academic_year)
+        ) * 100
+    ).order_by('-student_count')[:5]
+
+    context = {
+        'current_academic_year': current_academic_year,
+        'current_semester': current_semester,
+        'total_students': total_students,
+        'active_students': active_students,
+        'gender_distribution': gender_distribution,
+        'avg_grades': avg_grades,
+        'fee_data': fee_data,
+        'top_programmes': top_programmes,
+    }
+
+    return render(request, 'analytics/institutional_dashboard.html', context)

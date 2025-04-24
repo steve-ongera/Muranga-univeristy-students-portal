@@ -1,0 +1,395 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Institutional Dashboard - {{ current_academic_year.name }}{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    :root {
+        --primary-green: #2E8B57;
+        --light-green: #8FBC8F;
+        --lighter-green: #F0FFF0;
+        --accent-green: #3CB371;
+        --dark-green: #006400;
+    }
+    
+    body {
+        background-color: #f8f9fa;
+    }
+    
+    .dashboard-header {
+        background-color: var(--primary-green);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card {
+        border: none;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s;
+        margin-bottom: 1.5rem;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-header {
+        background-color: var(--primary-green);
+        color: white;
+        border-radius: 0.5rem 0.5rem 0 0 !important;
+        font-weight: 600;
+    }
+    
+    .stat-card {
+        border-left: 4px solid var(--accent-green);
+    }
+    
+    .stat-card .card-title {
+        color: var(--dark-green);
+        font-size: 1rem;
+        font-weight: 600;
+    }
+    
+    .stat-card .card-value {
+        color: var(--primary-green);
+        font-size: 2rem;
+        font-weight: 700;
+    }
+    
+    .progress {
+        height: 10px;
+        border-radius: 5px;
+    }
+    
+    .progress-bar {
+        background-color: var(--accent-green);
+    }
+    
+    .table th {
+        background-color: var(--lighter-green);
+        color: var(--dark-green);
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(143, 188, 143, 0.1);
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="h2 mb-0"><i class="fas fa-university mr-2"></i> Institutional Dashboard</h1>
+                <p class="mb-0">{{ current_academic_year.name }} | {{ current_academic_year.start_date|date:"M d, Y" }} - {{ current_academic_year.end_date|date:"M d, Y" }}</p>
+            </div>
+            <div class="col-md-4 text-md-right">
+                <span class="badge badge-light p-2">
+                    <i class="fas fa-calendar-alt mr-1"></i> Current Semester: {{ current_semester.name }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics Row -->
+    <div class="row">
+        <!-- Total Students Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="card-title text-uppercase mb-1">Total Students</div>
+                            <div class="card-value mb-0">{{ total_students }}</div>
+                            <div class="mt-2 text-success">
+                                <small>{{ active_students }} active students</small>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-light-green"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Academic Performance Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="card-title text-uppercase mb-1">Academic Performance</div>
+                            <div class="card-value mb-0">{{ avg_grades.avg_score|floatformat:2 }}</div>
+                            <div class="mt-2 text-success">
+                                <small>{{ avg_grades.pass_rate|floatformat:1 }}% pass rate</small>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-graduation-cap fa-2x text-light-green"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Status Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="card-title text-uppercase mb-1">Financial Status</div>
+                            <div class="card-value mb-0">{{ fee_data.collection_rate|floatformat:1 }}%</div>
+                            <div class="mt-2 text-success">
+                                <small>Fee collection rate</small>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-money-bill-wave fa-2x text-light-green"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gender Balance Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="card-title text-uppercase mb-1">Gender Balance</div>
+                            {% for item in gender_distribution %}
+                            <div class="mb-1">
+                                <small>{{ item.gender }}: {{ item.percentage|floatformat:1 }}%</small>
+                                <div class="progress" style="height: 5px;">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                         style="width: {{ item.percentage }}%" 
+                                         aria-valuenow="{{ item.percentage }}" 
+                                         aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-venus-mars fa-2x text-light-green"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row">
+        <!-- Gender Distribution Chart -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Gender Distribution</span>
+                    <button class="btn btn-sm btn-outline-light">View Details</button>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="genderChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Summary Chart -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Financial Summary</span>
+                    <button class="btn btn-sm btn-outline-light">View Details</button>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light-green rounded text-white mb-2">
+                                <h6 class="mb-0">Total Billed</h6>
+                                <h4 class="mb-0">Ksh {{ fee_data.total_billed|floatformat:2 }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-accent-green rounded text-white mb-2">
+                                <h6 class="mb-0">Total Collected</h6>
+                                <h4 class="mb-0">Ksh {{ fee_data.total_collected|floatformat:2 }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="financeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Programmes Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Top Programmes by Enrollment</span>
+                    <button class="btn btn-sm btn-outline-light">View All</button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Programme</th>
+                                    <th>Department</th>
+                                    <th>Students</th>
+                                    <th>Avg. Grade</th>
+                                    <th>Pass Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for programme in top_programmes %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td><strong>{{ programme.name }}</strong></td>
+                                    <td>{{ programme.department.name }}</td>
+                                    <td>{{ programme.student_count }}</td>
+                                    <td>
+                                        <span class="badge badge-pill 
+                                            {% if programme.avg_grade >= 70 %}badge-success
+                                            {% elif programme.avg_grade >= 50 %}badge-warning
+                                            {% else %}badge-danger{% endif %}">
+                                            {{ programme.avg_grade|floatformat:2 }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar bg-success" role="progressbar" 
+                                                 style="width: {{ programme.pass_rate }}%" 
+                                                 aria-valuenow="{{ programme.pass_rate }}" 
+                                                 aria-valuemin="0" aria-valuemax="100">
+                                                {{ programme.pass_rate|floatformat:1 }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Gender Distribution Chart
+        var genderCtx = document.getElementById('genderChart').getContext('2d');
+        var genderLabels = [];
+        var genderData = [];
+        var genderColors = ['#2E8B57', '#8FBC8F', '#3CB371', '#006400'];
+        
+        {% for item in gender_distribution %}
+        genderLabels.push('{{ item.gender }}');
+        genderData.push({{ item.count }});
+        {% endfor %}
+        
+        var genderChart = new Chart(genderCtx, {
+            type: 'doughnut',
+            data: {
+                labels: genderLabels,
+                datasets: [{
+                    data: genderData,
+                    backgroundColor: genderColors,
+                    borderWidth: 1,
+                }],
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                var label = context.label || '';
+                                var value = context.raw || 0;
+                                var total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                var percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                },
+                cutout: '70%',
+            }
+        });
+
+        // Financial Chart
+        var financeCtx = document.getElementById('financeChart').getContext('2d');
+        var financeChart = new Chart(financeCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Billed', 'Collected'],
+                datasets: [{
+                    label: 'Amount (Ksh)',
+                    data: [
+                        {{ fee_data.total_billed|default:0 }}, 
+                        {{ fee_data.total_collected|default:0 }}
+                    ],
+                    backgroundColor: [
+                        'rgba(46, 139, 87, 0.7)',
+                        'rgba(60, 179, 113, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(46, 139, 87, 1)',
+                        'rgba(60, 179, 113, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'Ksh ' + value.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Ksh ' + context.raw.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
