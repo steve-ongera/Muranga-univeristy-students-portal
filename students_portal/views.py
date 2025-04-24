@@ -4145,6 +4145,13 @@ def settings_view(request):
 
 
 
+
+@login_required
+def settings_configuration(request): 
+    return render(request, 'settings/system_configuration.html')
+
+
+
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -4577,3 +4584,195 @@ def fee_statement(request):
     }
     
     return render(request, 'payment/fee_statement.html', context)
+
+
+
+from django.shortcuts import render
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def documentation_view(request):
+    # Sample documentation data
+    documentation_sections = [
+        {
+            'title': 'Getting Started',
+            'icon': 'bi-rocket',
+            'items': [
+                {'title': 'Introduction', 'description': 'Overview of the system'},
+                {'title': 'Registration', 'description': 'How to create an account'},
+                {'title': 'Login', 'description': 'Accessing your account'},
+            ]
+        },
+        {
+            'title': 'User Guide',
+            'icon': 'bi-person',
+            'items': [
+                {'title': 'Dashboard', 'description': 'Navigating the main interface'},
+                {'title': 'Profile Settings', 'description': 'Managing your account'},
+                {'title': 'Notifications', 'description': 'Configuring alerts'},
+            ]
+        },
+        {
+            'title': 'Features',
+            'icon': 'bi-gear',
+            'items': [
+                {'title': 'Course Management', 'description': 'Enrolling in courses'},
+                {'title': 'Grades', 'description': 'Viewing your academic progress'},
+                {'title': 'Calendar', 'description': 'Scheduling and events'},
+            ]
+        }
+    ]
+
+    context = {
+        'documentation_sections': documentation_sections
+    }
+    return render(request, 'documentation/documentation.html', context)
+
+
+
+
+from django.shortcuts import render
+from django.contrib import messages
+from .models import DataCategory, DataRecord
+from .forms import DataUploadForm, DataCategoryForm
+
+def data_management(request):
+    # System messages are handled in the template
+    
+    # Get all data categories
+    categories = DataCategory.objects.all().order_by('name')
+    
+    # Get all data records (you might want to paginate this in a real application)
+    records = DataRecord.objects.select_related('category').order_by('-upload_date')
+    
+    # Handle form submissions
+    if request.method == 'POST':
+        if 'upload_data' in request.POST:
+            upload_form = DataUploadForm(request.POST, request.FILES)
+            category_form = DataCategoryForm()
+            
+            if upload_form.is_valid():
+                data_record = upload_form.save(commit=False)
+                data_record.uploaded_by = request.user
+                data_record.save()
+                messages.success(request, 'Data file uploaded successfully!')
+                
+        elif 'add_category' in request.POST:
+            category_form = DataCategoryForm(request.POST)
+            upload_form = DataUploadForm()
+            
+            if category_form.is_valid():
+                category_form.save()
+                messages.success(request, 'New data category added successfully!')
+        else:
+            upload_form = DataUploadForm()
+            category_form = DataCategoryForm()
+    else:
+        upload_form = DataUploadForm()
+        category_form = DataCategoryForm()
+    
+    context = {
+        'categories': categories,
+        'records': records,
+        'upload_form': upload_form,
+        'category_form': category_form,
+    }
+    
+    return render(request, 'settings/data_management.html', context)
+
+
+
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.shortcuts import render
+from django.contrib import messages
+from .models import AdminProfile
+from django.conf import settings
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser or u.is_staff)
+def admin_profile(request):
+    # Get or create admin profile
+    admin_profile, created = AdminProfile.objects.get_or_create(user=request.user)
+    
+    # Get failed login attempts (you'll need to implement this logic)
+    login_attempts = 0  # Replace with actual logic
+    
+    context = {
+        'admin_profile': admin_profile,
+        'login_attempts': login_attempts,
+    }
+    
+    return render(request, 'admin/admin_profile.html', context)
+
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib import messages
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
+
+from .models import AdminProfile
+from .forms import AdminProfileForm, AdminProfilePictureForm, AdminSecuritySettingsForm
+
+def is_admin(user):
+    return user.is_superuser or user.is_staff
+
+@login_required
+@user_passes_test(is_admin)
+def update_admin_profile(request):
+    profile, _ = AdminProfile.objects.get_or_create(user=request.user)
+    if request.method == 'POST':
+        form = AdminProfileForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully.")
+            return redirect('admin_profile')
+    else:
+        form = AdminProfileForm(instance=profile)
+    return render(request, 'admin/update_profile.html', {'form': form})
+
+
+@login_required
+@user_passes_test(is_admin)
+def change_admin_password(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Prevents logout
+            messages.success(request, "Password changed successfully.")
+            return redirect('admin_profile')
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'admin/change_password.html', {'form': form})
+
+
+@login_required
+@user_passes_test(is_admin)
+def update_admin_profile_picture(request):
+    profile, _ = AdminProfile.objects.get_or_create(user=request.user)
+    if request.method == 'POST':
+        form = AdminProfilePictureForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile picture updated.")
+            return redirect('admin_profile')
+    else:
+        form = AdminProfilePictureForm(instance=profile)
+    return render(request, 'admin/update_picture.html', {'form': form})
+
+
+@login_required
+@user_passes_test(is_admin)
+def update_admin_security_settings(request):
+    profile, _ = AdminProfile.objects.get_or_create(user=request.user)
+    if request.method == 'POST':
+        form = AdminSecuritySettingsForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Security settings updated.")
+            return redirect('admin_profile')
+    else:
+        form = AdminSecuritySettingsForm(instance=profile)
+    return render(request, 'admin/security_settings.html', {'form': form})

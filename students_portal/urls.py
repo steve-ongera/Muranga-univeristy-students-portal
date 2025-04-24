@@ -103,6 +103,8 @@ urlpatterns = [
      views.UnitStudentListPDFView.as_view(), name='unit_student_list_pdf'),
     path('hep-support/', views.help_support, name='help_support'),
     path('settings/', views.settings_view, name='settings_view'),
+    #settings_configuration
+    path('settings_configuration/', views.settings_configuration, name='settings_configuration'),
     path('virtual-assistant/', views.virtual_assistant, name='virtual_assistant'),
     path('process-query/', views.process_assistant_query, name='process_assistant_query'),
     path('forum/', views.discussion_forum, name='discussion_forum'),
@@ -116,6 +118,14 @@ urlpatterns = [
     path('clubs/leave/<int:club_id>/', views.leave_club, name='leave_club'),
     path('club-events/', views.club_events, name='club_events'),
     path('club-events/<int:club_id>/', views.club_events, name='club_events_detail'),
+    path('documentation/', views.documentation_view, name='documentation'),
+    path('data_management/', views.data_management, name='data_management'),
+
+    path('admin_profile/profile/', views.admin_profile, name='admin_profile'),
+    path('admin_profile/profile/update/', views.update_admin_profile, name='update_admin_profile'),
+    path('admin_profile/profile/change-password/', views.change_admin_password, name='change_admin_password'),
+    path('admin_profile/profile/update-picture/', views.update_admin_profile_picture, name='update_admin_profile_picture'),
+    path('admin_profile/profile/security-settings/', views.update_admin_security_settings, name='update_admin_security_settings'),
 
 
 ]

@@ -367,3 +367,45 @@ class GroupCreationForm(forms.ModelForm):
         widgets = {
             'description': forms.Textarea(attrs={'rows': 3}),
         }
+
+
+from django import forms
+from .models import DataRecord, DataCategory
+
+class DataUploadForm(forms.ModelForm):
+    class Meta:
+        model = DataRecord
+        fields = ['title', 'description', 'data_file', 'category']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+        }
+
+class DataCategoryForm(forms.ModelForm):
+    class Meta:
+        model = DataCategory
+        fields = ['name']
+
+
+from django import forms
+from .models import AdminProfile
+
+class AdminProfileForm(forms.ModelForm):
+    class Meta:
+        model = AdminProfile
+        fields = ['phone', 'position', 'profile_picture']  # Replace with actual fields in your model
+        widgets = {
+            'phone': forms.TextInput(attrs={'placeholder': 'Phone Number'}),
+            'position': forms.TextInput(attrs={'placeholder': 'Position/Role'}),
+        }
+
+
+class AdminProfilePictureForm(forms.ModelForm):
+    class Meta:
+        model = AdminProfile
+        fields = ['profile_picture']
+
+class AdminSecuritySettingsForm(forms.ModelForm):
+    class Meta:
+        model = AdminProfile
+        fields = '__all__'  # Example fields
+

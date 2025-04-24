@@ -41,7 +41,10 @@
                             </div>
                             
                             <h3 class="card-title text-university">{{ student.first_name }} {{ student.last_name }}</h3>
-                            <p class="badge bg-university-secondary fs-6">{{ student.programme }}</p>
+                            <div class="d-flex flex-wrap align-items-center">
+                                <p class="badge bg-university-secondary fs-16 mb-0 me-2">{{ student.programme }}</p>
+                            </div>
+                              
                             
                             <div class="d-grid gap-2 mt-4">
                                 <a href="{% url 'student_update' student.pk %}" class="btn btn-university">

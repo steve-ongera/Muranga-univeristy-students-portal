@@ -1065,3 +1065,33 @@ class ClubEvent(models.Model):
         elif self.end_datetime < now:
             self.status = 'completed'
         super().save(*args, **kwargs)
+
+
+
+
+class DataCategory(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class DataRecord(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    data_file = models.FileField(upload_to='data_files/')
+    upload_date = models.DateTimeField(auto_now_add=True)
+    category = models.ForeignKey(DataCategory, on_delete=models.CASCADE, related_name='records')
+    uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.title
+
+
+class AdminProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    phone = models.CharField(max_length=15, blank=True)
+    position = models.CharField(max_length=100, blank=True)
+    profile_picture = models.ImageField(upload_to='admin_profiles/', default='default.png')
+
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
