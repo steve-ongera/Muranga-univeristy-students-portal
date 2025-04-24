@@ -1,0 +1,713 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Performance Analysis - {{ current_academic_year.name }}{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    :root {
+        --primary-green: #2E8B57;
+        --light-green: #8FBC8F;
+        --lighter-green: #F0FFF0;
+        --accent-green: #3CB371;
+        --dark-green: #006400;
+    }
+    
+    body {
+        background-color: #f8f9fa;
+    }
+    
+    .dashboard-header {
+        background-color: var(--primary-green);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card {
+        border: none;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s;
+        margin-bottom: 1.5rem;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-header {
+        background-color: var(--primary-green);
+        color: white;
+        border-radius: 0.5rem 0.5rem 0 0 !important;
+        font-weight: 600;
+    }
+    
+    .stat-card {
+        border-left: 4px solid var(--accent-green);
+    }
+    
+    .stat-card .card-title {
+        color: var(--dark-green);
+        font-size: 1rem;
+        font-weight: 600;
+    }
+    
+    .stat-card .card-value {
+        color: var(--primary-green);
+        font-size: 2rem;
+        font-weight: 700;
+    }
+    
+    .progress {
+        height: 10px;
+        border-radius: 5px;
+    }
+    
+    .progress-bar {
+        background-color: var(--accent-green);
+    }
+    
+    .table th {
+        background-color: var(--lighter-green);
+        color: var(--dark-green);
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(143, 188, 143, 0.1);
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+    
+    .filter-card {
+        background-color: var(--lighter-green);
+        border-left: 4px solid var(--dark-green);
+    }
+    
+    .badge-success {
+        background-color: var(--accent-green);
+    }
+    
+    .badge-warning {
+        background-color: #FFA500;
+    }
+    
+    .badge-danger {
+        background-color: #DC3545;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="h2 mb-0"><i class="fas fa-chart-line mr-2"></i> Performance Analysis Dashboard</h1>
+                
+            </div>
+            <div class="col-md-4 text-md-right">
+                <span class="badge badge-light p-2">
+                    <i class="fas fa-calendar-alt mr-1"></i> Current Semester: {{ current_semester.name }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Card -->
+    <div class="card filter-card mb-4">
+        <div class="card-header">
+            <i class="fas fa-filter mr-1"></i> Filters
+        </div>
+        <div class="card-body">
+            <form method="get" class="form-inline">
+                <div class="form-group mr-3 mb-2">
+                    <label for="faculty" class="mr-2">Faculty:</label>
+                    <select name="faculty" id="faculty" class="form-control" onchange="this.form.submit()">
+                        <option value="">All</option>
+                        {% for faculty in faculties %}
+                            <option value="{{ faculty.id }}" {% if selected_faculty == faculty.id|stringformat:"s" %}selected{% endif %}>{{ faculty.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group mr-3 mb-2">
+                    <label for="department" class="mr-2">Department:</label>
+                    <select name="department" id="department" class="form-control" onchange="this.form.submit()">
+                        <option value="">All</option>
+                        {% for department in departments %}
+                            <option value="{{ department.id }}" {% if selected_department == department.id|stringformat:"s" %}selected{% endif %}>{{ department.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group mr-3 mb-2">
+                    <label for="programme" class="mr-2">Programme:</label>
+                    <select name="programme" id="programme" class="form-control" onchange="this.form.submit()">
+                        <option value="">All</option>
+                        {% for programme in programmes %}
+                            <option value="{{ programme.id }}" {% if selected_programme == programme.id|stringformat:"s" %}selected{% endif %}>{{ programme.name }} ({{ programme.code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                {% if selected_programme %}
+                <div class="form-group mr-3 mb-2">
+                    <label for="year_of_study" class="mr-2">Year:</label>
+                    <select name="year_of_study" id="year_of_study" class="form-control" onchange="this.form.submit()">
+                        <option value="">All</option>
+                        {% for year in "123456"|make_list %}
+                            <option value="{{ year }}" {% if selected_year_of_study == year %}selected{% endif %}>Year {{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+                
+                <div class="form-group mr-3 mb-2">
+                    <label for="semester" class="mr-2">Semester:</label>
+                    <select name="semester" id="semester" class="form-control" onchange="this.form.submit()">
+                        {% for semester in semesters %}
+                            <option value="{{ semester.id }}" {% if selected_semester == semester.id|stringformat:"s" %}selected{% endif %}>{{ semester.academic_year.name }} - Semester {{ semester.number }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                {% if selected_programme %}
+                <div class="form-group mr-3 mb-2">
+                    <label for="unit" class="mr-2">Unit:</label>
+                    <select name="unit" id="unit" class="form-control" onchange="this.form.submit()">
+                        <option value="">All</option>
+                        {% for unit in units %}
+                            <option value="{{ unit.id }}" {% if selected_unit == unit.id|stringformat:"s" %}selected{% endif %}>{{ unit.code }} - {{ unit.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <!-- Programme Performance Summary -->
+    {% if programme_performance %}
+    <div class="row">
+        <!-- Average Score Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="card-title text-uppercase mb-1">Average Score</div>
+                            <div class="card-value mb-0">{{ programme_performance.average_score }}%</div>
+                            <div class="mt-2 text-success">
+                                <small>Overall programme performance</small>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-bar fa-2x text-light-green"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pass Rate Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="card-title text-uppercase mb-1">Pass Rate</div>
+                            <div class="card-value mb-0">{{ programme_performance.pass_rate }}%</div>
+                            <div class="mt-2 text-success">
+                                <small>Students passing all units</small>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-light-green"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Students Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="card-title text-uppercase mb-1">Total Students</div>
+                            <div class="card-value mb-0">{{ programme_performance.total_students }}</div>
+                            <div class="mt-2 text-success">
+                                <small>Enrolled in programme</small>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-light-green"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Units Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="card-title text-uppercase mb-1">Total Units</div>
+                            <div class="card-value mb-0">{{ programme_performance.total_units }}</div>
+                            <div class="mt-2 text-success">
+                                <small>In current semester</small>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-book fa-2x text-light-green"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Charts Row -->
+    <div class="row">
+        <!-- Historical Trends Chart -->
+        {% if historical_trends %}
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Historical Performance Trends</span>
+                    <button class="btn btn-sm btn-outline-light">View Details</button>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="historicalTrendsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Unit Performance Chart -->
+        {% if unit_performance %}
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Unit Performance Breakdown</span>
+                    <button class="btn btn-sm btn-outline-light">View All</button>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="unitPerformanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Unit Performance Details -->
+    {% if performance_data %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>
+                        <i class="fas fa-book mr-1"></i> 
+                        Unit Performance - {{ performance_data.unit.code }}: {{ performance_data.unit.name }}
+                    </span>
+                    <div>
+                        <span class="badge badge-light mr-2">
+                            Semester: {{ performance_data.semester.academic_year.name }} - S{{ performance_data.semester.number }}
+                        </span>
+                        <button class="btn btn-sm btn-outline-light">Export Data</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Assessment Performance -->
+                        <div class="col-md-6">
+                            <h5 class="mb-3 text-success"><i class="fas fa-tasks mr-1"></i> Assessment Performance</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Assessment</th>
+                                            <th>Type</th>
+                                            <th>Date</th>
+                                            <th>Avg Score</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for assessment in performance_data.assessment_performance %}
+                                        <tr>
+                                            <td>{{ assessment.assessment_name }}</td>
+                                            <td>{{ assessment.assessment_type }}</td>
+                                            <td>{{ assessment.date }}</td>
+                                            <td>
+                                                <span class="badge 
+                                                    {% if assessment.average_score >= 70 %}badge-success
+                                                    {% elif assessment.average_score >= 50 %}badge-warning
+                                                    {% else %}badge-danger{% endif %}">
+                                                    {{ assessment.average_score }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Attendance Overview -->
+                        <div class="col-md-6">
+                            <h5 class="mb-3 text-success"><i class="fas fa-calendar-check mr-1"></i> Attendance Overview</h5>
+                            <div class="chart-container" style="height: 250px;">
+                                <canvas id="attendanceTrendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Attendance vs Performance Correlation -->
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <h5 class="mb-3 text-success"><i class="fas fa-chart-scatter mr-1"></i> Attendance vs Performance Correlation</h5>
+                            <div class="chart-container" style="height: 300px;">
+                                <canvas id="attendanceCorrelationChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Student Performance List -->
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <h5 class="mb-3 text-success"><i class="fas fa-user-graduate mr-1"></i> Student Performance</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Reg No</th>
+                                            <th>Student</th>
+                                            <th>Total Score</th>
+                                            <th>Grade</th>
+                                            <th>Status</th>
+                                            <th>Attendance</th>
+                                            <th>Present</th>
+                                            <th>Sessions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for student in performance_data.student_performance %}
+                                        <tr>
+                                            <td>{{ student.registration_number }}</td>
+                                            <td>{{ student.student.get_full_name }}</td>
+                                            <td>{{ student.total_score|default:"-" }}</td>
+                                            <td>{{ student.grade|default:"-" }}</td>
+                                            <td>
+                                                {% if student.is_pass %}
+                                                <span class="badge badge-success">Pass</span>
+                                                {% else %}
+                                                <span class="badge badge-danger">Fail</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar 
+                                                        {% if student.attendance_rate >= 80 %}bg-success
+                                                        {% elif student.attendance_rate >= 50 %}bg-warning
+                                                        {% else %}bg-danger{% endif %}" 
+                                                        role="progressbar" 
+                                                        style="width: {{ student.attendance_rate }}%" 
+                                                        aria-valuenow="{{ student.attendance_rate }}" 
+                                                        aria-valuemin="0" aria-valuemax="100">
+                                                        {{ student.attendance_rate }}%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>{{ student.present_count }}</td>
+                                            <td>{{ student.total_sessions }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Department Statistics -->
+    {% if department_stats %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-university mr-1"></i> Department Statistics</span>
+                    <button class="btn btn-sm btn-outline-light">View All</button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Programme</th>
+                                    <th>Avg Score</th>
+                                    <th>Pass Rate</th>
+                                    <th>Students</th>
+                                    <th>Progress</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in department_stats %}
+                                <tr>
+                                    <td><strong>{{ stat.programme.name }}</strong> ({{ stat.programme.code }})</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if stat.average_score >= 70 %}badge-success
+                                            {% elif stat.average_score >= 50 %}badge-warning
+                                            {% else %}badge-danger{% endif %}">
+                                            {{ stat.average_score }}%
+                                        </span>
+                                    </td>
+                                    <td>{{ stat.pass_rate }}%</td>
+                                    <td>{{ stat.student_count }}</td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar bg-success" role="progressbar" 
+                                                 style="width: {{ stat.pass_rate }}%" 
+                                                 aria-valuenow="{{ stat.pass_rate }}" 
+                                                 aria-valuemin="0" aria-valuemax="100">
+                                                {{ stat.pass_rate }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Historical Trends Chart
+        {% if historical_trends %}
+        var ctx = document.getElementById('historicalTrendsChart').getContext('2d');
+        var historicalTrendsChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [{% for trend in historical_trends %}"{{ trend.semester }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+                datasets: [
+                    {
+                        label: 'Average Score',
+                        data: [{% for trend in historical_trends %}{{ trend.average_score }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                        borderColor: 'rgba(46, 139, 87, 1)',
+                        backgroundColor: 'rgba(46, 139, 87, 0.2)',
+                        tension: 0.1,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Pass Rate',
+                        data: [{% for trend in historical_trends %}{{ trend.pass_rate }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                        borderColor: 'rgba(60, 179, 113, 1)',
+                        backgroundColor: 'rgba(60, 179, 113, 0.2)',
+                        tension: 0.1,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Average Score (%)'
+                        },
+                        min: 0,
+                        max: 100
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Pass Rate (%)'
+                        },
+                        min: 0,
+                        max: 100,
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                    }
+                }
+            }
+        });
+        {% endif %}
+        
+        // Unit Performance Chart
+        {% if unit_performance %}
+        var ctx2 = document.getElementById('unitPerformanceChart').getContext('2d');
+        var unitPerformanceChart = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: [{% for unit in unit_performance %}"{{ unit.unit_code }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+                datasets: [{
+                    label: 'Average Score',
+                    data: [{% for unit in unit_performance %}{{ unit.average_score }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                    backgroundColor: 'rgba(46, 139, 87, 0.7)',
+                    borderColor: 'rgba(46, 139, 87, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Average Score (%)'
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            afterLabel: function(context) {
+                                var data = context.dataset.data[context.dataIndex];
+                                var unit = {{ unit_performance|safe }}[context.dataIndex];
+                                return [
+                                    'Pass Rate: ' + unit.pass_rate + '%',
+                                    'Students: ' + unit.total_students
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        {% endif %}
+        
+        // Attendance Trend Chart
+        {% if performance_data and performance_data.attendance_dates %}
+        var ctx3 = document.getElementById('attendanceTrendChart').getContext('2d');
+        var attendanceTrendChart = new Chart(ctx3, {
+            type: 'bar',
+            data: {
+                labels: {{ performance_data.attendance_dates|safe }},
+                datasets: [
+                    {
+                        label: 'Present',
+                        data: {{ performance_data.present_counts|safe }},
+                        backgroundColor: 'rgba(46, 139, 87, 0.6)',
+                        borderColor: 'rgba(46, 139, 87, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Absent',
+                        data: {{ performance_data.absent_counts|safe }},
+                        backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Students'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    }
+                }
+            }
+        });
+        {% endif %}
+        
+        // Attendance vs Performance Correlation
+        {% if performance_data and performance_data.attendance_correlation_data %}
+        var ctx4 = document.getElementById('attendanceCorrelationChart').getContext('2d');
+        var attendanceCorrelationChart = new Chart(ctx4, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Students',
+                    data: {{ performance_data.attendance_correlation_data|safe }},
+                    backgroundColor: 'rgba(60, 179, 113, 0.6)',
+                    pointRadius: 8,
+                    pointHoverRadius: 10
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.raw.student + ': ' + context.raw.y + '% score, ' + context.raw.x + '% attendance';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Attendance Rate (%)'
+                        },
+                        min: 0,
+                        max: 100
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Total Score (%)'
+                        },
+                        min: 0,
+                        max: 100
+                    }
+                }
+            }
+        });
+        {% endif %}
+    });
+</script>
+{% endblock %}

@@ -4892,3 +4892,296 @@ def institutional_dashboard(request):
     }
 
     return render(request, 'analytics/institutional_dashboard.html', context)
+
+
+from django.shortcuts import render, get_object_or_404
+from django.db.models import Avg, Count, Sum, F, Q
+from django.http import JsonResponse
+from .models import (
+    Student, Programme, Unit, ProgrammeUnit, StudentEnrollment, 
+    StudentScore, StudentUnitGrade, AttendanceRecord, StudentAttendance,
+    Semester, AcademicYear, Department, Faculty
+)
+from datetime import datetime
+import json
+from collections import defaultdict
+
+def performance_analysis(request):
+    # Get filter parameters from request
+    programme_id = request.GET.get('programme')
+    semester_id = request.GET.get('semester')
+    unit_id = request.GET.get('unit')
+    year_of_study = request.GET.get('year_of_study')
+    department_id = request.GET.get('department')
+    faculty_id = request.GET.get('faculty')
+    
+    # Base querysets
+    programmes = Programme.objects.all()
+    semesters = Semester.objects.filter(is_current=True)  # Default to current semester
+    units = Unit.objects.all()
+    departments = Department.objects.all()
+    faculties = Faculty.objects.all()
+    
+    # Apply filters if provided
+    if faculty_id:
+        departments = departments.filter(faculty_id=faculty_id)
+        programmes = programmes.filter(department__faculty_id=faculty_id)
+    
+    if department_id:
+        programmes = programmes.filter(department_id=department_id)
+    
+    if programme_id:
+        programme = get_object_or_404(Programme, pk=programme_id)
+        semesters = semesters.filter(academic_year__is_current=True)
+        units = units.filter(programme_units__programme=programme)
+        
+        if year_of_study:
+            units = units.filter(programme_units__year_of_study=year_of_study)
+    
+    if semester_id:
+        semester = get_object_or_404(Semester, pk=semester_id)
+    else:
+        semester = semesters.first()
+    
+    if unit_id:
+        unit = get_object_or_404(Unit, pk=unit_id)
+    else:
+        unit = None
+    
+    # Performance data collection
+    performance_data = []
+    attendance_data = []
+    programme_performance = []
+    unit_performance = []
+    
+    # 1. Programme-wide performance analysis
+    if programme_id:
+        # Get all students in the programme
+        students = Student.objects.filter(programme_id=programme_id)
+        
+        # Get all units in the programme
+        programme_units = ProgrammeUnit.objects.filter(programme_id=programme_id)
+        
+        # Get current semester or selected semester
+        current_semester = semester
+        
+        # Calculate average performance per unit
+        for pu in programme_units.filter(semester=current_semester.number if current_semester else None):
+            enrollments = StudentEnrollment.objects.filter(
+                programme_unit=pu,
+                semester=current_semester
+            )
+            
+            grades = StudentUnitGrade.objects.filter(enrollment__in=enrollments)
+            
+            if grades.exists():
+                avg_score = grades.aggregate(avg=Avg('total_score'))['avg']
+                pass_rate = grades.filter(is_pass=True).count() / grades.count() * 100
+                
+                unit_performance.append({
+                    'unit_code': pu.unit.code,
+                    'unit_name': pu.unit.name,
+                    'year_of_study': pu.year_of_study,
+                    'semester': pu.semester,
+                    'average_score': round(avg_score, 2) if avg_score else 0,
+                    'pass_rate': round(pass_rate, 2) if pass_rate else 0,
+                    'total_students': enrollments.count()
+                })
+        
+        # Calculate overall programme performance
+        all_grades = StudentUnitGrade.objects.filter(
+            enrollment__student__programme_id=programme_id,
+            enrollment__semester=current_semester
+        )
+        
+        if all_grades.exists():
+            overall_avg = all_grades.aggregate(avg=Avg('total_score'))['avg']
+            overall_pass_rate = all_grades.filter(is_pass=True).count() / all_grades.count() * 100
+            
+            programme_performance = {
+                'programme_name': programme.name,
+                'programme_code': programme.code,
+                'average_score': round(overall_avg, 2) if overall_avg else 0,
+                'pass_rate': round(overall_pass_rate, 2) if overall_pass_rate else 0,
+                'total_students': students.count(),
+                'total_units': programme_units.count()
+            }
+    
+    # 2. Unit-specific performance analysis
+    if unit_id and semester_id:
+        # Get all enrollments for this unit in this semester
+        enrollments = StudentEnrollment.objects.filter(
+            programme_unit__unit_id=unit_id,
+            semester_id=semester_id
+        )
+        
+        # Get grades for these enrollments
+        grades = StudentUnitGrade.objects.filter(enrollment__in=enrollments)
+        
+        # Get all assessments for this unit
+        assessments = Assessment.objects.filter(
+            unit_allocation__programme_unit__unit_id=unit_id,
+            unit_allocation__semester_id=semester_id
+        )
+        
+        # Get attendance records for this unit
+        attendance_records = AttendanceRecord.objects.filter(
+            unit_allocation__programme_unit__unit_id=unit_id,
+            unit_allocation__semester_id=semester_id
+        ).order_by('date')
+        
+        # Performance by assessment
+        assessment_performance = []
+        for assessment in assessments:
+            scores = StudentScore.objects.filter(assessment=assessment)
+            if scores.exists():
+                avg_score = scores.aggregate(avg=Avg('score'))['avg']
+                assessment_performance.append({
+                    'assessment_name': assessment.name,
+                    'assessment_type': assessment.assessment_type.name,
+                    'max_score': assessment.max_score,
+                    'average_score': round(avg_score, 2) if avg_score else 0,
+                    'date': assessment.date
+                })
+        
+        # Attendance data
+        attendance_stats = []
+        attendance_dates = []
+        present_counts = []
+        absent_counts = []
+        
+        for record in attendance_records:
+            present = StudentAttendance.objects.filter(
+                attendance_record=record,
+                is_present=True
+            ).count()
+            absent = StudentAttendance.objects.filter(
+                attendance_record=record,
+                is_present=False
+            ).count()
+            
+            attendance_stats.append({
+                'date': record.date,
+                'week_number': record.week_number,
+                'topic': record.topic,
+                'present': present,
+                'absent': absent,
+                'attendance_rate': round(present / (present + absent) * 100, 2) if (present + absent) > 0 else 0
+            })
+            
+            attendance_dates.append(record.date.strftime('%Y-%m-%d'))
+            present_counts.append(present)
+            absent_counts.append(absent)
+        
+        # Student-wise performance and attendance
+        student_performance = []
+        for enrollment in enrollments:
+            grade = grades.filter(enrollment=enrollment).first()
+            student_attendance = StudentAttendance.objects.filter(
+                attendance_record__in=attendance_records,
+                student=enrollment.student
+            )
+            
+            present_count = student_attendance.filter(is_present=True).count()
+            total_sessions = attendance_records.count()
+            attendance_rate = round(present_count / total_sessions * 100, 2) if total_sessions > 0 else 0
+            
+            student_performance.append({
+                'student': enrollment.student,
+                'registration_number': enrollment.student.registration_number,
+                'total_score': grade.total_score if grade else None,
+                'grade': grade.grade.grade if grade and grade.grade else None,
+                'is_pass': grade.is_pass if grade else False,
+                'attendance_rate': attendance_rate,
+                'present_count': present_count,
+                'total_sessions': total_sessions
+            })
+        
+        # Correlation between attendance and performance
+        attendance_correlation_data = []
+        for sp in student_performance:
+            if sp['total_score'] is not None:
+                attendance_correlation_data.append({
+                    'x': sp['attendance_rate'],
+                    'y': float(sp['total_score']),
+                    'student': sp['registration_number']
+                })
+        
+        performance_data = {
+            'unit': unit,
+            'semester': semester,
+            'assessment_performance': assessment_performance,
+            'student_performance': student_performance,
+            'attendance_stats': attendance_stats,
+            'attendance_correlation_data': attendance_correlation_data,
+            'attendance_dates': json.dumps(attendance_dates),
+            'present_counts': json.dumps(present_counts),
+            'absent_counts': json.dumps(absent_counts)
+        }
+    
+    # 3. Historical trends for programme
+    historical_trends = []
+    if programme_id:
+        # Get all semesters for this programme
+        semesters_for_programme = Semester.objects.filter(
+            academic_year__is_current=False  # Historical data
+        ).order_by('academic_year__start_date', 'number')
+        
+        for sem in semesters_for_programme:
+            grades = StudentUnitGrade.objects.filter(
+                enrollment__student__programme_id=programme_id,
+                enrollment__semester=sem
+            )
+            
+            if grades.exists():
+                avg_score = grades.aggregate(avg=Avg('total_score'))['avg']
+                pass_rate = grades.filter(is_pass=True).count() / grades.count() * 100
+                
+                historical_trends.append({
+                    'semester': f"{sem.academic_year.name} S{sem.number}",
+                    'average_score': round(avg_score, 2) if avg_score else 0,
+                    'pass_rate': round(pass_rate, 2) if pass_rate else 0
+                })
+    
+    # 4. Department-wide analysis
+    department_stats = []
+    if department_id:
+        programmes_in_dept = Programme.objects.filter(department_id=department_id)
+        
+        for prog in programmes_in_dept:
+            grades = StudentUnitGrade.objects.filter(
+                enrollment__student__programme=prog,
+                enrollment__semester=semester
+            )
+            
+            if grades.exists():
+                avg_score = grades.aggregate(avg=Avg('total_score'))['avg']
+                pass_rate = grades.filter(is_pass=True).count() / grades.count() * 100
+                
+                department_stats.append({
+                    'programme': prog,
+                    'average_score': round(avg_score, 2) if avg_score else 0,
+                    'pass_rate': round(pass_rate, 2) if pass_rate else 0,
+                    'student_count': Student.objects.filter(programme=prog).count()
+                })
+    
+    context = {
+        'programmes': programmes,
+        'semesters': semesters,
+        'units': units,
+        'departments': departments,
+        'faculties': faculties,
+        'selected_programme': programme_id,
+        'selected_semester': semester_id,
+        'selected_unit': unit_id,
+        'selected_year_of_study': year_of_study,
+        'selected_department': department_id,
+        'selected_faculty': faculty_id,
+        'performance_data': performance_data,
+        'programme_performance': programme_performance,
+        'unit_performance': unit_performance,
+        'historical_trends': historical_trends,
+        'department_stats': department_stats
+    }
+    
+    return render(request, 'performance/analysis.html', context)

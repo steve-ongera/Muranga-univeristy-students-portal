@@ -127,5 +127,6 @@ urlpatterns = [
     path('admin_profile/profile/update-picture/', views.update_admin_profile_picture, name='update_admin_profile_picture'),
     path('admin_profile/profile/security-settings/', views.update_admin_security_settings, name='update_admin_security_settings'),
     path('dashboard/institutional/', views.institutional_dashboard, name='institutional_dashboard'),
+    path('performance_analysis/', views.performance_analysis, name='performance_analysis'),
 
 ]
