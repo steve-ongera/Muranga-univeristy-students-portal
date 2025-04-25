@@ -3,48 +3,106 @@
 {% block content %}
 
 <style>
+  :root {
+    --primary-green: #2e7d32; /* Deep green for primary elements */
+    --light-green: #a5d6a7; /* Light green for backgrounds */
+    --pale-green: #e8f5e9; /* Very light green for subtle backgrounds */
+    --white: #ffffff;
+    --text-dark: #263238;
+    --text-muted: #546e7a;
+    --border-light: #c8e6c9;
+  }
+  
+  
+  
   .profile-card {
-    background: white;
+    background: var(--white);
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     padding: 25px;
     text-align: center;
+    
   }
+  
   .profile-img {
     width: 150px;
     height: 150px;
     object-fit: cover;
     border-radius: 50%;
-    border: 3px solid #f0f0f0;
+    border: 3px solid var(--light-green);
     margin: 0 auto 15px;
   }
+  
   .info-card {
-    background: white;
+    background: var(--white);
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     padding: 25px;
+   
   }
+  
   .info-row {
     padding: 10px 0;
-    border-bottom: 1px solid #f5f5f5;
+    border-bottom: 1px solid var(--border-light);
   }
+  
   .info-row:last-child {
     border-bottom: none;
   }
+  
   .label {
     font-weight: 600;
-    color: #555;
+    color: var(--text-dark);
   }
+  
+  .nav-tabs {
+    border-bottom: 1px solid var(--light-green);
+  }
+  
+  .nav-tabs .nav-link {
+    color: var(--text-muted);
+    border: none;
+    padding: 10px 15px;
+    margin-right: 5px;
+  }
+  
+  .nav-tabs .nav-link:hover {
+    color: var(--primary-green);
+  }
+  
   .nav-tabs .nav-link.active {
     font-weight: 600;
-    color: #2575fc;
-    border-bottom: 2px solid #2575fc;
+    color: var(--primary-green);
+    background-color: transparent;
+    border-bottom: 2px solid var(--primary-green);
   }
+  
+  .btn-primary {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+  }
+  
+  .btn-primary:hover {
+    background-color: #1b5e20;
+    border-color: #1b5e20;
+  }
+  
+  .btn-outline-secondary {
+    color: var(--text-muted);
+    border-color: var(--text-muted);
+  }
+  
+  .btn-outline-danger {
+    color: #d32f2f;
+    border-color: #d32f2f;
+  }
+  
   .btn-upload {
     position: relative;
     overflow: hidden;
     display: inline-block;
   }
+  
   .btn-upload input[type="file"] {
     position: absolute;
     opacity: 0;
@@ -52,7 +110,32 @@
     top: 0;
     cursor: pointer;
   }
+  
+  .badge.bg-light {
+    background-color: var(--light-green) !important;
+    color: var(--text-dark) !important;
+  }
+  
+  .alert-success {
+    background-color: var(--light-green);
+    border-color: var(--primary-green);
+    color: var(--text-dark);
+  }
+  
+  /* University header branding */
+  .university-header {
+    background-color: var(--primary-green);
+    color: var(--white);
+    padding: 10px 0;
+    margin-bottom: 20px;
+  }
+  
+  .university-logo {
+    height: 40px;
+    margin-right: 10px;
+  }
 </style>
+
 
 
 <div class="message-container">
@@ -77,7 +160,7 @@
         
         <h3 class="mb-1">{{ student.get_full_name }}</h3>
         <p class="text-muted mb-2">{{ student.registration_number }}</p>
-        <p class="badge bg-light text-dark">{{ student.programme.name }}</p>
+        <p class="badge bg-light">{{ student.programme.name }}</p>
         <p>Year {{ student.current_year }}, Semester {{ student.current_semester }}</p>
       </div>
     </div>
