@@ -5664,85 +5664,115 @@ def student_transcripts(request):
 @login_required
 @user_passes_test(is_academic_staff)
 def download_transcript(request, student_id, semester_id=None, academic_year_id=None):
-    # Get the student
-    student = get_object_or_404(Student, id=student_id)
-    
-    # Get academic year and semester if provided
-    academic_year = get_object_or_404(AcademicYear, id=academic_year_id) if academic_year_id else None
-    semester = get_object_or_404(Semester, id=semester_id) if semester_id else None
-    
-    # Get enrollments based on filters
-    enrollments = StudentEnrollment.objects.filter(student=student)
-    
-    if academic_year:
-        enrollments = enrollments.filter(semester__academic_year=academic_year)
-    if semester:
-        enrollments = enrollments.filter(semester=semester)
-    
-    # Get grades for these enrollments
-    grades = StudentUnitGrade.objects.filter(enrollment__in=enrollments).select_related(
-        'enrollment', 'enrollment__programme_unit', 'enrollment__programme_unit__unit',
-        'enrollment__semester', 'enrollment__semester__academic_year', 'grade'
-    )
-    
-    # Group grades by semester
-    semesters_dict = {}
-    for grade in grades:
-        semester = grade.enrollment.semester
-        if semester not in semesters_dict:
-            semesters_dict[semester] = []
-        semesters_dict[semester].append(grade)
-    
-    # Sort semesters
-    semesters_list = sorted(semesters_dict.items(), key=lambda x: (x[0].academic_year.start_date, x[0].number))
-    
-    # Calculate GPA and other statistics
-    for semester, semester_grades in semesters_list:
-        total_points = 0
-        total_credit_hours = 0
+    try:
+        # Get the student with related data
+        student = get_object_or_404(
+            Student.objects.select_related('programme', 'programme__department'),
+            id=student_id
+        )
         
-        for grade in semester_grades:
-            unit = grade.enrollment.programme_unit.unit
-            credit_hours = unit.credit_hours
-            
-            if grade.grade:
-                points = grade.grade.points * credit_hours
-                total_points += points
-                total_credit_hours += credit_hours
+        # Get academic year and semester if provided
+        academic_year = None
+        semester = None
         
-        semester.gpa = total_points / total_credit_hours if total_credit_hours > 0 else 0
-    
-    # Prepare context for PDF template
-    context = {
-        'student': student,
-        'programme': student.programme,
-        'semesters': semesters_list,
-        'academic_year': academic_year,
-        'semester': semester,
-        'generated_date': timezone.now(),
-        'generated_by': request.user.get_full_name() or request.user.username
-    }
-    
-    # Create PDF
-    template = get_template('transcripts/transcript_pdf.html')
-    html = template.render(context)
-    
-    # Generate PDF file
-    result = BytesIO()
-    pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
-    
-    if not pdf.err:
-        # Determine filename based on what's being generated
+        if academic_year_id:
+            academic_year = get_object_or_404(AcademicYear, id=academic_year_id)
+        
+        if semester_id:
+            semester = get_object_or_404(
+                Semester.objects.select_related('academic_year'),
+                id=semester_id
+            )
+            # Ensure semester matches academic_year if both provided
+            if academic_year and semester.academic_year != academic_year:
+                return HttpResponseNotFound("Semester doesn't belong to the specified academic year")
+
+        # Build the base enrollment query
+        enrollments = StudentEnrollment.objects.filter(
+            student=student
+        ).select_related(
+            'semester__academic_year',
+            'programme_unit__unit'
+        )
+        
+        # Apply filters
+        if academic_year:
+            enrollments = enrollments.filter(semester__academic_year=academic_year)
         if semester:
-            filename = f"{student.registration_number}_S{semester.number}_{semester.academic_year.name}.pdf"
-        elif academic_year:
-            filename = f"{student.registration_number}_{academic_year.name}.pdf"
-        else:
-            filename = f"{student.registration_number}_full_transcript.pdf"
+            enrollments = enrollments.filter(semester=semester)
         
-        # Return PDF as response
-        response = HttpResponse(result.getvalue(), content_type='application/pdf')
+        # Get grades with all necessary related data
+        grades = StudentUnitGrade.objects.filter(
+            enrollment__in=enrollments
+        ).select_related(
+            'enrollment__semester__academic_year',
+            'enrollment__programme_unit__unit',
+            'grade'
+        ).order_by(
+            'enrollment__semester__academic_year__start_date',
+            'enrollment__semester__number'
+        )
+        
+        # Verify we have grades to display
+        if not grades.exists():
+            logger.warning(f"No grades found for student {student_id} with filters semester={semester_id}, year={academic_year_id}")
+            return HttpResponseNotFound("No academic records found for the specified criteria")
+
+        # Organize data by semester
+        semesters = {}
+        for grade in grades:
+            semester = grade.enrollment.semester
+            if semester not in semesters:
+                semesters[semester] = []
+            semesters[semester].append(grade)
+        
+        # Sort semesters chronologically
+        sorted_semesters = sorted(
+            semesters.items(),
+            key=lambda x: (x[0].academic_year.start_date, x[0].number)
+        )
+        
+        # Prepare context
+        context = {
+            'student': student,
+            'programme': student.programme,
+            'semesters': sorted_semesters,
+            'academic_year': academic_year,
+            'semester': semester,
+            'generated_date': timezone.now().strftime("%Y-%m-%d"),
+            'generated_by': request.user.get_full_name(),
+            'institution_name': "Your University Name",
+        }
+        
+        # Generate PDF
+        template = get_template('transcripts/transcript_pdf.html')
+        html = template.render(context)
+        
+        response = HttpResponse(content_type='application/pdf')
+        
+        # Set appropriate filename
+        if semester:
+            filename = f"transcript_{student.registration_number}_sem{semester.number}_{semester.academic_year.name}.pdf"
+        elif academic_year:
+            filename = f"transcript_{student.registration_number}_{academic_year.name}.pdf"
+        else:
+            filename = f"transcript_{student.registration_number}_full.pdf"
+            
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        # Create PDF
+        pisa_status = pisa.CreatePDF(
+            html,
+            dest=response,
+            encoding='UTF-8'
+        )
+        
+        if pisa_status.err:
+            logger.error(f"PDF generation failed for student {student_id}: {pisa_status.err}")
+            return HttpResponseNotFound("Failed to generate PDF document")
+            
         return response
-    
-    return HttpResponseNotFound("Failed to generate transcript PDF")
+        
+    except Exception as e:
+        logger.exception(f"Error generating transcript for student {student_id}")
+        return HttpResponseNotFound("An error occurred while generating the transcript")

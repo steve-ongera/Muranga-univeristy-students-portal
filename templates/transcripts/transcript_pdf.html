@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ student.get_full_name }} - Academic Transcript</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .institution { font-size: 18px; font-weight: bold; }
+        .title { font-size: 16px; margin: 10px 0; }
+        .student-info { margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .footer { margin-top: 30px; font-size: 12px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="institution">{{ institution_name }}</div>
+        <div class="title">OFFICIAL ACADEMIC TRANSCRIPT</div>
+    </div>
+
+    <div class="student-info">
+        <p><strong>Student Name:</strong> {{ student.get_full_name }}</p>
+        <p><strong>Registration Number:</strong> {{ student.registration_number }}</p>
+        <p><strong>Programme:</strong> {{ programme.name }} ({{ programme.code }})</p>
+        {% if academic_year %}
+        <p><strong>Academic Year:</strong> {{ academic_year.name }}</p>
+        {% endif %}
+        {% if semester %}
+        <p><strong>Semester:</strong> {{ semester.number }}</p>
+        {% endif %}
+    </div>
+
+    {% for semester, grades in semesters %}
+    <h3>{{ semester.academic_year.name }} - Semester {{ semester.number }}</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Unit Code</th>
+                <th>Unit Name</th>
+                <th>Credit Hours</th>
+                <th>Grade</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for grade in grades %}
+            <tr>
+                <td>{{ grade.enrollment.programme_unit.unit.code }}</td>
+                <td>{{ grade.enrollment.programme_unit.unit.name }}</td>
+                <td>{{ grade.enrollment.programme_unit.unit.credit_hours }}</td>
+                <td>{% if grade.grade %}{{ grade.grade.grade }}{% else %}N/A{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endfor %}
+
+    <div class="footer">
+        <p>Generated on {{ generated_date }} by {{ generated_by }}</p>
+        <p>This is an official document of {{ institution_name }}</p>
+    </div>
+</body>
+</html>

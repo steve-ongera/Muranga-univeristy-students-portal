@@ -139,7 +139,7 @@
                                                     <!-- Full Year Transcript Option -->
                                                     <li>
                                                         <a class="dropdown-item" 
-                                                           href="#">
+                                                           href="{% url 'download_transcript_year' data.student.id academic_year.id %}">
                                                             <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>
                                                             Full Year Transcript
                                                         </a>
@@ -149,7 +149,7 @@
                                                     {% for semester in semesters %}
                                                         <li>
                                                             <a class="dropdown-item" 
-                                                               href="#">
+                                                               href="{% url 'download_transcript_semester' data.student.id semester.id academic_year.id %}">
                                                                 <i class="bi bi-file-text me-2 text-primary"></i>
                                                                 Semester {{ semester.number }} Transcript
                                                             </a>
@@ -161,6 +161,16 @@
                                                         <li><hr class="dropdown-divider"></li>
                                                     {% endif %}
                                                 {% endfor %}
+                                                
+                                                <!-- Complete Transcript Option -->
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item" 
+                                                       href="{% url 'download_transcript_full' data.student.id %}">
+                                                        <i class="bi bi-collection me-2 text-success"></i>
+                                                        Complete Academic Transcript
+                                                    </a>
+                                                </li>
                                             </ul>
                                         </div>
                                     </td>
