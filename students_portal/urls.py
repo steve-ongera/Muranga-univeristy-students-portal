@@ -132,5 +132,9 @@ urlpatterns = [
     path('view_admin_permissions/', views.view_admin_permissions, name='view_admin_permissions'),
     path('reports/academic-performance/', views.academic_performance_report, name='academic_performance_report'),
 
+    path('transcripts/', views.student_transcripts, name='student_transcripts'),
+    path('transcripts/download/<int:student_id>/', views.download_transcript, name='download_transcript'),
+    path('transcripts/download/<int:student_id>/semester/<int:semester_id>/', views.download_transcript, name='download_transcript'),
+    path('transcripts/download/<int:student_id>/year/<int:academic_year_id>/', views.download_transcript, name='download_transcript'),
 
 ]

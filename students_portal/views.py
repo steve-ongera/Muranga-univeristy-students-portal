@@ -5533,3 +5533,175 @@ def academic_performance_report(request):
     }
 
     return render(request, 'reports/academic_performance.html', context)
+
+from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponse, HttpResponseNotFound
+from django.template.loader import get_template
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db.models import Q
+from xhtml2pdf import pisa
+from io import BytesIO
+from .models import (
+    Student, AcademicYear, Semester, StudentEnrollment, 
+    StudentUnitGrade, Programme
+)
+
+def is_academic_staff(user):
+    """Check if user is academic staff with permission to view transcripts"""
+    return user.is_authenticated and user.user_type in ['admin', 'lecturer', 'staff'] and user.is_verified
+
+@login_required
+@user_passes_test(is_academic_staff)
+def student_transcripts(request):
+    # Get filter parameters
+    academic_year_id = request.GET.get('academic_year')
+    programme_id = request.GET.get('programme')
+    year_of_study = request.GET.get('year_of_study')
+    search_query = request.GET.get('search')
+    
+    # Get all academic years for filter dropdown
+    academic_years = AcademicYear.objects.all().order_by('-start_date')
+    programmes = Programme.objects.all().order_by('name')
+    
+    # Get current academic year if none selected
+    current_year = AcademicYear.objects.filter(is_current=True).first()
+    
+    # Filter students based on parameters
+    students = Student.objects.filter(is_active=True).order_by('last_name', 'first_name')
+    
+    if academic_year_id:
+        students = students.filter(
+            enrollments__semester__academic_year_id=academic_year_id
+        ).distinct()
+    elif current_year:
+        students = students.filter(
+            enrollments__semester__academic_year=current_year
+        ).distinct()
+    
+    if programme_id:
+        students = students.filter(programme_id=programme_id)
+    
+    if year_of_study:
+        students = students.filter(current_year=year_of_study)
+    
+    if search_query:
+        students = students.filter(
+            Q(registration_number__icontains=search_query) |
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(middle_name__icontains=search_query)
+        )
+    
+    # Prepare student data with available semesters
+    student_data = []
+    for student in students:
+        semesters = Semester.objects.filter(
+            enrollments__student=student
+        ).order_by('-academic_year__start_date', '-number').distinct()
+        
+        if academic_year_id:
+            semesters = semesters.filter(academic_year_id=academic_year_id)
+        elif current_year:
+            semesters = semesters.filter(academic_year=current_year)
+        
+        # Group semesters by academic year
+        years = {}
+        for semester in semesters:
+            if semester.academic_year not in years:
+                years[semester.academic_year] = []
+            years[semester.academic_year].append(semester)
+        
+        student_data.append({
+            'student': student,
+            'years': sorted(years.items(), key=lambda x: x[0].start_date, reverse=True)
+        })
+    
+    context = {
+        'students': student_data,
+        'academic_years': academic_years,
+        'programmes': programmes,
+        'selected_year': academic_year_id,
+        'selected_programme': programme_id,
+        'selected_year_of_study': year_of_study,
+        'search_query': search_query or '',
+        'year_range': range(1, 6)  # Assuming max 5 years of study
+    }
+    
+    return render(request, 'transcripts/student_transcripts.html', context)
+
+@login_required
+@user_passes_test(is_academic_staff)
+def download_transcript(request, student_id, semester_id=None, academic_year_id=None):
+    student = get_object_or_404(Student, pk=student_id)
+    
+    if semester_id:
+        # Download single semester transcript
+        semester = get_object_or_404(Semester, pk=semester_id)
+        enrollments = StudentEnrollment.objects.filter(
+            student=student,
+            semester=semester
+        ).select_related('programme_unit__unit', 'programme_unit__programme')
+        
+        if not enrollments.exists():
+            return HttpResponseNotFound("No transcript data found for this semester")
+        
+        template = get_template('transcripts/semester_transcript_pdf.html')
+        context = {
+            'student': student,
+            'semester': semester,
+            'enrollments': enrollments,
+            'date_issued': timezone.now().strftime("%Y-%m-%d")
+        }
+        filename = f"transcript_{student.registration_number}_sem{semester.number}_{semester.academic_year.name}.pdf"
+        
+    elif academic_year_id:
+        # Download full academic year transcript
+        academic_year = get_object_or_404(AcademicYear, pk=academic_year_id)
+        semesters = Semester.objects.filter(
+            academic_year=academic_year,
+            enrollments__student=student
+        ).distinct().order_by('number')
+        
+        if not semesters.exists():
+            return HttpResponseNotFound("No transcript data found for this academic year")
+        
+        # Get all enrollments for the year grouped by semester
+        semester_data = []
+        for semester in semesters:
+            enrollments = StudentEnrollment.objects.filter(
+                student=student,
+                semester=semester
+            ).select_related('programme_unit__unit', 'programme_unit__programme')
+            
+            if enrollments.exists():
+                semester_data.append({
+                    'semester': semester,
+                    'enrollments': enrollments
+                })
+        
+        if not semester_data:
+            return HttpResponseNotFound("No transcript data found for this academic year")
+        
+        template = get_template('transcripts/yearly_transcript_pdf.html')
+        context = {
+            'student': student,
+            'academic_year': academic_year,
+            'semesters': semester_data,
+            'date_issued': timezone.now().strftime("%Y-%m-%d")
+        }
+        filename = f"transcript_{student.registration_number}_{academic_year.name}.pdf"
+    
+    else:
+        return HttpResponseNotFound("Invalid request")
+    
+    # Render PDF
+    html = template.render(context)
+    result = BytesIO()
+    
+    pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
+    if not pdf.err:
+        response = HttpResponse(result.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+    
+    return HttpResponse("Error generating PDF", status=500)
