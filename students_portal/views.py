@@ -5203,7 +5203,7 @@ def is_admin(user):
 @user_passes_test(is_admin)
 def user_permissions_view(request):
     if request.method == 'GET':
-        users = User.objects.select_related().all()
+        users = User.objects.all()
         user_types = User.USER_TYPES
         status_options = [choice[0] for choice in User._meta.get_field('status').choices]
         departments = Department.objects.all()
@@ -5218,16 +5218,40 @@ def user_permissions_view(request):
             users = users.filter(user_type=user_type_filter)
         if status_filter:
             users = users.filter(status=status_filter)
+            
+        # For department and faculty filtering, we need an alternative approach
+        # without directly linking Student/Lecturer to User
         if department_filter:
-            students = Student.objects.filter(programme__department_id=department_filter).values_list('user_id', flat=True)
-            lecturers = Lecturer.objects.filter(department_id=department_filter).values_list('user_id', flat=True)
-            user_ids = list(students) + list(lecturers)
-            users = users.filter(id__in=user_ids)
+            # Get usernames of likely students in this department 
+            # (assuming username pattern matches registration number)
+            students_reg_numbers = Student.objects.filter(
+                programme__department_id=department_filter
+            ).values_list('registration_number', flat=True)
+            
+            # Get usernames of likely lecturers in this department
+            # (assuming username pattern matches staff_id)
+            lecturers_staff_ids = Lecturer.objects.filter(
+                department_id=department_filter
+            ).values_list('staff_id', flat=True)
+            
+            # Filter users whose usernames match either pattern
+            users = users.filter(
+                username__in=list(students_reg_numbers) + list(lecturers_staff_ids)
+            )
+            
         if faculty_filter:
-            students = Student.objects.filter(programme__department__faculty_id=faculty_filter).values_list('user_id', flat=True)
-            lecturers = Lecturer.objects.filter(department__faculty_id=faculty_filter).values_list('user_id', flat=True)
-            user_ids = list(students) + list(lecturers)
-            users = users.filter(id__in=user_ids)
+            # Same approach for faculty filtering
+            students_reg_numbers = Student.objects.filter(
+                programme__department__faculty_id=faculty_filter
+            ).values_list('registration_number', flat=True)
+            
+            lecturers_staff_ids = Lecturer.objects.filter(
+                department__faculty_id=faculty_filter
+            ).values_list('staff_id', flat=True)
+            
+            users = users.filter(
+                username__in=list(students_reg_numbers) + list(lecturers_staff_ids)
+            )
 
         context = {
             'users': users,
@@ -5290,4 +5314,3 @@ def user_permissions_view(request):
             messages.error(request, "User not found")
 
         return redirect('user_permissions')
-    
