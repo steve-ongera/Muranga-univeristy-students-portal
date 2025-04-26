@@ -1,0 +1,288 @@
+{% extends 'base/base.html'%}
+{% load static %}
+
+{% block content %}
+<div class="message-container" id="system-messages">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        <i class="bi {% if message.tags == 'success' %}bi-check-circle{% else %}bi-exclamation-triangle{% endif %} me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="pagetitle">
+    <h1><i class="bi bi-shield-check me-2"></i>Administrator Permissions</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#"><i class="bi bi-house-door"></i> Home</a></li>
+            <li class="breadcrumb-item"><a href="#">Administration</a></li>
+            <li class="breadcrumb-item active">Admin Permissions</li>
+        </ol>
+    </nav>
+</div><!-- End Page Title -->
+
+<section class="section">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-university-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0"><i class="bi bi-person-gear me-2"></i>Administrator Access Levels</h5>
+                        <span class="badge bg-white text-university-primary">{{ total_admins }} Administrators</span>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="accordion" id="adminAccordion">
+                        {% for admin in admins %}
+                        <div class="accordion-item mb-3 border-university-primary">
+                            <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                                <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" 
+                                        type="button" data-bs-toggle="collapse" 
+                                        data-bs-target="#collapse{{ forloop.counter }}" 
+                                        aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" 
+                                        aria-controls="collapse{{ forloop.counter }}">
+                                    <div class="d-flex align-items-center w-100">
+                                        <div class="flex-shrink-0 me-3">
+                                            <i class="bi bi-person-circle fs-4 text-university-primary"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-0">{{ admin.user.get_full_name }}</h6>
+                                            <small class="text-muted">
+                                                @{{ admin.user.username }}
+                                                {% if admin.is_superuser %}
+                                                    <span class="badge bg-danger ms-2">Superuser</span>
+                                                {% elif admin.is_staff %}
+                                                    <span class="badge bg-warning text-dark ms-2">Staff</span>
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                        <div class="flex-shrink-0">
+                                            <span class="badge bg-university-secondary">
+                                                {{ admin.total_perms }} permission{{ admin.total_perms|pluralize }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="collapse{{ forloop.counter }}" 
+                                 class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" 
+                                 aria-labelledby="heading{{ forloop.counter }}" 
+                                 data-bs-parent="#adminAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <!-- User Management Permissions -->
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card h-100 border-university-primary">
+                                                <div class="card-header bg-university-light">
+                                                    <h6 class="mb-0">
+                                                        <i class="bi bi-people-fill me-2"></i>User Management
+                                                        <span class="badge bg-university-primary float-end">
+                                                            {{ admin.permissions.user_management|length }}
+                                                        </span>
+                                                    </h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    {% if admin.permissions.user_management %}
+                                                        <ul class="list-group list-group-flush">
+                                                            {% for perm in admin.permissions.user_management %}
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                                                <small>{{ perm|cut:"accounts."|cut:"auth."|truncatechars:40 }}</small>
+                                                                {% if perm in current_user_perms %}
+                                                                    <span class="badge bg-success">You have</span>
+                                                                {% endif %}
+                                                            </li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    {% else %}
+                                                        <div class="text-center py-3 text-muted">
+                                                            <i class="bi bi-slash-circle fs-4"></i>
+                                                            <p class="mb-0">No user management permissions</p>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Academic Management Permissions -->
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card h-100 border-university-primary">
+                                                <div class="card-header bg-university-light">
+                                                    <h6 class="mb-0">
+                                                        <i class="bi bi-journal-bookmark-fill me-2"></i>Academic Management
+                                                        <span class="badge bg-university-primary float-end">
+                                                            {{ admin.permissions.academic_management|length }}
+                                                        </span>
+                                                    </h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    {% if admin.permissions.academic_management %}
+                                                        <ul class="list-group list-group-flush">
+                                                            {% for perm in admin.permissions.academic_management %}
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                                                <small>{{ perm|truncatechars:40 }}</small>
+                                                                {% if perm in current_user_perms %}
+                                                                    <span class="badge bg-success">You have</span>
+                                                                {% endif %}
+                                                            </li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    {% else %}
+                                                        <div class="text-center py-3 text-muted">
+                                                            <i class="bi bi-slash-circle fs-4"></i>
+                                                            <p class="mb-0">No academic permissions</p>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Financial Management Permissions -->
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card h-100 border-university-primary">
+                                                <div class="card-header bg-university-light">
+                                                    <h6 class="mb-0">
+                                                        <i class="bi bi-cash-coin me-2"></i>Financial Management
+                                                        <span class="badge bg-university-primary float-end">
+                                                            {{ admin.permissions.financial_management|length }}
+                                                        </span>
+                                                    </h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    {% if admin.permissions.financial_management %}
+                                                        <ul class="list-group list-group-flush">
+                                                            {% for perm in admin.permissions.financial_management %}
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                                                <small>{{ perm|truncatechars:40 }}</small>
+                                                                {% if perm in current_user_perms %}
+                                                                    <span class="badge bg-success">You have</span>
+                                                                {% endif %}
+                                                            </li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    {% else %}
+                                                        <div class="text-center py-3 text-muted">
+                                                            <i class="bi bi-slash-circle fs-4"></i>
+                                                            <p class="mb-0">No financial permissions</p>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- System Management Permissions -->
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card h-100 border-university-primary">
+                                                <div class="card-header bg-university-light">
+                                                    <h6 class="mb-0">
+                                                        <i class="bi bi-server me-2"></i>System Management
+                                                        <span class="badge bg-university-primary float-end">
+                                                            {{ admin.permissions.system_management|length }}
+                                                        </span>
+                                                    </h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    {% if admin.permissions.system_management %}
+                                                        <ul class="list-group list-group-flush">
+                                                            {% for perm in admin.permissions.system_management %}
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                                                <small>{{ perm|truncatechars:40 }}</small>
+                                                                {% if perm in current_user_perms %}
+                                                                    <span class="badge bg-success">You have</span>
+                                                                {% endif %}
+                                                            </li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    {% else %}
+                                                        <div class="text-center py-3 text-muted">
+                                                            <i class="bi bi-slash-circle fs-4"></i>
+                                                            <p class="mb-0">No system permissions</p>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Other Permissions -->
+                                    {% if admin.permissions.other_permissions %}
+                                    <div class="card mt-3 border-university-primary">
+                                        <div class="card-header bg-university-light">
+                                            <h6 class="mb-0">
+                                                <i class="bi bi-collection me-2"></i>Other Permissions
+                                                <span class="badge bg-university-primary float-end">
+                                                    {{ admin.permissions.other_permissions|length }}
+                                                </span>
+                                            </h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                {% for perm in admin.permissions.other_permissions %}
+                                                <div class="col-md-6 mb-2">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <small>{{ perm }}</small>
+                                                        {% if perm in current_user_perms %}
+                                                            <span class="badge bg-success">You have</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-shield-lock display-4 text-muted"></i>
+                            <h4 class="mt-3">No Administrators Found</h4>
+                            <p class="text-muted">There are currently no administrators in the system</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-university-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Showing permissions for all system administrators
+                        </small>
+                        <small class="text-muted">
+                            <i class="bi bi-clock-history me-1"></i>
+                            Updated {% now "DATETIME_FORMAT" %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .accordion-button:not(.collapsed) {
+        background-color: var(--university-light);
+        color: var(--university-primary);
+        font-weight: 500;
+    }
+    .accordion-button:focus {
+        border-color: var(--university-primary);
+        box-shadow: 0 0 0 0.25rem rgba(46, 125, 50, 0.25);
+    }
+    .list-group-item {
+        border-left: 0;
+        border-right: 0;
+    }
+    .list-group-item:first-child {
+        border-top: 0;
+    }
+    .list-group-item:last-child {
+        border-bottom: 0;
+    }
+</style>
+
+{% endblock %}

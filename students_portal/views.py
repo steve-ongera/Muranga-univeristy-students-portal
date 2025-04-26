@@ -5314,3 +5314,74 @@ def user_permissions_view(request):
             messages.error(request, "User not found")
 
         return redirect('user_permissions')
+    
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.models import Permission
+from django.db.models import Q
+from .models import User
+
+def is_super_admin(user):
+    """Check if user is a super admin with permission to view admin permissions"""
+    return user.is_authenticated and user.user_type == 'admin' and user.is_verified and user.status == 'active'
+
+@login_required
+@user_passes_test(is_super_admin)
+def view_admin_permissions(request):
+    # Get all admin users (including staff marked as admin)
+    admin_users = User.objects.filter(
+        Q(user_type='admin') | Q(is_staff=True) | Q(is_superuser=True)
+    ).distinct().order_by('last_name', 'first_name')
+    
+    # Prepare data structure for each admin's permissions
+    admins_with_perms = []
+    
+    for admin in admin_users:
+        # Get all permissions (including group permissions)
+        permissions = admin.get_all_permissions()
+        
+        # Categorize permissions
+        perm_categories = {
+            'user_management': set(),
+            'academic_management': set(),
+            'financial_management': set(),
+            'system_management': set(),
+            'other_permissions': set()
+        }
+        
+        # Categorize each permission
+        for perm in permissions:
+            if perm.startswith('auth.') or perm.startswith('accounts.'):
+                perm_categories['user_management'].add(perm)
+            elif perm.startswith('academics.') or perm.startswith('courses.'):
+                perm_categories['academic_management'].add(perm)
+            elif perm.startswith('finance.') or perm.startswith('fees.'):
+                perm_categories['financial_management'].add(perm)
+            elif perm.startswith('admin.') or perm.startswith('system.'):
+                perm_categories['system_management'].add(perm)
+            else:
+                perm_categories['other_permissions'].add(perm)
+        
+        # Convert sets to sorted lists for display
+        for category, perms in perm_categories.items():
+            perm_categories[category] = sorted(perms)
+        
+        admins_with_perms.append({
+            'user': admin,
+            'permissions': perm_categories,
+            'is_superuser': admin.is_superuser,
+            'is_staff': admin.is_staff,
+            'total_perms': len(permissions)
+        })
+    
+    # Sort admins by total permissions (descending) then by name
+    admins_with_perms.sort(key=lambda x: (-x['total_perms'], x['user'].get_full_name()))
+    
+    context = {
+        'admins': admins_with_perms,
+        'total_admins': len(admins_with_perms),
+        'current_user_perms': request.user.get_all_permissions(),
+    }
+    
+    return render(request, 'admin/view_admin_permissions.html', context)
