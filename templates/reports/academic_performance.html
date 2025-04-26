@@ -1,0 +1,530 @@
+{% extends 'base/base.html'%}
+{% load static %}
+
+{% block content %}
+<div class="pagetitle">
+    <h1><i class="bi bi-graph-up me-2"></i>Academic Performance Report</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#"><i class="bi bi-house-door"></i> Home</a></li>
+            <li class="breadcrumb-item"><a href="#">Reports</a></li>
+            <li class="breadcrumb-item active">Academic Performance</li>
+        </ol>
+    </nav>
+</div>
+
+<section class="section">
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-university-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-journal-text me-2"></i>
+                            {{ current_year.name }} - Semester {{ current_semester.number }} Performance Analysis
+                        </h5>
+                        <div>
+                            <button class="btn btn-sm btn-light me-2" onclick="window.print()">
+                                <i class="bi bi-printer me-1"></i> Print
+                            </button>
+                            <button class="btn btn-sm btn-light">
+                                <i class="bi bi-download me-1"></i> Export
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Summary Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card border-university-primary h-100">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-muted">Overall Pass Rate</h6>
+                                    <div class="display-4 fw-bold text-university-primary">
+                                        {{ pass_fail_stats.pass_rate|floatformat:1 }}%
+                                    </div>
+                                    <div class="small text-muted">
+                                        {{ pass_fail_stats.passed }} passed / {{ pass_fail_stats.failed }} failed
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card border-university-primary h-100">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-muted">Best Programme</h6>
+                                    {% if best_programmes %}
+                                    <h4 class="fw-bold text-university-primary">
+                                        {{ best_programmes.0.name }}
+                                    </h4>
+                                    <div class="small text-muted">
+                                        Avg Score: {{ best_programmes.0.avg_score|floatformat:1 }}%
+                                    </div>
+                                    {% else %}
+                                    <div class="text-muted">No data available</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card border-university-primary h-100">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-muted">Best Unit</h6>
+                                    {% if best_units %}
+                                    <h4 class="fw-bold text-university-primary">
+                                        {{ best_units.0.code }}
+                                    </h4>
+                                    <div class="small text-muted">
+                                        {{ best_units.0.name }} ({{ best_units.0.avg_score|floatformat:1 }}%)
+                                    </div>
+                                    {% else %}
+                                    <div class="text-muted">No data available</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Charts Section -->
+                    <div class="row mb-4">
+                        <!-- Best Programmes Chart -->
+                        <div class="col-lg-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-university-light">
+                                    <h6 class="mb-0"><i class="bi bi-trophy me-2"></i>Top 5 Performing Programmes</h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="bestProgrammesChart" height="300"></canvas>
+                                    <div class="mt-3">
+                                        <small class="text-muted">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Based on average scores across all units in the programme
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Grade Distribution Chart -->
+                        <div class="col-lg-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-university-light">
+                                    <h6 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Grade Distribution</h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="gradeDistributionChart" height="300"></canvas>
+                                    <div class="mt-3">
+                                        <small class="text-muted">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Distribution of final grades across all units
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <!-- Best/Worst Units Chart -->
+                        <div class="col-lg-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-university-light">
+                                    <h6 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Top & Bottom Performing Units</h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="unitPerformanceChart" height="300"></canvas>
+                                    <div class="mt-3">
+                                        <small class="text-muted">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Top 5 and bottom 5 units by average score
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Year Performance Chart -->
+                        <div class="col-lg-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-university-light">
+                                    <h6 class="mb-0"><i class="bi bi-graph-up me-2"></i>Performance by Year of Study</h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="yearPerformanceChart" height="300"></canvas>
+                                    <div class="mt-3">
+                                        <small class="text-muted">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Average performance across different years of study
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Top Students Table -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-university-light">
+                            <h6 class="mb-0"><i class="bi bi-star-fill me-2"></i>Top Performing Students</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Student</th>
+                                            <th>Programme</th>
+                                            <th>Year</th>
+                                            <th>Avg Score</th>
+                                            <th>Units Taken</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for student in top_students %}
+                                        <tr>
+                                            <td>{{ forloop.counter }}</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi bi-person-circle me-2 text-university-primary"></i>
+                                                    <div>
+                                                        <h6 class="mb-0">{{ student.get_full_name }}</h6>
+                                                        <small class="text-muted">{{ student.registration_number }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>{{ student.programme.code }}</td>
+                                            <td>Year {{ student.current_year }}</td>
+                                            <td>
+                                                <span class="badge bg-success">
+                                                    {{ student.avg_score|floatformat:1 }}%
+                                                </span>
+                                            </td>
+                                            <td>{{ student.units_taken }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="6" class="text-center py-4 text-muted">
+                                                No student performance data available
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Worst Units Table -->
+                    <div class="card">
+                        <div class="card-header bg-university-light">
+                            <h6 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Units Needing Attention</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Unit Code</th>
+                                            <th>Unit Name</th>
+                                            <th>Avg Score</th>
+                                            <th>Students</th>
+                                            <th>Pass Rate</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for unit in worst_units %}
+                                        <tr>
+                                            <td>{{ unit.code }}</td>
+                                            <td>{{ unit.name }}</td>
+                                            <td>
+                                                <span class="badge bg-danger">
+                                                    {{ unit.avg_score|floatformat:1 }}%
+                                                </span>
+                                            </td>
+                                            <td>{{ unit.student_count }}</td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar bg-danger" 
+                                                         role="progressbar" 
+                                                         style="width: {{ unit.avg_score }}%" 
+                                                         aria-valuenow="{{ unit.avg_score }}" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="100">
+                                                        {{ unit.avg_score|floatformat:1 }}%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="5" class="text-center py-4 text-muted">
+                                                No unit performance data available
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-university-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="bi bi-clock me-1"></i>
+                            Report generated on {% now "DATETIME_FORMAT" %}
+                        </small>
+                        <small class="text-muted">
+                            <i class="bi bi-person me-1"></i>
+                            Prepared by {{ request.user.get_full_name }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Initialize all charts when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Best Programmes Chart (Horizontal Bar)
+    const progCtx = document.getElementById('bestProgrammesChart').getContext('2d');
+    new Chart(progCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ chart_data.best_programmes.labels|safe }},
+            datasets: [{
+                label: 'Average Score (%)',
+                data: {{ chart_data.best_programmes.data|safe }},
+                backgroundColor: 'rgba(46, 125, 50, 0.7)',
+                borderColor: 'rgba(46, 125, 50, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        afterLabel: function(context) {
+                            const index = context.dataIndex;
+                            return 'Students: ' + {{ chart_data.best_programmes.student_counts|safe }}[index];
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: { 
+                    beginAtZero: true,
+                    max: 100,
+                    title: { display: true, text: 'Average Score (%)' }
+                },
+                y: { 
+                    ticks: { autoSkip: false }
+                }
+            }
+        }
+    });
+
+    // Grade Distribution Chart (Doughnut)
+    const gradeCtx = document.getElementById('gradeDistributionChart').getContext('2d');
+    new Chart(gradeCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ chart_data.performance_distribution.labels|safe }},
+            datasets: [{
+                data: {{ chart_data.performance_distribution.data|safe }},
+                backgroundColor: [
+                    'rgba(0, 150, 0, 0.7)',   // A
+                    'rgba(0, 180, 0, 0.7)',    // B
+                    'rgba(255, 205, 86, 0.7)', // C
+                    'rgba(255, 159, 64, 0.7)', // D
+                    'rgba(255, 99, 132, 0.7)', // E
+                    'rgba(220, 53, 69, 0.7)'   // F
+                ],
+                borderColor: [
+                    'rgba(0, 150, 0, 1)',
+                    'rgba(0, 180, 0, 1)',
+                    'rgba(255, 205, 86, 1)',
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(220, 53, 69, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'right' },
+                tooltip: {
+                    callbacks: {
+                        afterLabel: function(context) {
+                            const index = context.dataIndex;
+                            return 'Avg Score: ' + {{ chart_data.performance_distribution.avg_scores|safe }}[index].toFixed(1) + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Unit Performance Chart (Bar)
+    const unitCtx = document.getElementById('unitPerformanceChart').getContext('2d');
+    new Chart(unitCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ chart_data.best_units.labels|safe }}.concat({{ chart_data.worst_units.labels|safe }}),
+            datasets: [{
+                label: 'Average Score (%)',
+                data: {{ chart_data.best_units.data|safe }}.concat({{ chart_data.worst_units.data|safe }}),
+                backgroundColor: function(context) {
+                    const index = context.dataIndex;
+                    return index < {{ chart_data.best_units.data|length }} ? 
+                        'rgba(46, 125, 50, 0.7)' : 'rgba(220, 53, 69, 0.7)';
+                },
+                borderColor: function(context) {
+                    const index = context.dataIndex;
+                    return index < {{ chart_data.best_units.data|length }} ? 
+                        'rgba(46, 125, 50, 1)' : 'rgba(220, 53, 69, 1)';
+                },
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        afterLabel: function(context) {
+                            const index = context.dataIndex;
+                            const counts = {{ chart_data.best_units.student_counts|safe }}.concat({{ chart_data.worst_units.student_counts|safe }});
+                            return 'Students: ' + counts[index];
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: true,
+                    max: 100,
+                    title: { display: true, text: 'Average Score (%)' }
+                },
+                x: {
+                    ticks: {
+                        autoSkip: false,
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }
+            }
+        }
+    });
+
+    // Year Performance Chart (Line)
+    const yearCtx = document.getElementById('yearPerformanceChart').getContext('2d');
+    new Chart(yearCtx, {
+        type: 'line',
+        data: {
+            labels: {{ chart_data.year_performance.labels|safe }},
+            datasets: [{
+                label: 'Average Score (%)',
+                data: {{ chart_data.year_performance.data|safe }},
+                backgroundColor: 'rgba(46, 125, 50, 0.2)',
+                borderColor: 'rgba(46, 125, 50, 1)',
+                borderWidth: 2,
+                tension: 0.1,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        afterLabel: function(context) {
+                            const index = context.dataIndex;
+                            return 'Students: ' + {{ chart_data.year_performance.student_counts|safe }}[index];
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: true,
+                    max: 100,
+                    title: { display: true, text: 'Average Score (%)' }
+                }
+            }
+        }
+    });
+});
+</script>
+
+<style>
+    :root {
+        --university-primary: #2E7D32; /* Dark green */
+        --university-secondary: #81C784; /* Light green */
+        --university-light: #E8F5E9; /* Very light green */
+    }
+    .bg-university-primary {
+        background-color: var(--university-primary) !important;
+    }
+    .bg-university-secondary {
+        background-color: var(--university-secondary) !important;
+    }
+    .bg-university-light {
+        background-color: var(--university-light) !important;
+    }
+    .btn-university {
+        background-color: var(--university-primary);
+        color: white;
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university {
+        color: var(--university-primary);
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university:hover {
+        background-color: var(--university-primary);
+        color: white;
+    }
+    .border-university-primary {
+        border-color: var(--university-primary) !important;
+    }
+    .card {
+        margin-bottom: 1.5rem;
+        border-radius: 0.5rem;
+    }
+    .card-header {
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+    .table-hover tbody tr:hover {
+        background-color: rgba(46, 125, 50, 0.05);
+    }
+    @media print {
+        .card-header {
+            background-color: var(--university-primary) !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .bg-university-light {
+            background-color: #E8F5E9 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+    }
+</style>
+{% endblock %}

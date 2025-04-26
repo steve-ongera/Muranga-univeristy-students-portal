@@ -5385,3 +5385,151 @@ def view_admin_permissions(request):
     }
     
     return render(request, 'admin/view_admin_permissions.html', context)
+
+
+
+from django.shortcuts import render
+from django.db.models import Avg, Count, Sum, Q
+from django.contrib.auth.decorators import login_required, user_passes_test
+from .models import (
+    AcademicYear, Semester, Programme, Unit, StudentEnrollment, 
+    StudentScore, StudentUnitGrade, Student
+)
+
+def is_academic_staff(user):
+    """Check if user is academic staff with permission to view reports"""
+    return user.is_authenticated and user.user_type in ['admin', 'lecturer', 'staff'] and user.is_verified
+
+@login_required
+@user_passes_test(is_academic_staff)
+def academic_performance_report(request):
+    # Get current academic year and semester
+    try:
+        current_year = AcademicYear.objects.get(is_current=True)
+        current_semester = Semester.objects.filter(academic_year=current_year, is_current=True).first()
+    except AcademicYear.DoesNotExist:
+        return render(request, 'error.html', {
+            'error': 'No current academic year set',
+            'message': 'Please set the current academic year in the system settings'
+        })
+
+    if not current_semester:
+        return render(request, 'error.html', {
+            'error': 'No current semester set',
+            'message': 'Please set the current semester in the system settings'
+        })
+
+    # 1. Best Performing Programme (by average score)
+    best_programmes = Programme.objects.filter(
+        students__enrollments__semester=current_semester
+    ).annotate(
+        avg_score=Avg('students__enrollments__final_grade__total_score'),
+        student_count=Count('students__enrollments__student', distinct=True)
+    ).filter(
+        avg_score__isnull=False
+    ).order_by('-avg_score')[:5]
+
+    # 2. Best Performing Unit (by average score)
+    best_units = Unit.objects.filter(
+        programme_units__enrollments__semester=current_semester
+    ).annotate(
+        avg_score=Avg('programme_units__enrollments__final_grade__total_score'),
+        student_count=Count('programme_units__enrollments__student', distinct=True)
+    ).filter(
+        avg_score__isnull=False
+    ).order_by('-avg_score')[:5]
+
+    # 3. Least Performing Unit (by average score)
+    worst_units = Unit.objects.filter(
+        programme_units__enrollments__semester=current_semester
+    ).annotate(
+        avg_score=Avg('programme_units__enrollments__final_grade__total_score'),
+        student_count=Count('programme_units__enrollments__student', distinct=True)
+    ).filter(
+        avg_score__isnull=False
+    ).order_by('avg_score')[:5]
+
+    # 4. Student Performance Distribution
+    performance_distribution = StudentUnitGrade.objects.filter(
+        enrollment__semester=current_semester
+    ).values(
+        'grade__grade'
+    ).annotate(
+        count=Count('id'),
+        avg_score=Avg('total_score')
+    ).order_by('grade__min_score')
+
+    # 5. Year of Study Performance
+    year_performance = StudentEnrollment.objects.filter(
+        semester=current_semester
+    ).values(
+        'student__current_year'
+    ).annotate(
+        avg_score=Avg('final_grade__total_score'),
+        student_count=Count('student', distinct=True)
+    ).order_by('student__current_year')
+
+    # 6. Overall Pass/Fail Statistics
+    pass_fail_stats = StudentUnitGrade.objects.filter(
+        enrollment__semester=current_semester
+    ).aggregate(
+        total_students=Count('enrollment__student', distinct=True),
+        passed=Count('id', filter=Q(is_pass=True)),
+        failed=Count('id', filter=Q(is_pass=False)),
+        pass_rate=Avg('is_pass', output_field=models.FloatField()) * 100
+    )
+
+    # 7. Top Performing Students
+    top_students = Student.objects.filter(
+        enrollments__semester=current_semester
+    ).annotate(
+        avg_score=Avg('enrollments__final_grade__total_score'),
+        units_taken=Count('enrollments__programme_unit', distinct=True)
+    ).filter(
+        avg_score__isnull=False
+    ).order_by('-avg_score')[:10]
+
+    # Prepare data for charts
+    chart_data = {
+        'best_programmes': {
+            'labels': [p.name for p in best_programmes],
+            'data': [float(p.avg_score) for p in best_programmes],
+            'student_counts': [p.student_count for p in best_programmes]
+        },
+        'best_units': {
+            'labels': [f"{u.code} - {u.name}" for u in best_units],
+            'data': [float(u.avg_score) for u in best_units],
+            'student_counts': [u.student_count for u in best_units]
+        },
+        'worst_units': {
+            'labels': [f"{u.code} - {u.name}" for u in worst_units],
+            'data': [float(u.avg_score) for u in worst_units],
+            'student_counts': [u.student_count for u in worst_units]
+        },
+        'performance_distribution': {
+            'labels': [pd['grade__grade'] for pd in performance_distribution],
+            'data': [pd['count'] for pd in performance_distribution],
+            'avg_scores': [float(pd['avg_score']) for pd in performance_distribution]
+        },
+        'year_performance': {
+            'labels': [f"Year {yp['student__current_year']}" for yp in year_performance],
+            'data': [float(yp['avg_score']) for yp in year_performance],
+            'student_counts': [yp['student_count'] for yp in year_performance]
+        },
+        'pass_fail_stats': pass_fail_stats
+    }
+
+    context = {
+        'current_year': current_year,
+        'current_semester': current_semester,
+        'best_programmes': best_programmes,
+        'best_units': best_units,
+        'worst_units': worst_units,
+        'performance_distribution': performance_distribution,
+        'year_performance': year_performance,
+        'pass_fail_stats': pass_fail_stats,
+        'top_students': top_students,
+        'chart_data': chart_data,
+    }
+
+    return render(request, 'reports/academic_performance.html', context)

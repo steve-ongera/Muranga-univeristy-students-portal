@@ -130,5 +130,7 @@ urlpatterns = [
     path('performance_analysis/', views.performance_analysis, name='performance_analysis'),
     path('user-permissions/', views.user_permissions_view, name='user_permissions'),#
     path('view_admin_permissions/', views.view_admin_permissions, name='view_admin_permissions'),
+    path('reports/academic-performance/', views.academic_performance_report, name='academic_performance_report'),
+
 
 ]
