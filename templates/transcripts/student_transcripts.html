@@ -125,32 +125,45 @@
                                         <div class="dropdown">
                                             <button class="btn btn-sm btn-outline-university dropdown-toggle" 
                                                     type="button" id="dropdownMenuButton{{ forloop.counter }}" 
-                                                    data-bs-toggle="dropdown" aria-expanded="false"
-                                                    data-bs-auto-close="outside">
+                                                    data-bs-toggle="dropdown" aria-expanded="false">
                                                 <i class="bi bi-download me-1"></i> Download
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton{{ forloop.counter }}">
-                                                {% for year, semesters in data.years %}
+                                                {% for academic_year, semesters in data.years %}
+                                                    <li class="dropdown-header fw-bold text-university-primary">
+                                                        <i class="bi bi-calendar-range me-2"></i>
+                                                        {{ academic_year.name }}
+                                                    </li>
+                                                    
+                                                    <!-- Full Year Transcript Option -->
                                                     <li>
-                                                        <a class="dropdown-item fw-bold" 
-                                                           href="{% url 'download_transcript' data.student.id None year.id %}">
+                                                        <a class="dropdown-item" 
+                                                           href="{% url 'download_transcript' data.student.id None academic_year.id %}">
                                                             <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>
-                                                            Full {{ year.name }} Transcript
+                                                            Full Year Transcript
                                                         </a>
                                                     </li>
-                                                    <li><hr class="dropdown-divider m-0"></li>
+                                                    
+                                                    <!-- Semester Options -->
                                                     {% for semester in semesters %}
                                                         <li>
                                                             <a class="dropdown-item" 
-                                                               href="{% url 'download_transcript' data.student.id semester.id %}">
+                                                               href="{% url 'download_transcript' data.student.id semester.id academic_year.id %}">
                                                                 <i class="bi bi-file-text me-2 text-primary"></i>
-                                                                Sem {{ semester.number }} {{ year.name }}
+                                                                Semester {{ semester.number }} Transcript
                                                             </a>
                                                         </li>
                                                     {% endfor %}
+                                                    
+                                                    <!-- Add divider unless it's the last item -->
                                                     {% if not forloop.last %}
-                                                        <li><hr class="dropdown-divider m-0"></li>
+                                                        <li><hr class="dropdown-divider"></li>
                                                     {% endif %}
+                                                {% empty %}
+                                                    <li class="dropdown-item text-muted">
+                                                        <i class="bi bi-exclamation-circle me-2"></i>
+                                                        No academic records found
+                                                    </li>
                                                 {% endfor %}
                                             </ul>
                                         </div>
