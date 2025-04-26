@@ -1,0 +1,173 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2>User Permissions Management</h2>
+    
+    <!-- Filter Form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Filters</h5>
+        </div>
+        <div class="card-body">
+            <form method="get">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="user_type">User Type</label>
+                            <select class="form-control" id="user_type" name="user_type">
+                                <option value="">All Types</option>
+                                {% for type in user_types %}
+                                    <option value="{{ type.0 }}" {% if current_filters.user_type == type.0 %}selected{% endif %}>{{ type.1 }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="status">Status</label>
+                            <select class="form-control" id="status" name="status">
+                                <option value="">All Statuses</option>
+                                {% for status in status_options %}
+                                    <option value="{{ status }}" {% if current_filters.status == status %}selected{% endif %}>{{ status|title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="faculty">Faculty</label>
+                            <select class="form-control" id="faculty" name="faculty">
+                                <option value="">All Faculties</option>
+                                {% for faculty in faculties %}
+                                    <option value="{{ faculty.id }}" {% if current_filters.faculty == faculty.id|stringformat:"s" %}selected{% endif %}>{{ faculty.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="department">Department</label>
+                            <select class="form-control" id="department" name="department">
+                                <option value="">All Departments</option>
+                                {% for department in departments %}
+                                    <option value="{{ department.id }}" {% if current_filters.department == department.id|stringformat:"s" %}selected{% endif %}>{{ department.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Apply Filters</button>
+                <a href="{% url 'user_permissions' %}" class="btn btn-secondary">Reset Filters</a>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Users Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5>User List</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>User Type</th>
+                            <th>Status</th>
+                            <th>Verified</th>
+                            <th>Last Login</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.get_full_name }}</td>
+                            <td>{{ user.get_user_type_display }}</td>
+                            <td>{{ user.get_status_display }}</td>
+                            <td>
+                                {% if user.is_verified %}
+                                    <span class="badge badge-success">Yes</span>
+                                {% else %}
+                                    <span class="badge badge-warning">No</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.last_login|date:"Y-m-d H:i" }}</td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton{{ user.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Actions
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ user.id }}">
+                                        {% if not user.is_verified %}
+                                            <form method="post" action="{% url 'user_permissions' %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                                <button type="submit" name="action" value="verify" class="dropdown-item">Verify User</button>
+                                            </form>
+                                        {% else %}
+                                            <form method="post" action="{% url 'user_permissions' %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                                <button type="submit" name="action" value="unverify" class="dropdown-item">Unverify User</button>
+                                            </form>
+                                        {% endif %}
+                                        
+                                        {% if user.status != 'active' %}
+                                            <form method="post" action="{% url 'user_permissions' %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                                <button type="submit" name="action" value="activate" class="dropdown-item">Activate</button>
+                                            </form>
+                                        {% endif %}
+                                        
+                                        {% if user.status != 'inactive' %}
+                                            <form method="post" action="{% url 'user_permissions' %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                                <button type="submit" name="action" value="deactivate" class="dropdown-item">Deactivate</button>
+                                            </form>
+                                        {% endif %}
+                                        
+                                        {% if user.status != 'suspended' %}
+                                            <form method="post" action="{% url 'user_permissions' %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                                <button type="submit" name="action" value="suspend" class="dropdown-item">Suspend</button>
+                                            </form>
+                                        {% endif %}
+                                        
+                                        <div class="dropdown-divider"></div>
+                                        <form method="post" action="{% url 'user_permissions' %}" class="px-3 py-1">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                                            <div class="form-group">
+                                                <label for="new_type{{ user.id }}">Change Type</label>
+                                                <select class="form-control form-control-sm" id="new_type{{ user.id }}" name="new_type">
+                                                    {% for type in user_types %}
+                                                        <option value="{{ type.0 }}" {% if user.user_type == type.0 %}selected{% endif %}>{{ type.1 }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <button type="submit" name="action" value="change_type" class="btn btn-sm btn-primary btn-block">Change</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">No users found matching your criteria</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

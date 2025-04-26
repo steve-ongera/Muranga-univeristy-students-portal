@@ -5185,3 +5185,109 @@ def performance_analysis(request):
     }
     
     return render(request, 'performance/analysis.html', context)
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.views import View
+from django.utils.decorators import method_decorator
+from .models import User, Lecturer, Student, Department, Faculty, Programme
+
+def is_admin(user):
+    """Check if user is admin"""
+    return user.user_type == 'admin' and user.is_verified and user.status == 'active'
+
+@login_required
+@user_passes_test(is_admin)
+def user_permissions_view(request):
+    if request.method == 'GET':
+        users = User.objects.select_related().all()
+        user_types = User.USER_TYPES
+        status_options = [choice[0] for choice in User._meta.get_field('status').choices]
+        departments = Department.objects.all()
+        faculties = Faculty.objects.all()
+
+        user_type_filter = request.GET.get('user_type')
+        status_filter = request.GET.get('status')
+        department_filter = request.GET.get('department')
+        faculty_filter = request.GET.get('faculty')
+
+        if user_type_filter:
+            users = users.filter(user_type=user_type_filter)
+        if status_filter:
+            users = users.filter(status=status_filter)
+        if department_filter:
+            students = Student.objects.filter(programme__department_id=department_filter).values_list('user_id', flat=True)
+            lecturers = Lecturer.objects.filter(department_id=department_filter).values_list('user_id', flat=True)
+            user_ids = list(students) + list(lecturers)
+            users = users.filter(id__in=user_ids)
+        if faculty_filter:
+            students = Student.objects.filter(programme__department__faculty_id=faculty_filter).values_list('user_id', flat=True)
+            lecturers = Lecturer.objects.filter(department__faculty_id=faculty_filter).values_list('user_id', flat=True)
+            user_ids = list(students) + list(lecturers)
+            users = users.filter(id__in=user_ids)
+
+        context = {
+            'users': users,
+            'user_types': user_types,
+            'status_options': status_options,
+            'departments': departments,
+            'faculties': faculties,
+            'current_filters': {
+                'user_type': user_type_filter,
+                'status': status_filter,
+                'department': department_filter,
+                'faculty': faculty_filter,
+            }
+        }
+        return render(request, 'user_permissions.html', context)
+
+    elif request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        action = request.POST.get('action')
+
+        if not user_id or not action:
+            messages.error(request, "Invalid request")
+            return redirect('user_permissions')
+
+        try:
+            user = User.objects.get(id=user_id)
+
+            if action == 'verify':
+                user.is_verified = True
+                user.save()
+                messages.success(request, f"User {user.username} has been verified")
+            elif action == 'unverify':
+                user.is_verified = False
+                user.save()
+                messages.success(request, f"User {user.username} has been unverified")
+            elif action == 'activate':
+                user.status = 'active'
+                user.save()
+                messages.success(request, f"User {user.username} has been activated")
+            elif action == 'deactivate':
+                user.status = 'inactive'
+                user.save()
+                messages.success(request, f"User {user.username} has been deactivated")
+            elif action == 'suspend':
+                user.status = 'suspended'
+                user.save()
+                messages.success(request, f"User {user.username} has been suspended")
+            elif action == 'change_type':
+                new_type = request.POST.get('new_type')
+                if new_type in [choice[0] for choice in User.USER_TYPES]:
+                    user.user_type = new_type
+                    user.save()
+                    messages.success(request, f"User {user.username} type changed to {new_type}")
+                else:
+                    messages.error(request, "Invalid user type")
+            else:
+                messages.error(request, "Invalid action")
+
+        except User.DoesNotExist:
+            messages.error(request, "User not found")
+
+        return redirect('user_permissions')
+    
