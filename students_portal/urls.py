@@ -133,8 +133,21 @@ urlpatterns = [
     path('reports/academic-performance/', views.academic_performance_report, name='academic_performance_report'),
 
     path('transcripts/', views.student_transcripts, name='student_transcripts'),
-    path('transcripts/download/<int:student_id>/', views.download_transcript, name='download_transcript'),
-    path('transcripts/download/<int:student_id>/semester/<int:semester_id>/', views.download_transcript, name='download_transcript'),
-    path('transcripts/download/<int:student_id>/year/<int:academic_year_id>/', views.download_transcript, name='download_transcript'),
+    # URL for downloading a specific semester transcript
+    path('transcripts/download/<int:student_id>/<int:semester_id>/<int:academic_year_id>/', 
+         views.download_transcript, 
+         name='download_transcript_semester'),
+    
+    # URL for downloading a transcript for a specific academic year
+    path('transcripts/download/<int:student_id>/year/<int:academic_year_id>/', 
+         views.download_transcript, 
+         name='download_transcript_year'),
+    
+    # URL for downloading a complete transcript
+    path('transcripts/download/<int:student_id>/', 
+         views.download_transcript, 
+         name='download_transcript_full'),
+
+
 
 ]

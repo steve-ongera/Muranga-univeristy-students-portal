@@ -5534,11 +5534,12 @@ def academic_performance_report(request):
 
     return render(request, 'reports/academic_performance.html', context)
 
+
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseNotFound
 from django.template.loader import get_template
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import Q
+from django.db.models import Q, Count, Prefetch
 from xhtml2pdf import pisa
 from io import BytesIO
 from .models import (
@@ -5553,6 +5554,10 @@ def is_academic_staff(user):
 @login_required
 @user_passes_test(is_academic_staff)
 def student_transcripts(request):
+    # Add these debug checks at the start of your view
+    print(f"Total students in DB: {Student.objects.all().count()}")
+    print(f"Students with enrollments: {Student.objects.annotate(enrollment_count=Count('enrollments')).filter(enrollment_count__gt=0).count()}")
+    print(f"Active students with enrollments: {Student.objects.filter(is_active=True).annotate(enrollment_count=Count('enrollments')).filter(enrollment_count__gt=0).count()}")
     # Get filter parameters
     academic_year_id = request.GET.get('academic_year')
     programme_id = request.GET.get('programme')
@@ -5563,8 +5568,24 @@ def student_transcripts(request):
     academic_years = AcademicYear.objects.all().order_by('-start_date')
     programmes = Programme.objects.all().order_by('name')
     
-    # Start with all active students
-    students = Student.objects.filter(is_active=True).select_related('programme').order_by('last_name', 'first_name')
+    # Start with students who have enrollments
+    students = Student.objects.filter(
+        is_active=True
+    ).prefetch_related(
+        Prefetch(
+            'enrollments',
+            queryset=StudentEnrollment.objects.select_related(
+                'semester',
+                'semester__academic_year',
+                'programme_unit',
+                'programme_unit__unit'
+            )
+        )
+    ).annotate(
+        enrollment_count=Count('enrollments')
+    ).filter(
+        enrollment_count__gt=0
+    ).order_by('last_name', 'first_name')
     
     # Apply filters
     if programme_id:
@@ -5584,12 +5605,15 @@ def student_transcripts(request):
     # Prepare student data with available academic years and semesters
     student_data = []
     for student in students:
-        # Get all enrollments for this student
-        enrollments = StudentEnrollment.objects.filter(student=student).select_related('semester', 'semester__academic_year')
+        enrollments = student.enrollments.all()
         
         # Filter enrollments by academic year if specified
         if academic_year_id:
             enrollments = enrollments.filter(semester__academic_year_id=academic_year_id)
+        
+        # Skip students with no enrollments after filtering
+        if not enrollments.exists():
+            continue
         
         # Get distinct academic years from enrollments
         academic_years_for_student = set()
@@ -5630,7 +5654,9 @@ def student_transcripts(request):
         'selected_programme': programme_id,
         'selected_year_of_study': year_of_study,
         'search_query': search_query or '',
-        'year_range': range(1, 6)  # Assuming max 5 years of study
+        'year_range': range(1, 6),  # Assuming max 5 years of study
+        'total_students': len(student_data),
+        'has_records': bool(student_data)
     }
     
     return render(request, 'transcripts/student_transcripts.html', context)
