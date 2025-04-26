@@ -124,31 +124,32 @@
                                     <td>
                                         <div class="dropdown">
                                             <button class="btn btn-sm btn-outline-university dropdown-toggle" 
-                                                    type="button" data-bs-toggle="dropdown" 
-                                                    aria-expanded="false">
+                                                    type="button" id="dropdownMenuButton{{ forloop.counter }}" 
+                                                    data-bs-toggle="dropdown" aria-expanded="false"
+                                                    data-bs-auto-close="outside">
                                                 <i class="bi bi-download me-1"></i> Download
                                             </button>
-                                            <ul class="dropdown-menu">
+                                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton{{ forloop.counter }}">
                                                 {% for year, semesters in data.years %}
                                                     <li>
                                                         <a class="dropdown-item fw-bold" 
                                                            href="{% url 'download_transcript' data.student.id None year.id %}">
-                                                            <i class="bi bi-file-earmark-pdf me-2"></i>
+                                                            <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>
                                                             Full {{ year.name }} Transcript
                                                         </a>
                                                     </li>
-                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><hr class="dropdown-divider m-0"></li>
                                                     {% for semester in semesters %}
                                                         <li>
                                                             <a class="dropdown-item" 
                                                                href="{% url 'download_transcript' data.student.id semester.id %}">
-                                                                <i class="bi bi-file-text me-2"></i>
+                                                                <i class="bi bi-file-text me-2 text-primary"></i>
                                                                 Sem {{ semester.number }} {{ year.name }}
                                                             </a>
                                                         </li>
                                                     {% endfor %}
                                                     {% if not forloop.last %}
-                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li><hr class="dropdown-divider m-0"></li>
                                                     {% endif %}
                                                 {% endfor %}
                                             </ul>
@@ -193,6 +194,17 @@
     .dropdown-menu {
         max-height: 400px;
         overflow-y: auto;
+        min-width: 300px;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    .dropdown-item {
+        padding: 0.5rem 1.5rem;
+    }
+    .dropdown-item:hover {
+        background-color: rgba(46, 125, 50, 0.1);
+    }
+    .dropdown-divider {
+        margin: 0.25rem 0;
     }
 </style>
 {% endblock %}

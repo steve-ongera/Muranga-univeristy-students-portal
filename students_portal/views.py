@@ -5559,30 +5559,27 @@ def student_transcripts(request):
     year_of_study = request.GET.get('year_of_study')
     search_query = request.GET.get('search')
     
+    print(f"Filters - Academic Year: {academic_year_id}, Programme: {programme_id}, Year: {year_of_study}, Search: {search_query}")
+    
     # Get all academic years for filter dropdown
     academic_years = AcademicYear.objects.all().order_by('-start_date')
     programmes = Programme.objects.all().order_by('name')
     
-    # Get current academic year if none selected
+    # Get current academic year
     current_year = AcademicYear.objects.filter(is_current=True).first()
     
-    # Filter students based on parameters
+    # Start with all active students
     students = Student.objects.filter(is_active=True).order_by('last_name', 'first_name')
+    print(f"Initial student count: {students.count()}")
     
-    if academic_year_id:
-        students = students.filter(
-            enrollments__semester__academic_year_id=academic_year_id
-        ).distinct()
-    elif current_year:
-        students = students.filter(
-            enrollments__semester__academic_year=current_year
-        ).distinct()
-    
+    # Apply direct student filters
     if programme_id:
         students = students.filter(programme_id=programme_id)
+        print(f"After programme filter: {students.count()}")
     
     if year_of_study:
         students = students.filter(current_year=year_of_study)
+        print(f"After year of study filter: {students.count()}")
     
     if search_query:
         students = students.filter(
@@ -5591,18 +5588,43 @@ def student_transcripts(request):
             Q(last_name__icontains=search_query) |
             Q(middle_name__icontains=search_query)
         )
+        print(f"After search query filter: {students.count()}")
+    
+    # If academic year filter is applied, we need to filter students by enrollment
+    if academic_year_id:
+        students_with_enrollment = students.filter(
+            enrollments__semester__academic_year_id=academic_year_id
+        ).distinct()
+        
+        # Debug info about enrollments
+        print(f"Students with enrollments in this academic year: {students_with_enrollment.count()}")
+        
+        # IMPORTANT: If no students have enrollments in this academic year, use all students
+        if students_with_enrollment.exists():
+            students = students_with_enrollment
+        else:
+            # No enrollments for this academic year - you could either:
+            # 1. Show all students (current behavior)
+            # 2. Show empty list (uncomment below)
+            # students = Student.objects.none()
+            print("No students found with enrollments in selected academic year")
     
     # Prepare student data with available semesters
     student_data = []
     for student in students:
+        # Get all semesters for this student
         semesters = Semester.objects.filter(
             enrollments__student=student
-        ).order_by('-academic_year__start_date', '-number').distinct()
+        ).distinct()
         
+        # Filter semesters by academic year if specified
         if academic_year_id:
             semesters = semesters.filter(academic_year_id=academic_year_id)
-        elif current_year:
+        elif current_year and not academic_year_id:  # Only use current year if no specific year selected
             semesters = semesters.filter(academic_year=current_year)
+        
+        # Order semesters appropriately
+        semesters = semesters.order_by('-academic_year__start_date', '-number')
         
         # Group semesters by academic year
         years = {}
@@ -5611,10 +5633,13 @@ def student_transcripts(request):
                 years[semester.academic_year] = []
             years[semester.academic_year].append(semester)
         
+        # Always include the student, even with empty years list
         student_data.append({
             'student': student,
-            'years': sorted(years.items(), key=lambda x: x[0].start_date, reverse=True)
+            'years': sorted(years.items(), key=lambda x: x[0].start_date, reverse=True) if years else []
         })
+    
+    print(f"Final student data count: {len(student_data)}")
     
     context = {
         'students': student_data,
