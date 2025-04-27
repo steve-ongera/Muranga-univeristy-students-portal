@@ -13,15 +13,27 @@
     --border-light: #c8e6c9;
   }
   
+
   
+  .container-main {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .content-wrapper {
+    width: 100%;
+    padding: 10px;
+  }
   
   .profile-card {
     background: var(--white);
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    padding: 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    padding: 10px;
     text-align: center;
-    
+    height: 100%;
   }
   
   .profile-img {
@@ -30,20 +42,24 @@
     object-fit: cover;
     border-radius: 50%;
     border: 3px solid var(--light-green);
-    margin: 0 auto 15px;
+    margin: 0 auto 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   }
   
   .info-card {
     background: var(--white);
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    padding: 25px;
-   
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    padding: 30px;
+    height: 100%;
+    width: 100%;
   }
   
   .info-row {
-    padding: 10px 0;
+    padding: 12px 0;
     border-bottom: 1px solid var(--border-light);
+    display: flex;
+    flex-wrap: wrap;
   }
   
   .info-row:last-child {
@@ -53,33 +69,44 @@
   .label {
     font-weight: 600;
     color: var(--text-dark);
+    width: 25%;
+    min-width: 120px;
+  }
+  
+  .value {
+    width: 75%;
+    color: var(--text-muted);
+    word-break: break-word;
   }
   
   .nav-tabs {
-    border-bottom: 1px solid var(--light-green);
+    border-bottom: 1px solid var(--border-light);
   }
   
   .nav-tabs .nav-link {
     color: var(--text-muted);
     border: none;
-    padding: 10px 15px;
+    padding: 12px 20px;
     margin-right: 5px;
+    font-size: 0.95rem;
   }
   
   .nav-tabs .nav-link:hover {
     color: var(--primary-green);
+    background-color: rgba(46, 125, 50, 0.05);
   }
   
   .nav-tabs .nav-link.active {
     font-weight: 600;
     color: var(--primary-green);
     background-color: transparent;
-    border-bottom: 2px solid var(--primary-green);
+    border-bottom: 3px solid var(--primary-green);
   }
   
   .btn-primary {
     background-color: var(--primary-green);
     border-color: var(--primary-green);
+    padding: 8px 20px;
   }
   
   .btn-primary:hover {
@@ -90,17 +117,20 @@
   .btn-outline-secondary {
     color: var(--text-muted);
     border-color: var(--text-muted);
+    padding: 8px 20px;
   }
   
   .btn-outline-danger {
     color: #d32f2f;
     border-color: #d32f2f;
+    padding: 8px 20px;
   }
   
   .btn-upload {
     position: relative;
     overflow: hidden;
     display: inline-block;
+    padding: 8px 20px;
   }
   
   .btn-upload input[type="file"] {
@@ -114,6 +144,15 @@
   .badge.bg-light {
     background-color: var(--light-green) !important;
     color: var(--text-dark) !important;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin: 5px 0;
+    display: inline-block;
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+    word-break: break-word;
   }
   
   .alert-success {
@@ -122,139 +161,184 @@
     color: var(--text-dark);
   }
   
-  /* University header branding */
-  .university-header {
-    background-color: var(--primary-green);
-    color: var(--white);
-    padding: 10px 0;
-    margin-bottom: 20px;
+  .message-container {
+    width: 100%;
+    padding: 20px;
   }
   
-  .university-logo {
-    height: 40px;
-    margin-right: 10px;
+  .profile-name {
+    font-size: 1.0rem;
+    font-weight: 800;
+    margin-bottom: 5px;
+    color: var(--text-dark);
+  }
+  
+  .profile-id {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 15px;
+  }
+  
+  .profile-year {
+    font-size: 0.95rem;
+    color: var(--text-dark);
+  }
+  
+  @media (max-width: 992px) {
+    .content-wrapper {
+      padding: 15px;
+    }
+    
+    .label {
+      width: 100%;
+      margin-bottom: 5px;
+    }
+    
+    .value {
+      width: 100%;
+    }
+    
+    .message-container {
+      padding: 15px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .profile-card {
+      margin-bottom: 20px;
+    }
+    
+    .info-card {
+      padding: 20px;
+    }
   }
 </style>
 
-
-
-<div class="message-container">
-  {% for message in messages %}
-  <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-      {{ message }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  </div>
-  {% endfor %}
-</div>
-
-<div class="container py-4">
-  <div class="row">
-    <!-- Left Column - Profile Card -->
-    <div class="col-md-4 mb-4">
-      <div class="profile-card">
-        {% if student.profile_picture %}
-          <img src="{{ student.profile_picture.url }}" alt="Profile" class="profile-img">
-        {% else %}
-          <img src="{% static 'assets/img/profile.png' %}" alt="Profile" class="profile-img">
-        {% endif %}
-        
-        <h3 class="mb-1">{{ student.get_full_name }}</h3>
-        <p class="text-muted mb-2">{{ student.registration_number }}</p>
-        <p class="badge bg-light">{{ student.programme.name }}</p>
-        <p>Year {{ student.current_year }}, Semester {{ student.current_semester }}</p>
-      </div>
+<div class="container-main">
+  <div class="message-container">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
+    {% endfor %}
+  </div>
 
-    <!-- Right Column - Info Tabs -->
-    <div class="col-md-8">
-      <div class="info-card">
-        <ul class="nav nav-tabs mb-4">
-          <li class="nav-item">
-            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#overview">Overview</button>
-          </li>
-          <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#edit">Edit</button>
-          </li>
-        </ul>
+  <div class="content-wrapper">
+    <div class="row">
+      <!-- Left Column - Profile Card -->
+      <div class="col-xl-4 col-lg-4 col-md-5 mb-4">
+        <div class="profile-card">
+          {% if student.profile_picture %}
+            <img src="{{ student.profile_picture.url }}" alt="Profile" class="profile-img">
+          {% else %}
+            <img src="{% static 'assets/img/profile.png' %}" alt="Profile" class="profile-img">
+          {% endif %}
+          
+          <h3 class="profile-name">{{ student.get_full_name|upper }}</h3>
+          <p class="profile-id">{{ student.registration_number }}</p>
+          <p class="badge bg-light">{{ student.programme.name }}</p>
+          <p class="profile-year">Year {{ student.current_year }}, Semester {{ student.current_semester }}</p>
+        </div>
+      </div>
 
-        <div class="tab-content">
-          <!-- Overview Tab -->
-          <div class="tab-pane fade show active" id="overview">
-            <div class="info-row row">
-              <div class="col-md-3 label">Email</div>
-              <div class="col-md-9">{{ student.email|default:"Not provided" }}</div>
-            </div>
-            <div class="info-row row">
-              <div class="col-md-3 label">Phone</div>
-              <div class="col-md-9">{{ student.phone_number|default:"Not provided" }}</div>
-            </div>
-            <div class="info-row row">
-              <div class="col-md-3 label">Date of Birth</div>
-              <div class="col-md-9">{{ student.date_of_birth|date:"M d, Y"|default:"Not provided" }}</div>
-            </div>
-            <div class="info-row row">
-              <div class="col-md-3 label">Address</div>
-              <div class="col-md-9">
-                {{ student.town|default:"" }}{% if student.town and student.county %}, {% endif %}
-                {{ student.county|default:"Not provided" }}
+      <!-- Right Column - Info Tabs -->
+      <div class="col-xl-8 col-lg-8 col-md-7">
+        <div class="info-card">
+          <ul class="nav nav-tabs mb-4">
+            <li class="nav-item">
+              <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#overview">Overview</button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#edit">Edit Profile</button>
+            </li>
+          </ul>
+
+          <div class="tab-content">
+            <!-- Overview Tab -->
+            <div class="tab-pane fade show active" id="overview">
+              <div class="info-row">
+                <div class="label">Email</div>
+                <div class="value">{{ student.email|default:"Not provided" }}</div>
+              </div>
+              <div class="info-row">
+                <div class="label">Phone</div>
+                <div class="value">{{ student.phone_number|default:"Not provided" }}</div>
+              </div>
+              <div class="info-row">
+                <div class="label">Date of Birth</div>
+                <div class="value">{{ student.date_of_birth|date:"M d, Y"|default:"Not provided" }}</div>
+              </div>
+              <div class="info-row">
+                <div class="label">Address</div>
+                <div class="value">
+                  {{ student.town|default:"" }}{% if student.town and student.county %}, {% endif %}
+                  {{ student.county|default:"Not provided" }}
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Edit Tab -->
-          <div class="tab-pane fade" id="edit">
-            <form method="POST" enctype="multipart/form-data">
-              {% csrf_token %}
-              
-              <div class="mb-4 text-center">
-                {% if student.profile_picture %}
-                  <img src="{{ student.profile_picture.url }}" class="profile-img mb-3" id="profile-preview">
-                {% else %}
-                  <img src="{% static 'assets/img/profile.png' %}" class="profile-img mb-3" id="profile-preview">
-                {% endif %}
+            <!-- Edit Tab -->
+            <div class="tab-pane fade" id="edit">
+              <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
                 
-                <label class="btn btn-primary btn-upload">
-                  <i class="bi bi-upload"></i> Change Photo
-                  {{ form.profile_picture }}
-                </label>
+                <div class="mb-4 text-center">
+                  {% if student.profile_picture %}
+                    <img src="{{ student.profile_picture.url }}" class="profile-img mb-3" id="profile-preview">
+                  {% else %}
+                    <img src="{% static 'assets/img/profile.png' %}" class="profile-img mb-3" id="profile-preview">
+                  {% endif %}
+                  
+                  <div class="d-flex justify-content-center gap-2 flex-wrap">
+                    <label class="btn btn-primary btn-upload">
+                      <i class="bi bi-upload"></i> Change Photo
+                      {{ form.profile_picture }}
+                    </label>
+                    
+                    {% if student.profile_picture %}
+                      <button type="submit" name="remove_profile_image" class="btn btn-outline-danger">
+                        <i class="bi bi-trash"></i> Remove
+                      </button>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Email</label>
+                    {{ form.email }}
+                  </div>
+                  
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Phone Number</label>
+                    {{ form.phone_number }}
+                  </div>
+                </div>
                 
-                {% if student.profile_picture %}
-                  <button type="submit" name="remove_profile_image" class="btn btn-outline-danger">
-                    <i class="bi bi-trash"></i> Remove
-                  </button>
-                {% endif %}
-              </div>
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Date of Birth</label>
+                    {{ form.date_of_birth }}
+                  </div>
+                  
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Town/City</label>
+                    {{ form.town }}
+                  </div>
+                </div>
+                
+                <div class="mb-4">
+                  <label class="form-label">County</label>
+                  {{ form.county }}
+                </div>
 
-              <div class="mb-3">
-                <label class="form-label">Email</label>
-                {{ form.email }}
-              </div>
-              
-              <div class="mb-3">
-                <label class="form-label">Phone Number</label>
-                {{ form.phone_number }}
-              </div>
-              
-              <div class="mb-3">
-                <label class="form-label">Date of Birth</label>
-                {{ form.date_of_birth }}
-              </div>
-              
-              <div class="mb-3">
-                <label class="form-label">Town/City</label>
-                {{ form.town }}
-              </div>
-              
-              <div class="mb-4">
-                <label class="form-label">County</label>
-                {{ form.county }}
-              </div>
-
-              <div class="d-flex justify-content-end">
-                <a href="{% url 'student_profile' %}" class="btn btn-outline-secondary me-2">Cancel</a>
-                <button type="submit" class="btn btn-primary">Save Changes</button>
-              </div>
-            </form>
+                <div class="d-flex justify-content-end gap-2">
+                  <a href="{% url 'student_profile' %}" class="btn btn-outline-secondary">Cancel</a>
+                  <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>

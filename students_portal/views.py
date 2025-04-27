@@ -3935,7 +3935,7 @@ from django.views import View
 from .models import AcademicYear, Hostel, Room, HostelAllocation, Student
 
 class HostelAllocationExplorer(View):
-    template_name = 'hostel_allocation_explorer.html'
+    template_name = 'hostel/hostel_allocation_explorer.html'
     
     def get(self, request):
         # Get all academic years
