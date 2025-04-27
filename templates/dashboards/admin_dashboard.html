@@ -2,6 +2,7 @@
 {% load static %}
 {% block content %}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 
 <style>
   /* Existing styles */
@@ -144,92 +145,95 @@
       <!-- Left side columns -->
       <div class="col-lg-8">
         <div class="row">
-          <!-- Sales Card -->
+          <!-- Students Card -->
           <div class="col-xxl-4 col-md-6">
-            <div class="card info-card sales-card">
-              <div class="card-body">
-                <h5 class="card-title">Students</h5>
+            <div class="card info-card sales-card" style="border-radius: 12px; border-left: 6px solid #2E7D32; box-shadow: 0 4px 12px rgba(46, 125, 50, 0.15); border-top: none; border-right: none; border-bottom: none;">
+              <div class="card-body" style="padding: 1.5rem;">
+                <h5 class="card-title" style="color: #2E7D32; font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px; margin-bottom: 1rem;">STUDENTS</h5>
                 <div class="d-flex align-items-center">
-                  <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                    <i class="bi bi-mortarboard"></i>
+                  <div class="card-icon rounded-circle d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, rgba(46, 125, 50, 0.1) 0%, rgba(46, 125, 50, 0.2) 100%); width: 60px; height: 60px;">
+                    <i class="bi bi-mortarboard" style="color: #2E7D32; font-size: 1.75rem;"></i>
                   </div>
                   <div class="ps-3">
-                    <h6>{{ total_students }}</h6>
-                    <span class="text-success small pt-1 fw-bold"></span> <span class="text-muted small pt-2 ps-1"></span>
+                    <h6 style="font-family: 'Roboto', sans-serif; font-size: 2.25rem; font-weight: 900; color: #2E7D32; margin-bottom: 0.25rem; line-height: 1;">{{ total_students }}</h6>
+                    <span style="font-size: 0.9rem; color: #666; font-weight: 500;">Total enrolled</span>
                   </div>
                 </div>
               </div>
             </div>
-          </div><!-- End Sales Card -->
+          </div><!-- End Students Card -->
 
-          <!-- Revenue Card -->
+          <!-- Active Students Card -->
           <div class="col-xxl-4 col-md-6">
-            <div class="card info-card revenue-card">
-              <div class="card-body">
-                <h5 class="card-title">Active Students</h5>
+            <div class="card info-card revenue-card" style="border-radius: 12px; border-left: 6px solid #388E3C; box-shadow: 0 4px 12px rgba(56, 142, 60, 0.15); border-top: none; border-right: none; border-bottom: none;">
+              <div class="card-body" style="padding: 1.5rem;">
+                <h5 class="card-title" style="color: #388E3C; font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px; margin-bottom: 1rem;">ACTIVE STUDENTS</h5>
                 <div class="d-flex align-items-center">
-                  <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                    <i class="bi bi-person"></i>
+                  <div class="card-icon rounded-circle d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, rgba(56, 142, 60, 0.1) 0%, rgba(56, 142, 60, 0.2) 100%); width: 60px; height: 60px;">
+                    <i class="bi bi-person-check" style="color: #388E3C; font-size: 1.75rem;"></i>
                   </div>
                   <div class="ps-3">
-                    <h6>{{ active_students }}</h6>
+                    <h6 style="font-family: 'Roboto', sans-serif; font-size: 2.25rem; font-weight: 900; color: #388E3C; margin-bottom: 0.25rem; line-height: 1;">{{ active_students }}</h6>
+                    <span style="font-size: 0.9rem; color: #666; font-weight: 500;">Active Now</span>
                   </div>
                 </div>
               </div>
             </div>
-          </div><!-- End Revenue Card -->
+          </div><!-- End Active Students Card -->
 
-          <!-- Randomized Patients -->
+          <!-- Lecturers Card -->
           <div class="col-xxl-4 col-md-6">
-            <div class="card info-card revenue-card">
-              <div class="card-body">
-                <h5 class="card-title">Lecturers</h5>
+            <div class="card info-card revenue-card" style="border-radius: 12px; border-left: 6px solid #43A047; box-shadow: 0 4px 12px rgba(67, 160, 71, 0.15); border-top: none; border-right: none; border-bottom: none;">
+              <div class="card-body" style="padding: 1.5rem;">
+                <h5 class="card-title" style="color: #43A047; font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px; margin-bottom: 1rem;">LECTURERS</h5>
                 <div class="d-flex align-items-center">
-                  <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                    <i class="bi bi-person-check text-white"></i>
+                  <div class="card-icon rounded-circle d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, rgba(67, 160, 71, 0.1) 0%, rgba(67, 160, 71, 0.2) 100%); width: 60px; height: 60px;">
+                    <i class="bi bi-person-gear" style="color: #43A047; font-size: 1.75rem;"></i>
                   </div>
                   <div class="ps-3">
-                    <h6>{{ total_lecturers }}</h6>
+                    <h6 style="font-family: 'Roboto', sans-serif; font-size: 2.25rem; font-weight: 900; color: #43A047; margin-bottom: 0.25rem; line-height: 1;">{{ total_lecturers }}</h6>
+                    <span style="font-size: 0.9rem; color: #666; font-weight: 500;">Teaching staff</span>
                   </div>
                 </div>
               </div>
             </div>
-          </div><!-- End Revenue Card -->
+          </div><!-- End Lecturers Card -->
 
-          <!-- UnRandomized Patients -->
+          <!-- Programmes Card -->
           <div class="col-xxl-6 col-md-6">
-            <div class="card info-card revenue-card">
-              <div class="card-body">
-                <h5 class="card-title">Programmes</h5>
+            <div class="card info-card revenue-card" style="border-radius: 12px; border-left: 6px solid #4CAF50; box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15); border-top: none; border-right: none; border-bottom: none;">
+              <div class="card-body" style="padding: 1.5rem;">
+                <h5 class="card-title" style="color: #4CAF50; font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px; margin-bottom: 1rem;">PROGRAMMES</h5>
                 <div class="d-flex align-items-center">
-                  <div class="card-icon rounded-circle d-flex align-items-center justify-content-center bg-warning">
-                    <i class="bi bi-person-dash text-white"></i>
+                  <div class="card-icon rounded-circle d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(76, 175, 80, 0.2) 100%); width: 60px; height: 60px;">
+                    <i class="bi bi-book" style="color: #4CAF50; font-size: 1.75rem;"></i>
                   </div>
                   <div class="ps-3">
-                    <h6>{{ total_programmes }}</h6>
+                    <h6 style="font-family: 'Roboto', sans-serif; font-size: 2.25rem; font-weight: 900; color: #4CAF50; margin-bottom: 0.25rem; line-height: 1;">{{ total_programmes }}</h6>
+                    <span style="font-size: 0.9rem; color: #666; font-weight: 500;">Academic programs</span>
                   </div>
                 </div>
               </div>
             </div>
-          </div><!-- End Unrandomized Card -->
+          </div><!-- End Programmes Card -->
 
-          <!-- Customers Card -->
+          <!-- Employees Card -->
           <div class="col-xxl-6 col-xl-12">
-            <div class="card info-card customers-card">
-              <div class="card-body">
-                <h5 class="card-title">Employees</h5>
+            <div class="card info-card customers-card" style="border-radius: 12px; border-left: 6px solid #66BB6A; box-shadow: 0 4px 12px rgba(102, 187, 106, 0.15); border-top: none; border-right: none; border-bottom: none;">
+              <div class="card-body" style="padding: 1.5rem;">
+                <h5 class="card-title" style="color: #66BB6A; font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px; margin-bottom: 1rem;">EMPLOYEES</h5>
                 <div class="d-flex align-items-center">
-                  <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                    <i class="bi bi-people"></i>
+                  <div class="card-icon rounded-circle d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, rgba(102, 187, 106, 0.1) 0%, rgba(102, 187, 106, 0.2) 100%); width: 60px; height: 60px;">
+                    <i class="bi bi-people" style="color: #66BB6A; font-size: 1.75rem;"></i>
                   </div>
                   <div class="ps-3">
-                    <h6>89</h6>
-                    <span class="text-danger small pt-1 fw-bold"></span> <span class="text-muted small pt-2 ps-1"></span>
+                    <h6 style="font-family: 'Roboto', sans-serif; font-size: 2.25rem; font-weight: 900; color: #66BB6A; margin-bottom: 0.25rem; line-height: 1;">{{ total_employees }}</h6>
+                    <span style="font-size: 0.9rem; color: #666; font-weight: 500;">Total staff</span>
                   </div>
                 </div>
               </div>
             </div>
-          </div><!-- End summary Card -->
+          </div><!-- End Employees Card -->
 
           <div class="col-12">
             <div class="card">

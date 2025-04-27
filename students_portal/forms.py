@@ -409,3 +409,148 @@ class AdminSecuritySettingsForm(forms.ModelForm):
         model = AdminProfile
         fields = '__all__'  # Example fields
 
+
+from django.core.exceptions import ValidationError
+class EmployeeForm(forms.ModelForm):
+    class Meta:
+        model = Employee
+        exclude = ['created_at', 'updated_at', 'user_account']
+        widgets = {
+            # Basic identification fields
+            'employee_id': forms.TextInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'middle_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'national_id': forms.TextInput(attrs={'class': 'form-control'}),
+            'passport_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'profile_picture': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            
+            # Employment information
+            'department': forms.Select(attrs={'class': 'form-select'}),
+            'job_title': forms.TextInput(attrs={'class': 'form-control'}),
+            'employment_type': forms.Select(attrs={'class': 'form-select'}),
+            'employment_category': forms.Select(attrs={'class': 'form-select'}),
+            'date_of_employment': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'date_of_termination': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'is_teaching_staff': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            
+            # Academic qualifications
+            'highest_qualification': forms.TextInput(attrs={'class': 'form-control'}),
+            'specialization': forms.TextInput(attrs={'class': 'form-control'}),
+            'academic_rank': forms.Select(attrs={'class': 'form-select'}),
+            
+            # Personal information
+            'date_of_birth': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'gender': forms.Select(attrs={'class': 'form-select'}),
+            'marital_status': forms.Select(attrs={'class': 'form-select'}),
+            
+            # Contact information
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'alternative_phone': forms.TextInput(attrs={'class': 'form-control'}),
+            
+            # Address information
+            'residential_address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'county': forms.TextInput(attrs={'class': 'form-control'}),
+            'town': forms.TextInput(attrs={'class': 'form-control'}),
+            'postal_address': forms.TextInput(attrs={'class': 'form-control'}),
+            'postal_code': forms.TextInput(attrs={'class': 'form-control'}),
+            
+            # Emergency contact
+            'emergency_contact_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'emergency_contact_relationship': forms.TextInput(attrs={'class': 'form-control'}),
+            'emergency_contact_phone': forms.TextInput(attrs={'class': 'form-control'}),
+            
+            # Financial information
+            'bank_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'bank_branch': forms.TextInput(attrs={'class': 'form-control'}),
+            'bank_account_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'nhif_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'nssf_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'kra_pin': forms.TextInput(attrs={'class': 'form-control'}),
+            
+            # System access
+            'has_system_access': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'access_level': forms.Select(attrs={'class': 'form-select'}),
+            
+            # Employment status
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'employment_status': forms.Select(attrs={'class': 'form-select'}),
+            
+            # Additional information
+            'biography': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        date_of_employment = cleaned_data.get('date_of_employment')
+        date_of_termination = cleaned_data.get('date_of_termination')
+        date_of_birth = cleaned_data.get('date_of_birth')
+        
+        # Validate that termination date is after employment date if both exist
+        if date_of_termination and date_of_employment and date_of_termination < date_of_employment:
+            raise ValidationError("Termination date cannot be before employment date.")
+        
+        # Validate that employment date is not in the future
+        if date_of_employment and date_of_employment > timezone.now().date():
+            raise ValidationError("Employment date cannot be in the future.")
+        
+        # Validate that birth date is reasonable (at least 16 years before employment)
+        if date_of_birth and date_of_employment:
+            min_age_date = date_of_employment.replace(year=date_of_employment.year - 16)
+            if date_of_birth > min_age_date:
+                raise ValidationError("Employee must be at least 16 years old at the time of employment.")
+        
+        return cleaned_data
+    
+
+
+
+from django import forms
+from .models import Department
+
+class EmployeeFilterForm(forms.Form):
+    department = forms.ModelChoiceField(
+        queryset=Department.objects.all(),
+        required=False,
+        label="Department",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    employment_type = forms.ChoiceField(
+        choices=[('', 'All')] + Employee._meta.get_field('employment_type').choices,
+        required=False,
+        label="Employment Type",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    employment_category = forms.ChoiceField(
+        choices=[('', 'All')] + Employee._meta.get_field('employment_category').choices,
+        required=False,
+        label="Category",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    is_active = forms.ChoiceField(
+        choices=[('', 'All'), (True, 'Active'), (False, 'Inactive')],
+        required=False,
+        label="Status",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    search = forms.CharField(
+        required=False,
+        label="Search",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Search by name, ID or job title'
+        })
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set empty labels for choice fields
+        for field_name, field in self.fields.items():
+            if isinstance(field, forms.ChoiceField) and not isinstance(field, forms.ModelChoiceField):
+                field.choices = [('', 'All')] + field.choices[1:]

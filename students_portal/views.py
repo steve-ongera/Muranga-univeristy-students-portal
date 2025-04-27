@@ -576,6 +576,9 @@ def admin_dashboard(request):
     # Lecturer statistics
     total_lecturers = Lecturer.objects.count()
     active_lecturers = Lecturer.objects.filter(status='active').count()
+
+    #total employees Employee
+    total_employees = Employee.objects.count()
     
     # Programme statistics
     total_programmes = Programme.objects.count()
@@ -633,6 +636,7 @@ def admin_dashboard(request):
         
         # Statistics
         'total_students': total_students,
+        'total_employees': total_employees,
         'active_students': active_students,
         'total_lecturers': total_lecturers,
         'active_lecturers': active_lecturers,
@@ -5535,6 +5539,13 @@ def academic_performance_report(request):
     return render(request, 'reports/academic_performance.html', context)
 
 
+import base64
+
+def get_image_data_uri(filepath):
+    with open(filepath, "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+    return f"data:image/png;base64,{encoded_string}"
+
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseNotFound
 from django.template.loader import get_template
@@ -5741,7 +5752,9 @@ def download_transcript(request, student_id, semester_id=None, academic_year_id=
             'semester': semester,
             'generated_date': timezone.now().strftime("%Y-%m-%d"),
             'generated_by': request.user.get_full_name(),
-            'institution_name': "Your University Name",
+            'institution_name': "MURANG'A UNIVERSITY OF TECHNOLOGY",
+            'logo_data_uri': get_image_data_uri(os.path.join(settings.BASE_DIR, 'static', 'mut_logo.png')),
+            'seal_data_uri': get_image_data_uri(os.path.join(settings.BASE_DIR, 'static', 'university_seal.png'))
         }
         
         # Generate PDF
@@ -5776,3 +5789,210 @@ def download_transcript(request, student_id, semester_id=None, academic_year_id=
     except Exception as e:
         logger.exception(f"Error generating transcript for student {student_id}")
         return HttpResponseNotFound("An error occurred while generating the transcript")
+    
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.generic import ListView, DetailView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.urls import reverse_lazy
+from django.contrib import messages
+from django.http import JsonResponse
+from django.core.paginator import Paginator
+from django.db.models import Q
+from .models import Employee, Department
+from .forms import EmployeeForm, EmployeeFilterForm
+
+from django.shortcuts import render
+from django.db.models import Q
+from .models import Employee, Department
+from .forms import EmployeeFilterForm
+
+def employee_list(request):
+    # Initialize the form with GET parameters
+    filter_form = EmployeeFilterForm(request.GET or None)
+    
+    # Start with base queryset
+    employees = Employee.objects.select_related('department').order_by('last_name', 'first_name')
+    
+    if filter_form.is_valid():
+        data = filter_form.cleaned_data
+        
+        # Apply filters
+        if data.get('department'):
+            employees = employees.filter(department=data['department'])
+        
+        if data.get('employment_type'):
+            employees = employees.filter(employment_type=data['employment_type'])
+        
+        if data.get('employment_category'):
+            employees = employees.filter(employment_category=data['employment_category'])
+        
+        # Handle the is_active filter safely
+        is_active = data.get('is_active')
+        if is_active is not None and is_active != '':
+            # Convert string to boolean if needed
+            if isinstance(is_active, str):
+                is_active = is_active.lower() == 'true'
+            employees = employees.filter(is_active=is_active)
+        
+        if data.get('search'):
+            search = data['search']
+            employees = employees.filter(
+                Q(first_name__icontains=search) |
+                Q(last_name__icontains=search) |
+                Q(employee_id__icontains=search) |
+                Q(job_title__icontains=search)
+            )
+    
+    # Pagination
+    paginator = Paginator(employees, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'filter_form': filter_form,
+    }
+    return render(request, 'employees/employee_list.html', context)
+
+def employee_detail_json(request, pk):
+    employee = get_object_or_404(Employee, pk=pk)
+    
+    data = {
+        'first_name': employee.first_name,
+        'last_name': employee.last_name,
+        'employee_id': employee.employee_id,
+        'department_name': str(employee.department),
+        'job_title': employee.job_title,
+        'date_of_birth': employee.date_of_birth.strftime('%Y-%m-%d') if employee.date_of_birth else None,
+        'gender_display': employee.get_gender_display(),
+        'marital_status_display': employee.get_marital_status_display(),
+        'national_id': employee.national_id,
+        'passport_number': employee.passport_number,
+        'email': employee.email,
+        'phone_number': employee.phone_number,
+        'alternative_phone': employee.alternative_phone,
+        'residential_address': employee.residential_address,
+        'county': employee.county,
+        'town': employee.town,
+        'employment_type_display': employee.get_employment_type_display(),
+        'employment_category_display': employee.get_employment_category_display(),
+        'date_of_employment': employee.date_of_employment.strftime('%Y-%m-%d'),
+        'employment_status_display': employee.get_employment_status_display(),
+        'years_of_service': employee.years_of_service(),
+        'has_system_access': employee.has_system_access,
+        'profile_picture': employee.profile_picture.url if employee.profile_picture else None,
+    }
+    
+    return JsonResponse(data)
+
+from django.shortcuts import render, redirect
+from django.urls import reverse_lazy
+from django.contrib import messages
+from .models import Employee
+from .forms import EmployeeForm
+
+def employee_create(request):
+    if request.method == 'POST':
+        form = EmployeeForm(request.POST, request.FILES)
+        if form.is_valid():
+            employee = form.save()
+            messages.success(request, f"Employee {employee.get_full_name()} created successfully!")
+            return redirect(reverse_lazy('employee_list'))
+        else:
+            messages.error(request, "There was an error creating the employee. Please check the form.")
+    else:
+        form = EmployeeForm()
+    
+    context = {
+        'form': form,
+        'title': 'Add New Employee'
+    }
+    return render(request, 'employees/employee_form.html', context)
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse_lazy
+from django.contrib import messages
+from .models import Employee
+from .forms import EmployeeForm
+
+def employee_update(request, pk):
+    employee = get_object_or_404(Employee, pk=pk)
+    
+    if request.method == 'POST':
+        form = EmployeeForm(request.POST, request.FILES, instance=employee)
+        if form.is_valid():
+            employee = form.save()
+            messages.success(request, f"Employee {employee.get_full_name()} updated successfully!")
+            return redirect(reverse_lazy('employee_list'))
+        else:
+            messages.error(request, "There was an error updating the employee. Please check the form.")
+    else:
+        form = EmployeeForm(instance=employee)
+    
+    context = {
+        'form': form,
+        'employee': employee,
+        'title': f'Edit Employee - {employee.get_full_name()}',
+        'modal': request.GET.get('modal') == 'true'
+    }
+    return render(request, 'employees/employee_form.html', context)
+
+def employee_delete(request, pk):
+    employee = get_object_or_404(Employee, pk=pk)
+    
+    if request.method == 'POST':
+        employee_name = employee.get_full_name()
+        employee.delete()
+        messages.success(request, f"Employee {employee_name} deleted successfully!")
+        return redirect(reverse_lazy('employee_list'))
+    
+    context = {
+        'employee': employee,
+        'title': f'Delete Employee - {employee.get_full_name()}'
+    }
+    return render(request, 'employees/employee_confirm_delete.html', context)
+
+def employee_create_modal(request):
+    if request.method == 'POST':
+        form = EmployeeForm(request.POST, request.FILES)
+        if form.is_valid():
+            employee = form.save()
+            return JsonResponse({
+                'success': True,
+                'message': 'Employee created successfully!',
+                'employee_id': employee.id
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'errors': form.errors,
+                'message': 'There were errors in the form.'
+            }, status=400)
+    
+    form = EmployeeForm()
+    return render(request, 'employees/partials/employee_form_modal.html', {'form': form})
+
+def employee_update_modal(request, pk):
+    employee = get_object_or_404(Employee, pk=pk)
+    
+    if request.method == 'POST':
+        form = EmployeeForm(request.POST, request.FILES, instance=employee)
+        if form.is_valid():
+            employee = form.save()
+            return JsonResponse({
+                'success': True,
+                'message': 'Employee updated successfully!',
+                'employee_id': employee.id
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'errors': form.errors,
+                'message': 'There were errors in the form.'
+            }, status=400)
+    
+    form = EmployeeForm(instance=employee)
+    return render(request, 'employees/partials/employee_form_modal.html', {'form': form})

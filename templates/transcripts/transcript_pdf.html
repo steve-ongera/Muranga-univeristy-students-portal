@@ -1,47 +1,161 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <title>{{ student.get_full_name }} - Academic Transcript</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .institution { font-size: 18px; font-weight: bold; }
-        .title { font-size: 16px; margin: 10px 0; }
-        .student-info { margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .footer { margin-top: 30px; font-size: 12px; text-align: center; }
+        @page {
+            size: A4;
+            margin: 1.5cm 1cm;
+        }
+        body {
+            font-family: 'Times New Roman', serif;
+            font-size: 9pt;
+            line-height: 1.2;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 0.4cm;
+            border-bottom: 1px solid #000;
+            padding-bottom: 0.3cm;
+        }
+        .logo {
+            height: 60px;
+            margin-bottom: 0.1cm;
+        }
+        .institution {
+            font-size: 14pt;
+            font-weight: bold;
+            margin: 0;
+            letter-spacing: 0.5px;
+        }
+        .title {
+            font-size: 11pt;
+            margin: 0.2cm 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .student-info {
+            margin-bottom: 0.3cm;
+            font-size: 8pt;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .info-column {
+            width: 50%;
+        }
+        .student-info p {
+            margin: 0.1cm 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0.3cm;
+            font-size: 8pt;
+        }
+        th, td {
+            border: 0.5px solid #666;
+            padding: 0.15cm;
+            text-align: left;
+        }
+        th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            font-size: 7.5pt;
+        }
+        .semester-header {
+            font-size: 9pt;
+            margin: 0.2cm 0 0.1cm 0;
+            font-weight: bold;
+            background-color: #f7f7f7;
+            padding: 0.1cm 0.2cm;
+            border: 0.5px solid #999;
+        }
+        .signature-section {
+            margin-top: 0.5cm;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .signature-box {
+            width: 40%;
+            text-align: center;
+            font-size: 8pt;
+        }
+        .signature-line {
+            border-top: 1px solid #000;
+            margin-top: 1cm;
+            margin-bottom: 0.2cm;
+            width: 100%;
+        }
+        .official-seal {
+            width: 1.8cm;
+            height: 1.8cm;
+            text-align: center;
+            font-size: 7pt;
+            border: 0.5px dotted #999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0.2cm auto 0;
+            padding: 0.1cm;
+            overflow: hidden;
+        }
+        .seal-image {
+            width: 90%;
+            height: 90%;
+            object-fit: contain;
+        }
+        .footer {
+            font-size: 7pt;
+            text-align: center;
+            margin-top: 0.5cm;
+            padding-top: 0.2cm;
+            border-top: 1px solid #ddd;
+            color: #666;
+        }
+        .gpa-summary {
+            font-size: 8pt;
+            margin: 0.2cm 0;
+            font-weight: bold;
+            text-align: right;
+        }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="institution">{{ institution_name }}</div>
+        <img src="{{ logo_data_uri }}" class="logo" alt="Murang'a University of Technology Logo">
+        <div class="institution">MURANG'A UNIVERSITY OF TECHNOLOGY</div>
         <div class="title">OFFICIAL ACADEMIC TRANSCRIPT</div>
     </div>
 
     <div class="student-info">
-        <p><strong>Student Name:</strong> {{ student.get_full_name }}</p>
-        <p><strong>Registration Number:</strong> {{ student.registration_number }}</p>
-        <p><strong>Programme:</strong> {{ programme.name }} ({{ programme.code }})</p>
-        {% if academic_year %}
-        <p><strong>Academic Year:</strong> {{ academic_year.name }}</p>
-        {% endif %}
-        {% if semester %}
-        <p><strong>Semester:</strong> {{ semester.number }}</p>
-        {% endif %}
+        <div class="info-column">
+            <p><strong>Student Name:</strong> {{ student.get_full_name }}</p>
+            <p><strong>Registration No:</strong> {{ student.registration_number }}</p>
+            <p><strong>Programme:</strong> {{ programme.code }}</p>
+        </div>
+        <div class="info-column">
+            <p><strong>Programme Name:</strong> {{ programme.name }}</p>
+            {% if academic_year %}<p><strong>Academic Year:</strong> {{ academic_year.name }}</p>{% endif %}
+            {% if semester %}<p><strong>Semester:</strong> {{ semester.number }}</p>{% endif %}
+        </div>
     </div>
 
     {% for semester, grades in semesters %}
-    <h3>{{ semester.academic_year.name }} - Semester {{ semester.number }}</h3>
+    <div class="semester-header">{{ semester.academic_year.name }} - Semester {{ semester.number }}</div>
     <table>
         <thead>
             <tr>
-                <th>Unit Code</th>
-                <th>Unit Name</th>
-                <th>Credit Hours</th>
-                <th>Grade</th>
+                <th style="width: 14%;">Unit Code</th>
+                <th style="width: 52%;">Unit Name</th>
+                <th style="width: 10%;">Credit</th>
+                <th style="width: 12%;">Grade</th>
+                <th style="width: 12%;">Points</th>
             </tr>
         </thead>
         <tbody>
@@ -51,15 +165,37 @@
                 <td>{{ grade.enrollment.programme_unit.unit.name }}</td>
                 <td>{{ grade.enrollment.programme_unit.unit.credit_hours }}</td>
                 <td>{% if grade.grade %}{{ grade.grade.grade }}{% else %}N/A{% endif %}</td>
+                <td>{% if grade.grade %}{{ grade.grade.points }}{% else %}N/A{% endif %}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    <div class="gpa-summary">
+        Semester GPA: {{ semester.gpa|floatformat:2 }}
+    </div>
     {% endfor %}
 
+    <div class="signature-section">
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <p>Registrar Academic Affairs</p>
+            <p>Date: ___________________</p>
+        </div>
+        
+        <div class="official-seal">
+            <img src="{{ seal_data_uri }}" class="seal-image" alt="Official University Seal">
+        </div>
+        
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <p>Dean of Faculty</p>
+            <p>Date: ___________________</p>
+        </div>
+    </div>
+
     <div class="footer">
-        <p>Generated on {{ generated_date }} by {{ generated_by }}</p>
-        <p>This is an official document of {{ institution_name }}</p>
+        <p>Generated on {{ generated_date|date:"d/m/Y" }} • This document is not valid without the official university seal • Any alterations will render this transcript invalid</p>
+        <p>Murang'a University of Technology • P.O. Box 75-10200 • Murang'a, Kenya • Tel: +254-1122-84093 • www.mut.ac.ke</p>
     </div>
 </body>
 </html>

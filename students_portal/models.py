@@ -1095,3 +1095,138 @@ class AdminProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
+    
+
+
+
+
+class Employee(models.Model):
+    """Model for university employees"""
+    
+    # Basic identification fields
+    employee_id = models.CharField(max_length=20, unique=True)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    middle_name = models.CharField(max_length=100, blank=True, null=True)
+    national_id = models.CharField(max_length=20, blank=True, null=True)
+    passport_number = models.CharField(max_length=20, blank=True, null=True)
+    
+    profile_picture = models.ImageField(upload_to='employee_profiles/', blank=True, null=True)
+    
+    # Employment information
+    department = models.ForeignKey('Department', on_delete=models.CASCADE, related_name='employees' , blank=True, null=True)
+    job_title = models.CharField(max_length=100)
+    employment_type = models.CharField(max_length=20, choices=[
+        ('full_time', 'Full Time'),
+        ('part_time', 'Part Time'),
+        ('contract', 'Contract'),
+        ('temporary', 'Temporary'),
+        ('intern', 'Intern')
+    ], default='full_time')
+    
+    employment_category = models.CharField(max_length=50, choices=[
+        ('academic', 'Academic Staff'),
+        ('administrative', 'Administrative Staff'),
+        ('technical', 'Technical Staff'),
+        ('support', 'Support Staff'),
+        ('management', 'Management')
+    ])
+    
+    date_of_employment = models.DateField()
+    date_of_termination = models.DateField(blank=True, null=True)
+    is_teaching_staff = models.BooleanField(default=False)
+    
+    # Academic qualifications (for academic staff)
+    highest_qualification = models.CharField(max_length=100, blank=True, null=True)
+    specialization = models.CharField(max_length=200, blank=True, null=True)
+    academic_rank = models.CharField(max_length=50, choices=[
+        ('professor', 'Professor'),
+        ('associate_professor', 'Associate Professor'),
+        ('senior_lecturer', 'Senior Lecturer'),
+        ('lecturer', 'Lecturer'),
+        ('assistant_lecturer', 'Assistant Lecturer'),
+        ('tutorial_fellow', 'Tutorial Fellow')
+    ], blank=True, null=True)
+    
+    # Personal information
+    date_of_birth = models.DateField(blank=True, null=True)
+    gender = models.CharField(max_length=10, choices=[
+        ('M', 'Male'),
+        ('F', 'Female'),
+        ('O', 'Other')
+    ], blank=True, null=True)
+    marital_status = models.CharField(max_length=20, choices=[
+        ('single', 'Single'),
+        ('married', 'Married'),
+        ('divorced', 'Divorced'),
+        ('widowed', 'Widowed')
+    ], blank=True, null=True)
+    
+    # Contact information
+    email = models.EmailField(blank=True, null=True)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
+    alternative_phone = models.CharField(max_length=15, blank=True, null=True)
+    
+    # Address information
+    residential_address = models.TextField(blank=True, null=True)
+    county = models.CharField(max_length=50, blank=True, null=True)
+    town = models.CharField(max_length=50, blank=True, null=True)
+    postal_address = models.CharField(max_length=100, blank=True, null=True)
+    postal_code = models.CharField(max_length=10, blank=True, null=True)
+    
+    # Emergency contact
+    emergency_contact_name = models.CharField(max_length=100, blank=True, null=True)
+    emergency_contact_relationship = models.CharField(max_length=50, blank=True, null=True)
+    emergency_contact_phone = models.CharField(max_length=15, blank=True, null=True)
+    
+    # Financial information
+    bank_name = models.CharField(max_length=100, blank=True, null=True)
+    bank_branch = models.CharField(max_length=100, blank=True, null=True)
+    bank_account_number = models.CharField(max_length=20, blank=True, null=True)
+    nhif_number = models.CharField(max_length=20, blank=True, null=True)
+    nssf_number = models.CharField(max_length=20, blank=True, null=True)
+    kra_pin = models.CharField(max_length=20, blank=True, null=True)
+    
+    # System access
+    user_account = models.OneToOneField(User, on_delete=models.SET_NULL, blank=True, null=True)
+    has_system_access = models.BooleanField(default=False)
+    access_level = models.CharField(max_length=20, choices=[
+        ('admin', 'Administrator'),
+        ('staff', 'Staff'),
+        ('limited', 'Limited Access'),
+        ('none', 'No Access')
+    ], default='none')
+    
+    # Employment status
+    is_active = models.BooleanField(default=True)
+    employment_status = models.CharField(max_length=20, choices=[
+        ('active', 'Active'),
+        ('on_leave', 'On Leave'),
+        ('suspended', 'Suspended'),
+        ('retired', 'Retired'),
+        ('terminated', 'Terminated'),
+        ('deceased', 'Deceased')
+    ], default='active')
+    
+    # Additional information
+    biography = models.TextField(blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+    
+    # System fields
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def get_full_name(self):
+        """Return the employee's full name"""
+        if self.middle_name:
+            return f"{self.first_name} {self.middle_name} {self.last_name}"
+        return f"{self.first_name} {self.last_name}"
+    
+    def years_of_service(self):
+        """Calculate years of service"""
+        if self.date_of_termination:
+            return (self.date_of_termination - self.date_of_employment).days // 365
+        return (timezone.now().date() - self.date_of_employment).days // 365
+    
+    def __str__(self):
+        return f"{self.employee_id} - {self.get_full_name()} ({self.job_title})"

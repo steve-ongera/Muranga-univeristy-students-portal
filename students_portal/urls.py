@@ -148,6 +148,21 @@ urlpatterns = [
          views.download_transcript, 
          name='download_transcript_full'),
 
+    # Main employee list view
+    path('employee_list/', views.employee_list, name='employee_list'),
+
+    
+    # JSON endpoint for employee details (used in view modal)
+    path('employee/<int:pk>/json/', views.employee_detail_json, name='employee_detail_json'),
+    
+    # Standard CRUD views
+    path('employee/create/', views.employee_create, name='employee_create'),
+    path('employee/<int:pk>/update/',views.employee_update, name='employee_update'),
+    path('employee/<int:pk>/delete/',views.employee_delete, name='employee_delete'),
+    
+    # Modal-specific endpoints
+    path('employee/modal/create/', views.employee_create_modal, name='employee_create_modal'),
+    path('employee/<int:pk>/modal/update/', views.employee_update_modal, name='employee_update_modal'),
 
 
 ]
