@@ -1,0 +1,363 @@
+{% extends 'base/base.html'%}
+{% load static %}
+
+{% block content %}
+<div class="message-container" id="system-messages">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        <i class="bi {% if message.tags == 'success' %}bi-check-circle{% else %}bi-exclamation-triangle{% endif %} me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="pagetitle">
+    <h1><i class="bi bi-chat-square-text me-2"></i>Discussion Forum</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#"><i class="bi bi-house-door"></i> Home</a></li>
+            <li class="breadcrumb-item"><a href="#">Courses</a></li>
+            <li class="breadcrumb-item active">Discussion Forum</li>
+        </ol>
+    </nav>
+</div><!-- End Page Title -->
+
+<section class="section">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-university-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0"><i class="bi bi-people me-2"></i>{{ course.name }} - Discussion Forum</h5>
+                        <button class="btn btn-sm btn-university" data-bs-toggle="modal" data-bs-target="#newTopicModal">
+                            <i class="bi bi-plus-circle me-1"></i> New Topic
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Forum Navigation -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="list-group">
+                                <a href="#" class="list-group-item list-group-item-action active">
+                                    <i class="bi bi-grid me-2"></i> All Topics
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <i class="bi bi-pin-angle me-2"></i> Pinned
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <i class="bi bi-star me-2"></i> Important
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <i class="bi bi-question-circle me-2"></i> Questions
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <i class="bi bi-lightbulb me-2"></i> Ideas
+                                </a>
+                            </div>
+                            
+                            <div class="card mt-3">
+                                <div class="card-header bg-university-light">
+                                    <h6 class="mb-0"><i class="bi bi-gear me-2"></i>Forum Settings</h6>
+                                </div>
+                                <div class="card-body">
+                                    <form>
+                                        <div class="mb-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="forumActive" checked>
+                                                <label class="form-check-label" for="forumActive">Forum Active</label>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="studentPosts" checked>
+                                                <label class="form-check-label" for="studentPosts">Allow Student Posts</label>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="moderatePosts">
+                                                <label class="form-check-label" for="moderatePosts">Moderate Posts</label>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="emailNotifications">
+                                                <label class="form-check-label" for="emailNotifications">Email Notifications</label>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-sm btn-university w-100">
+                                            <i class="bi bi-save me-1"></i> Save Settings
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Forum Content -->
+                        <div class="col-md-9">
+                            <!-- Search and Filter -->
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" placeholder="Search discussions...">
+                                                <button class="btn btn-outline-university" type="button">
+                                                    <i class="bi bi-search"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <select class="form-select">
+                                                <option>Sort by: Newest</option>
+                                                <option>Sort by: Oldest</option>
+                                                <option>Sort by: Most Active</option>
+                                                <option>Sort by: Most Replies</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Discussion Topics -->
+                            <div class="list-group">
+                                {% for topic in topics %}
+                                <div class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            {% if topic.pinned %}
+                                            <i class="bi bi-pin-angle-fill text-warning me-2" title="Pinned"></i>
+                                            {% endif %}
+                                            <h5 class="mb-1">
+                                                <a href="{% url 'discussion_detail' topic.id %}" class="text-decoration-none">
+                                                    {{ topic.title }}
+                                                </a>
+                                            </h5>
+                                        </div>
+                                        <small class="text-muted">{{ topic.created_at|timesince }} ago</small>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <div>
+                                            <span class="badge bg-university-light text-dark me-2">
+                                                <i class="bi bi-person me-1"></i> {{ topic.author.get_full_name }}
+                                            </span>
+                                            <span class="badge bg-university-light text-dark me-2">
+                                                <i class="bi bi-chat me-1"></i> {{ topic.reply_count }} replies
+                                            </span>
+                                            <span class="badge bg-university-light text-dark me-2">
+                                                <i class="bi bi-eye me-1"></i> {{ topic.views }} views
+                                            </span>
+                                            {% if topic.tags %}
+                                            <span class="badge bg-university">{{ topic.tags }}</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" 
+                                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="bi bi-three-dots"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <a class="dropdown-item" href="#">
+                                                        <i class="bi bi-pin-angle me-2"></i> 
+                                                        {% if topic.pinned %}Unpin{% else %}Pin{% endif %}
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="#">
+                                                        <i class="bi bi-star me-2"></i> 
+                                                        {% if topic.important %}Unmark Important{% else %}Mark Important{% endif %}
+                                                    </a>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item text-danger" href="#">
+                                                        <i class="bi bi-trash me-2"></i> Delete
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i> No discussion topics yet. Create one to get started!
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- Pagination -->
+                            <nav aria-label="Forum pagination" class="mt-3">
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" tabindex="-1">Previous</a>
+                                    </li>
+                                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">Next</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-university-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            {{ topics.count }} topics • {{ total_posts }} posts • {{ active_users }} active users
+                        </small>
+                        <small class="text-muted">
+                            Last post: {{ last_post.created_at|timesince }} ago by {{ last_post.author.get_full_name }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- New Topic Modal -->
+<div class="modal fade" id="newTopicModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-university-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Create New Discussion Topic</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="topicTitle" class="form-label">Topic Title</label>
+                        <input type="text" class="form-control" id="topicTitle" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="topicContent" class="form-label">Content</label>
+                        <textarea class="form-control" id="topicContent" name="content" rows="6" required></textarea>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="topicTags" class="form-label">Tags</label>
+                            <input type="text" class="form-control" id="topicTags" name="tags" placeholder="e.g., assignment, week1, questions">
+                            <small class="text-muted">Separate tags with commas</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="topicType" class="form-label">Topic Type</label>
+                            <select class="form-select" id="topicType" name="type">
+                                <option value="discussion">General Discussion</option>
+                                <option value="question">Question</option>
+                                <option value="announcement">Announcement</option>
+                                <option value="feedback">Feedback</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="topicAttachments" class="form-label">Attachments</label>
+                        <input class="form-control" type="file" id="topicAttachments" name="attachments" multiple>
+                        <small class="text-muted">You can attach up to 3 files (max 5MB each)</small>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="pinTopic" name="pinned">
+                            <label class="form-check-label" for="pinTopic">Pin this topic</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="importantTopic" name="important">
+                            <label class="form-check-label" for="importantTopic">Mark as important</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="lockTopic" name="locked">
+                            <label class="form-check-label" for="lockTopic">Lock discussion (no replies)</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-university">Post Topic</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --university-primary: #2E7D32; /* Dark green */
+        --university-secondary: #81C784; /* Light green */
+        --university-light: #E8F5E9; /* Very light green */
+    }
+    .bg-university-primary {
+        background-color: var(--university-primary) !important;
+    }
+    .bg-university-secondary {
+        background-color: var(--university-secondary) !important;
+    }
+    .bg-university-light {
+        background-color: var(--university-light) !important;
+    }
+    .btn-university {
+        background-color: var(--university-primary);
+        color: white;
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university {
+        color: var(--university-primary);
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university:hover {
+        background-color: var(--university-primary);
+        color: white;
+    }
+    .border-university-primary {
+        border-color: var(--university-primary) !important;
+    }
+    .list-group-item.active {
+        background-color: var(--university-primary);
+        border-color: var(--university-primary);
+    }
+    
+    .list-group-item-action:hover {
+        background-color: var(--university-light);
+    }
+    
+    .form-switch .form-check-input:checked {
+        background-color: var(--university-primary);
+    }
+    
+    .dropdown-item:active {
+        background-color: var(--university-primary);
+    }
+    
+    /* Custom styling for discussion items */
+    .list-group-item h5 a {
+        color: var(--bs-body-color);
+    }
+    .list-group-item h5 a:hover {
+        color: var(--university-primary);
+        text-decoration: underline;
+    }
+</style>
+
+<script>
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+    
+    // Initialize rich text editor for topic content
+    document.addEventListener('DOMContentLoaded', function() {
+        // This would be replaced with actual rich text editor initialization
+        // Example: SimpleMDE or TinyMCE integration
+        console.log('Rich text editor would be initialized here');
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,442 @@
+{% extends 'base/base.html'%}
+{% load static %}
+
+{% block content %}
+<div class="message-container" id="system-messages">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        <i class="bi {% if message.tags == 'success' %}bi-check-circle{% else %}bi-exclamation-triangle{% endif %} me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="pagetitle">
+    <h1><i class="bi bi-book me-2"></i>Lecture Settings</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#"><i class="bi bi-house-door"></i> Home</a></li>
+            <li class="breadcrumb-item"><a href="#">Courses</a></li>
+            <li class="breadcrumb-item active">Lecture Settings</li>
+        </ol>
+    </nav>
+</div><!-- End Page Title -->
+
+<section class="section">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-university-primary text-white">
+                    <h5 class="card-title mb-0"><i class="bi bi-gear me-2"></i>Manage Lecture Preferences</h5>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Settings Navigation -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="list-group">
+                                <a href="#basic" class="list-group-item list-group-item-action active" data-bs-toggle="tab">
+                                    <i class="bi bi-info-circle me-2"></i> Basic Info
+                                </a>
+                                <a href="#schedule" class="list-group-item list-group-item-action" data-bs-toggle="tab">
+                                    <i class="bi bi-calendar me-2"></i> Schedule
+                                </a>
+                                <a href="#resources" class="list-group-item list-group-item-action" data-bs-toggle="tab">
+                                    <i class="bi bi-file-earmark me-2"></i> Resources
+                                </a>
+                                <a href="#attendance" class="list-group-item list-group-item-action" data-bs-toggle="tab">
+                                    <i class="bi bi-people me-2"></i> Attendance
+                                </a>
+                                <a href="#recording" class="list-group-item list-group-item-action" data-bs-toggle="tab">
+                                    <i class="bi bi-camera-video me-2"></i> Recording
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <!-- Settings Content -->
+                        <div class="col-md-9">
+                            <div class="tab-content">
+                                <!-- Basic Info Tab -->
+                                <div class="tab-pane fade show active" id="basic">
+                                    <h5 class="text-university mb-4"><i class="bi bi-info-circle me-2"></i>Lecture Information</h5>
+                                    
+                                    <form>
+                                        <div class="mb-3">
+                                            <label for="lectureTitle" class="form-label">Lecture Title</label>
+                                            <input type="text" class="form-control" id="lectureTitle" value="{{ lecture.title }}">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="lectureDescription" class="form-label">Description</label>
+                                            <textarea class="form-control" id="lectureDescription" rows="3">{{ lecture.description }}</textarea>
+                                        </div>
+                                        
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label for="courseSelect" class="form-label">Course</label>
+                                                <select class="form-select" id="courseSelect">
+                                                    {% for course in courses %}
+                                                        <option value="{{ course.id }}" {% if lecture.course.id == course.id %}selected{% endif %}>{{ course.name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="lecturerSelect" class="form-label">Lecturer</label>
+                                                <select class="form-select" id="lecturerSelect">
+                                                    {% for lecturer in lecturers %}
+                                                        <option value="{{ lecturer.id }}" {% if lecture.lecturer.id == lecturer.id %}selected{% endif %}>{{ lecturer.get_full_name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="lectureType" class="form-label">Lecture Type</label>
+                                            <select class="form-select" id="lectureType">
+                                                <option value="regular" {% if lecture.lecture_type == 'regular' %}selected{% endif %}>Regular Lecture</option>
+                                                <option value="guest" {% if lecture.lecture_type == 'guest' %}selected{% endif %}>Guest Lecture</option>
+                                                <option value="workshop" {% if lecture.lecture_type == 'workshop' %}selected{% endif %}>Workshop</option>
+                                                <option value="seminar" {% if lecture.lecture_type == 'seminar' %}selected{% endif %}>Seminar</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-university">
+                                            <i class="bi bi-save me-1"></i> Save Changes
+                                        </button>
+                                    </form>
+                                </div>
+                                
+                                <!-- Schedule Tab -->
+                                <div class="tab-pane fade" id="schedule">
+                                    <h5 class="text-university mb-4"><i class="bi bi-calendar me-2"></i>Lecture Schedule</h5>
+                                    
+                                    <form>
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label for="lectureDate" class="form-label">Date</label>
+                                                <input type="date" class="form-control" id="lectureDate" value="{{ lecture.date|date:'Y-m-d' }}">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="startTime" class="form-label">Start Time</label>
+                                                <input type="time" class="form-control" id="startTime" value="{{ lecture.start_time|time:'H:i' }}">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="endTime" class="form-label">End Time</label>
+                                                <input type="time" class="form-control" id="endTime" value="{{ lecture.end_time|time:'H:i' }}">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="recurring" class="form-label">Recurring Lecture</label>
+                                            <select class="form-select" id="recurring">
+                                                <option value="none" {% if lecture.recurrence == 'none' %}selected{% endif %}>Does not repeat</option>
+                                                <option value="daily" {% if lecture.recurrence == 'daily' %}selected{% endif %}>Daily</option>
+                                                <option value="weekly" {% if lecture.recurrence == 'weekly' %}selected{% endif %}>Weekly</option>
+                                                <option value="biweekly" {% if lecture.recurrence == 'biweekly' %}selected{% endif %}>Bi-weekly</option>
+                                                <option value="monthly" {% if lecture.recurrence == 'monthly' %}selected{% endif %}>Monthly</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div id="recurrenceOptions" class="mb-3" style="display: {% if lecture.recurrence != 'none' %}block{% else %}none{% endif %};">
+                                            <label class="form-label">Recurrence Options</label>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label for="endDate" class="form-label">End Date</label>
+                                                        <input type="date" class="form-control" id="endDate" value="{{ lecture.recurrence_end_date|date:'Y-m-d' }}">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Days of Week</label>
+                                                        <div class="d-flex flex-wrap gap-2">
+                                                            {% for day in days_of_week %}
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox" id="day{{ forloop.counter }}" 
+                                                                       value="{{ day.0 }}" {% if day.0 in lecture.recurrence_days %}checked{% endif %}>
+                                                                <label class="form-check-label" for="day{{ forloop.counter }}">{{ day.1 }}</label>
+                                                            </div>
+                                                            {% endfor %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="location" class="form-label">Location</label>
+                                            <input type="text" class="form-control" id="location" value="{{ lecture.location|default:'Not specified' }}">
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-university">
+                                            <i class="bi bi-save me-1"></i> Update Schedule
+                                        </button>
+                                    </form>
+                                </div>
+                                
+                                <!-- Resources Tab -->
+                                <div class="tab-pane fade" id="resources">
+                                    <h5 class="text-university mb-4"><i class="bi bi-file-earmark me-2"></i>Lecture Resources</h5>
+                                    
+                                    <div class="card mb-4">
+                                        <div class="card-body">
+                                            <h6 class="card-title text-university">Upload Resources</h6>
+                                            <form enctype="multipart/form-data">
+                                                <div class="mb-3">
+                                                    <label for="resourceFile" class="form-label">Select Files</label>
+                                                    <input class="form-control" type="file" id="resourceFile" multiple>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="resourceType" class="form-label">Resource Type</label>
+                                                    <select class="form-select" id="resourceType">
+                                                        <option value="slides">Lecture Slides</option>
+                                                        <option value="reading">Reading Material</option>
+                                                        <option value="assignment">Assignment</option>
+                                                        <option value="other">Other</option>
+                                                    </select>
+                                                </div>
+                                                <button type="submit" class="btn btn-university">
+                                                    <i class="bi bi-upload me-1"></i> Upload
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title text-university">Existing Resources</h6>
+                                            <div class="table-responsive">
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Name</th>
+                                                            <th>Type</th>
+                                                            <th>Size</th>
+                                                            <th>Uploaded</th>
+                                                            <th>Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for resource in resources %}
+                                                        <tr>
+                                                            <td>
+                                                                <i class="bi {% if resource.type == 'slides' %}bi-file-earmark-ppt{% elif resource.type == 'reading' %}bi-file-earmark-text{% elif resource.type == 'assignment' %}bi-file-earmark-check{% else %}bi-file-earmark{% endif %} me-2"></i>
+                                                                {{ resource.name }}
+                                                            </td>
+                                                            <td>{{ resource.get_type_display }}</td>
+                                                            <td>{{ resource.size|filesizeformat }}</td>
+                                                            <td>{{ resource.uploaded_at|date:"M d, Y" }}</td>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-outline-university me-1">
+                                                                    <i class="bi bi-download"></i>
+                                                                </button>
+                                                                <button class="btn btn-sm btn-outline-danger">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                        {% empty %}
+                                                        <tr>
+                                                            <td colspan="5" class="text-center">No resources uploaded yet</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Attendance Tab -->
+                                <div class="tab-pane fade" id="attendance">
+                                    <h5 class="text-university mb-4"><i class="bi bi-people me-2"></i>Attendance Settings</h5>
+                                    
+                                    <form>
+                                        <div class="mb-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="trackAttendance" 
+                                                       {% if lecture.track_attendance %}checked{% endif %}>
+                                                <label class="form-check-label" for="trackAttendance">Track Attendance</label>
+                                            </div>
+                                            <small class="text-muted">Enable attendance tracking for this lecture</small>
+                                        </div>
+                                        
+                                        <div id="attendanceOptions" style="display: {% if lecture.track_attendance %}block{% else %}none{% endif %};">
+                                            <div class="mb-3">
+                                                <label for="attendanceMethod" class="form-label">Attendance Method</label>
+                                                <select class="form-select" id="attendanceMethod">
+                                                    <option value="manual" {% if lecture.attendance_method == 'manual' %}selected{% endif %}>Manual Entry</option>
+                                                    <option value="qr" {% if lecture.attendance_method == 'qr' %}selected{% endif %}>QR Code Check-in</option>
+                                                    <option value="geolocation" {% if lecture.attendance_method == 'geolocation' %}selected{% endif %}>Geolocation Check-in</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="attendanceWindow" class="form-label">Attendance Window</label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" id="attendanceWindow" value="{{ lecture.attendance_window|default:15 }}">
+                                                    <span class="input-group-text">minutes before/after lecture</span>
+                                                </div>
+                                                <small class="text-muted">Time window when attendance can be recorded</small>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="requireConfirmation" 
+                                                           {% if lecture.require_confirmation %}checked{% endif %}>
+                                                    <label class="form-check-label" for="requireConfirmation">Require student confirmation</label>
+                                                </div>
+                                                <small class="text-muted">Students must confirm their attendance after the lecture</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-university">
+                                            <i class="bi bi-save me-1"></i> Save Settings
+                                        </button>
+                                    </form>
+                                </div>
+                                
+                                <!-- Recording Tab -->
+                                <div class="tab-pane fade" id="recording">
+                                    <h5 class="text-university mb-4"><i class="bi bi-camera-video me-2"></i>Lecture Recording</h5>
+                                    
+                                    <form>
+                                        <div class="mb-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="recordLecture" 
+                                                       {% if lecture.record_lecture %}checked{% endif %}>
+                                                <label class="form-check-label" for="recordLecture">Record this lecture</label>
+                                            </div>
+                                            <small class="text-muted">Automatically record the lecture if supported by the classroom</small>
+                                        </div>
+                                        
+                                        <div id="recordingOptions" style="display: {% if lecture.record_lecture %}block{% else %}none{% endif %};">
+                                            <div class="mb-3">
+                                                <label for="recordingQuality" class="form-label">Recording Quality</label>
+                                                <select class="form-select" id="recordingQuality">
+                                                    <option value="low" {% if lecture.recording_quality == 'low' %}selected{% endif %}>Low (480p)</option>
+                                                    <option value="medium" {% if lecture.recording_quality == 'medium' %}selected{% endif %}>Medium (720p)</option>
+                                                    <option value="high" {% if lecture.recording_quality == 'high' %}selected{% endif %}>High (1080p)</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="recordingAccess" class="form-label">Access Level</label>
+                                                <select class="form-select" id="recordingAccess">
+                                                    <option value="public" {% if lecture.recording_access == 'public' %}selected{% endif %}>Public (anyone with link)</option>
+                                                    <option value="course" {% if lecture.recording_access == 'course' %}selected{% endif %}>Course participants only</option>
+                                                    <option value="private" {% if lecture.recording_access == 'private' %}selected{% endif %}>Private (only visible to you)</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="autoPublish" 
+                                                           {% if lecture.auto_publish %}checked{% endif %}>
+                                                    <label class="form-check-label" for="autoPublish">Auto-publish recording</label>
+                                                </div>
+                                                <small class="text-muted">Automatically make recording available after processing</small>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="retentionPeriod" class="form-label">Retention Period</label>
+                                                <select class="form-select" id="retentionPeriod">
+                                                    <option value="7" {% if lecture.retention_period == 7 %}selected{% endif %}>1 Week</option>
+                                                    <option value="30" {% if lecture.retention_period == 30 %}selected{% endif %}>1 Month</option>
+                                                    <option value="90" {% if lecture.retention_period == 90 %}selected{% endif %}>3 Months</option>
+                                                    <option value="180" {% if lecture.retention_period == 180 %}selected{% endif %}>6 Months</option>
+                                                    <option value="365" {% if lecture.retention_period == 365 %}selected{% endif %}>1 Year</option>
+                                                    <option value="0" {% if lecture.retention_period == 0 %}selected{% endif %}>Indefinitely</option>
+                                                </select>
+                                                <small class="text-muted">How long to keep the recording before automatic deletion</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-university">
+                                            <i class="bi bi-save me-1"></i> Save Recording Settings
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-university-light">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Last updated: {{ lecture.updated_at|date:"M d, Y H:i" }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    :root {
+        --university-primary: #2E7D32; /* Dark green */
+        --university-secondary: #81C784; /* Light green */
+        --university-light: #E8F5E9; /* Very light green */
+    }
+    .bg-university-primary {
+        background-color: var(--university-primary) !important;
+    }
+    .bg-university-secondary {
+        background-color: var(--university-secondary) !important;
+    }
+    .bg-university-light {
+        background-color: var(--university-light) !important;
+    }
+    .btn-university {
+        background-color: var(--university-primary);
+        color: white;
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university {
+        color: var(--university-primary);
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university:hover {
+        background-color: var(--university-primary);
+        color: white;
+    }
+    .border-university-primary {
+        border-color: var(--university-primary) !important;
+    }
+    .list-group-item.active {
+        background-color: var(--university-primary);
+        border-color: var(--university-primary);
+    }
+    
+    .form-switch .form-check-input:checked {
+        background-color: var(--university-primary);
+    }
+    
+    .tab-pane {
+        padding: 15px;
+    }
+</style>
+
+<script>
+    // Show/hide recurrence options based on selection
+    document.getElementById('recurring').addEventListener('change', function() {
+        document.getElementById('recurrenceOptions').style.display = 
+            this.value === 'none' ? 'none' : 'block';
+    });
+    
+    // Show/hide attendance options based on checkbox
+    document.getElementById('trackAttendance').addEventListener('change', function() {
+        document.getElementById('attendanceOptions').style.display = 
+            this.checked ? 'block' : 'none';
+    });
+    
+    // Show/hide recording options based on checkbox
+    document.getElementById('recordLecture').addEventListener('change', function() {
+        document.getElementById('recordingOptions').style.display = 
+            this.checked ? 'block' : 'none';
+    });
+</script>
+
+{% endblock %}

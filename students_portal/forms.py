@@ -554,3 +554,24 @@ class EmployeeFilterForm(forms.Form):
         for field_name, field in self.fields.items():
             if isinstance(field, forms.ChoiceField) and not isinstance(field, forms.ModelChoiceField):
                 field.choices = [('', 'All')] + field.choices[1:]
+
+
+
+
+from django import forms
+from .models import DiscussionTopic
+
+class DiscussionTopicForm(forms.ModelForm):
+    class Meta:
+        model = DiscussionTopic
+        fields = ['title', 'content', 'topic_type', 'tags', 'is_pinned', 'is_important', 'is_locked']
+        widgets = {
+            'content': forms.Textarea(attrs={'rows': 6}),
+            'tags': forms.TextInput(attrs={'placeholder': 'e.g., assignment, week1, questions'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['is_pinned'].label = "Pin this topic"
+        self.fields['is_important'].label = "Mark as important"
+        self.fields['is_locked'].label = "Lock discussion (no replies)"

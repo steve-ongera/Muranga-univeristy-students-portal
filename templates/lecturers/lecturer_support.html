@@ -1,0 +1,679 @@
+
+{% extends 'base/base.html'%}
+{% load static %}
+
+{% block content %}
+<div class="message-container" id="system-messages">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        <i class="bi {% if message.tags == 'success' %}bi-check-circle{% else %}bi-exclamation-triangle{% endif %} me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="pagetitle">
+    <h1><i class="bi bi-headset me-2"></i>Lecturer Support</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#"><i class="bi bi-house-door"></i> Home</a></li>
+            <li class="breadcrumb-item active">Support</li>
+        </ol>
+    </nav>
+</div><!-- End Page Title -->
+
+<section class="section">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-university-primary text-white">
+                    <h5 class="card-title mb-0"><i class="bi bi-life-preserver me-2"></i>Lecturer Support Center</h5>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Support Navigation -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="list-group">
+                                <a href="#help" class="list-group-item list-group-item-action active" data-bs-toggle="tab">
+                                    <i class="bi bi-question-circle me-2"></i> Help Center
+                                </a>
+                                <a href="#tickets" class="list-group-item list-group-item-action" data-bs-toggle="tab">
+                                    <i class="bi bi-ticket-detailed me-2"></i> My Tickets
+                                </a>
+                                <a href="#resources" class="list-group-item list-group-item-action" data-bs-toggle="tab">
+                                    <i class="bi bi-collection me-2"></i> Resources
+                                </a>
+                                <a href="#contact" class="list-group-item list-group-item-action" data-bs-toggle="tab">
+                                    <i class="bi bi-envelope me-2"></i> Contact Support
+                                </a>
+                                <a href="#training" class="list-group-item list-group-item-action" data-bs-toggle="tab">
+                                    <i class="bi bi-easel me-2"></i> Training
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <!-- Support Content -->
+                        <div class="col-md-9">
+                            <div class="tab-content">
+                                <!-- Help Center Tab -->
+                                <div class="tab-pane fade show active" id="help">
+                                    <h5 class="text-university mb-4"><i class="bi bi-question-circle me-2"></i>Help Center</h5>
+                                    
+                                    <div class="mb-4">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" placeholder="Search help articles...">
+                                            <button class="btn btn-university" type="button">
+                                                <i class="bi bi-search"></i> Search
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="card mb-3">
+                                                <div class="card-body">
+                                                    <h6 class="card-title text-university">
+                                                        <i class="bi bi-journal-bookmark me-2"></i>Getting Started
+                                                    </h6>
+                                                    <ul class="list-group list-group-flush">
+                                                        <li class="list-group-item border-0 ps-0">
+                                                            <a href="#" class="text-decoration-none">
+                                                                <i class="bi bi-chevron-right me-1"></i> Lecturer Dashboard Overview
+                                                            </a>
+                                                        </li>
+                                                        <li class="list-group-item border-0 ps-0">
+                                                            <a href="#" class="text-decoration-none">
+                                                                <i class="bi bi-chevron-right me-1"></i> Creating Your First Lecture
+                                                            </a>
+                                                        </li>
+                                                        <li class="list-group-item border-0 ps-0">
+                                                            <a href="#" class="text-decoration-none">
+                                                                <i class="bi bi-chevron-right me-1"></i> Uploading Course Materials
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="card mb-3">
+                                                <div class="card-body">
+                                                    <h6 class="card-title text-university">
+                                                        <i class="bi bi-people me-2"></i>Student Management
+                                                    </h6>
+                                                    <ul class="list-group list-group-flush">
+                                                        <li class="list-group-item border-0 ps-0">
+                                                            <a href="#" class="text-decoration-none">
+                                                                <i class="bi bi-chevron-right me-1"></i> Taking Attendance
+                                                            </a>
+                                                        </li>
+                                                        <li class="list-group-item border-0 ps-0">
+                                                            <a href="#" class="text-decoration-none">
+                                                                <i class="bi bi-chevron-right me-1"></i> Communicating with Students
+                                                            </a>
+                                                        </li>
+                                                        <li class="list-group-item border-0 ps-0">
+                                                            <a href="#" class="text-decoration-none">
+                                                                <i class="bi bi-chevron-right me-1"></i> Managing Student Groups
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="card mb-3">
+                                                <div class="card-body">
+                                                    <h6 class="card-title text-university">
+                                                        <i class="bi bi-file-earmark-text me-2"></i>Assessments
+                                                    </h6>
+                                                    <ul class="list-group list-group-flush">
+                                                        <li class="list-group-item border-0 ps-0">
+                                                            <a href="#" class="text-decoration-none">
+                                                                <i class="bi bi-chevron-right me-1"></i> Creating Assignments
+                                                            </a>
+                                                        </li>
+                                                        <li class="list-group-item border-0 ps-0">
+                                                            <a href="#" class="text-decoration-none">
+                                                                <i class="bi bi-chevron-right me-1"></i> Grading Student Work
+                                                            </a>
+                                                        </li>
+                                                        <li class="list-group-item border-0 ps-0">
+                                                            <a href="#" class="text-decoration-none">
+                                                                <i class="bi bi-chevron-right me-1"></i> Using Rubrics
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="card mb-3">
+                                                <div class="card-body">
+                                                    <h6 class="card-title text-university">
+                                                        <i class="bi bi-tools me-2"></i>Troubleshooting
+                                                    </h6>
+                                                    <ul class="list-group list-group-flush">
+                                                        <li class="list-group-item border-0 ps-0">
+                                                            <a href="#" class="text-decoration-none">
+                                                                <i class="bi bi-chevron-right me-1"></i> Login Issues
+                                                            </a>
+                                                        </li>
+                                                        <li class="list-group-item border-0 ps-0">
+                                                            <a href="#" class="text-decoration-none">
+                                                                <i class="bi bi-chevron-right me-1"></i> Upload Problems
+                                                            </a>
+                                                        </li>
+                                                        <li class="list-group-item border-0 ps-0">
+                                                            <a href="#" class="text-decoration-none">
+                                                                <i class="bi bi-chevron-right me-1"></i> System Errors
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- My Tickets Tab -->
+                                <div class="tab-pane fade" id="tickets">
+                                    <h5 class="text-university mb-4"><i class="bi bi-ticket-detailed me-2"></i>My Support Tickets</h5>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <button class="btn btn-university" data-bs-toggle="modal" data-bs-target="#newTicketModal">
+                                            <i class="bi bi-plus-circle me-1"></i> New Ticket
+                                        </button>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-outline-university active">All</button>
+                                            <button type="button" class="btn btn-outline-university">Open</button>
+                                            <button type="button" class="btn btn-outline-university">Closed</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Ticket ID</th>
+                                                    <th>Subject</th>
+                                                    <th>Status</th>
+                                                    <th>Date Created</th>
+                                                    <th>Last Update</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for ticket in support_tickets %}
+                                                <tr>
+                                                    <td>#{{ ticket.id }}</td>
+                                                    <td>{{ ticket.subject }}</td>
+                                                    <td>
+                                                        <span class="badge 
+                                                            {% if ticket.status == 'open' %}bg-success
+                                                            {% elif ticket.status == 'pending' %}bg-warning text-dark
+                                                            {% else %}bg-secondary{% endif %}">
+                                                            {{ ticket.get_status_display }}
+                                                        </span>
+                                                    </td>
+                                                    <td>{{ ticket.created_at|date:"M d, Y" }}</td>
+                                                    <td>{{ ticket.updated_at|date:"M d, Y" }}</td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-outline-university">
+                                                            <i class="bi bi-eye"></i> View
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                {% empty %}
+                                                <tr>
+                                                    <td colspan="6" class="text-center">No support tickets found</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <nav aria-label="Ticket pagination">
+                                        <ul class="pagination justify-content-center">
+                                            <li class="page-item disabled">
+                                                <a class="page-link" href="#" tabindex="-1">Previous</a>
+                                            </li>
+                                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                            <li class="page-item">
+                                                <a class="page-link" href="#">Next</a>
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                </div>
+                                
+                                <!-- Resources Tab -->
+                                <div class="tab-pane fade" id="resources">
+                                    <h5 class="text-university mb-4"><i class="bi bi-collection me-2"></i>Lecturer Resources</h5>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-4 mb-4">
+                                            <div class="card h-100">
+                                                <div class="card-body text-center">
+                                                    <i class="bi bi-file-earmark-pdf text-university" style="font-size: 2.5rem;"></i>
+                                                    <h5 class="card-title mt-3">User Guides</h5>
+                                                    <p class="card-text">Comprehensive documentation for all platform features</p>
+                                                    <a href="#" class="btn btn-outline-university">
+                                                        <i class="bi bi-download me-1"></i> Download
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-4 mb-4">
+                                            <div class="card h-100">
+                                                <div class="card-body text-center">
+                                                    <i class="bi bi-file-earmark-play text-university" style="font-size: 2.5rem;"></i>
+                                                    <h5 class="card-title mt-3">Video Tutorials</h5>
+                                                    <p class="card-text">Step-by-step video guides for common tasks</p>
+                                                    <a href="#" class="btn btn-outline-university">
+                                                        <i class="bi bi-play-circle me-1"></i> Watch
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-4 mb-4">
+                                            <div class="card h-100">
+                                                <div class="card-body text-center">
+                                                    <i class="bi bi-file-earmark-ppt text-university" style="font-size: 2.5rem;"></i>
+                                                    <h5 class="card-title mt-3">Templates</h5>
+                                                    <p class="card-text">Course templates and syllabus examples</p>
+                                                    <a href="#" class="btn btn-outline-university">
+                                                        <i class="bi bi-download me-1"></i> Download
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="card">
+                                        <div class="card-header bg-university-light">
+                                            <h6 class="mb-0"><i class="bi bi-bookmark-star me-2"></i>Quick Links</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <ul class="list-group list-group-flush">
+                                                        <li class="list-group-item border-0">
+                                                            <a href="#" class="text-decoration-none">
+                                                                <i class="bi bi-link-45deg me-2"></i> Academic Policies
+                                                            </a>
+                                                        </li>
+                                                        <li class="list-group-item border-0">
+                                                            <a href="#" class="text-decoration-none">
+                                                                <i class="bi bi-link-45deg me-2"></i> Assessment Guidelines
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <ul class="list-group list-group-flush">
+                                                        <li class="list-group-item border-0">
+                                                            <a href="#" class="text-decoration-none">
+                                                                <i class="bi bi-link-45deg me-2"></i> IT Services Portal
+                                                            </a>
+                                                        </li>
+                                                        <li class="list-group-item border-0">
+                                                            <a href="#" class="text-decoration-none">
+                                                                <i class="bi bi-link-45deg me-2"></i> Faculty Handbook
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Contact Support Tab -->
+                                <div class="tab-pane fade" id="contact">
+                                    <h5 class="text-university mb-4"><i class="bi bi-envelope me-2"></i>Contact Support</h5>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-4">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <h6 class="card-title text-university">
+                                                        <i class="bi bi-telephone me-2"></i> Immediate Assistance
+                                                    </h6>
+                                                    <p class="card-text">For urgent issues requiring immediate attention</p>
+                                                    <ul class="list-unstyled">
+                                                        <li class="mb-2">
+                                                            <i class="bi bi-telephone-fill me-2"></i> 
+                                                            <strong>IT Help Desk:</strong> +1 (555) 123-4567
+                                                        </li>
+                                                        <li class="mb-2">
+                                                            <i class="bi bi-clock me-2"></i> 
+                                                            <strong>Hours:</strong> Mon-Fri, 8am-6pm
+                                                        </li>
+                                                        <li>
+                                                            <i class="bi bi-building me-2"></i> 
+                                                            <strong>Location:</strong> Library Building, Room 102
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6 mb-4">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <h6 class="card-title text-university">
+                                                        <i class="bi bi-chat-left-text me-2"></i> Online Support
+                                                    </h6>
+                                                    <p class="card-text">Submit a ticket for non-urgent issues</p>
+                                                    <form>
+                                                        <div class="mb-3">
+                                                            <label for="supportSubject" class="form-label">Subject</label>
+                                                            <input type="text" class="form-control" id="supportSubject">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label for="supportMessage" class="form-label">Message</label>
+                                                            <textarea class="form-control" id="supportMessage" rows="3"></textarea>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label for="supportAttachment" class="form-label">Attachments</label>
+                                                            <input class="form-control" type="file" id="supportAttachment">
+                                                        </div>
+                                                        <button type="submit" class="btn btn-university">
+                                                            <i class="bi bi-send me-1"></i> Submit Request
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title text-university">
+                                                <i class="bi bi-question-circle me-2"></i> Frequently Asked Questions
+                                            </h6>
+                                            <div class="accordion" id="faqAccordion">
+                                                <div class="accordion-item">
+                                                    <h2 class="accordion-header" id="headingOne">
+                                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                                            How do I reset my password?
+                                                        </button>
+                                                    </h2>
+                                                    <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                                        <div class="accordion-body">
+                                                            You can reset your password by clicking on the "Forgot Password" link on the login page. 
+                                                            You'll receive an email with instructions to create a new password.
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="accordion-item">
+                                                    <h2 class="accordion-header" id="headingTwo">
+                                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                                                            Where can I find my course roster?
+                                                        </button>
+                                                    </h2>
+                                                    <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                                        <div class="accordion-body">
+                                                            Your course roster is available in the "Courses" section of your dashboard. 
+                                                            Select the specific course and click on "Students" to view the roster.
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="accordion-item">
+                                                    <h2 class="accordion-header" id="headingThree">
+                                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                                                            How do I submit final grades?
+                                                        </button>
+                                                    </h2>
+                                                    <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                                        <div class="accordion-body">
+                                                            Final grades can be submitted through the "Gradebook" section. 
+                                                            Navigate to your course, select "Final Grades" and follow the submission wizard.
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Training Tab -->
+                                <div class="tab-pane fade" id="training">
+                                    <h5 class="text-university mb-4"><i class="bi bi-easel me-2"></i>Training Programs</h5>
+                                    
+                                    <div class="row mb-4">
+                                        <div class="col-md-6">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <h6 class="card-title text-university">
+                                                        <i class="bi bi-calendar-check me-2"></i> Upcoming Training Sessions
+                                                    </h6>
+                                                    <div class="list-group">
+                                                        {% for session in training_sessions %}
+                                                        <div class="list-group-item">
+                                                            <div class="d-flex w-100 justify-content-between">
+                                                                <h6 class="mb-1">{{ session.title }}</h6>
+                                                                <small>{{ session.date|date:"M d" }}</small>
+                                                            </div>
+                                                            <small class="text-muted">
+                                                                <i class="bi bi-clock me-1"></i> {{ session.time }} | 
+                                                                <i class="bi bi-geo-alt me-1"></i> {{ session.location }}
+                                                            </small>
+                                                            <div class="mt-2">
+                                                                <button class="btn btn-sm btn-outline-university">
+                                                                    <i class="bi bi-calendar-plus me-1"></i> Register
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        {% empty %}
+                                                        <div class="list-group-item">
+                                                            No upcoming training sessions scheduled
+                                                        </div>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <h6 class="card-title text-university">
+                                                        <i class="bi bi-collection-play me-2"></i> On-Demand Training
+                                                    </h6>
+                                                    <div class="list-group">
+                                                        <a href="#" class="list-group-item list-group-item-action">
+                                                            <i class="bi bi-play-circle me-2"></i> Platform Orientation
+                                                        </a>
+                                                        <a href="#" class="list-group-item list-group-item-action">
+                                                            <i class="bi bi-play-circle me-2"></i> Gradebook Management
+                                                        </a>
+                                                        <a href="#" class="list-group-item list-group-item-action">
+                                                            <i class="bi bi-play-circle me-2"></i> Creating Online Assessments
+                                                        </a>
+                                                        <a href="#" class="list-group-item list-group-item-action">
+                                                            <i class="bi bi-play-circle me-2"></i> Using the Virtual Classroom
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="card">
+                                        <div class="card-header bg-university-light">
+                                            <h6 class="mb-0"><i class="bi bi-award me-2"></i>Certification Programs</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                {% for program in certification_programs %}
+                                                <div class="col-md-4 mb-3">
+                                                    <div class="card h-100">
+                                                        <div class="card-body">
+                                                            <h6 class="card-title">{{ program.name }}</h6>
+                                                            <p class="card-text small">{{ program.description }}</p>
+                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                <span class="badge bg-university">{{ program.duration }}</span>
+                                                                <button class="btn btn-sm btn-outline-university">Learn More</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% empty %}
+                                                <div class="col-12">
+                                                    <p class="text-center text-muted">No certification programs currently available</p>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-university-light">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Support hours: Mon-Fri, 8am-6pm
+                            </small>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <small class="text-muted">
+                                <i class="bi bi-envelope me-1"></i>
+                                <a href="mailto:support@university.edu" class="text-decoration-none">support@university.edu</a>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- New Ticket Modal -->
+<div class="modal fade" id="newTicketModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-university-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>New Support Ticket</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="ticketSubject" class="form-label">Subject</label>
+                            <input type="text" class="form-control" id="ticketSubject" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="ticketCategory" class="form-label">Category</label>
+                            <select class="form-select" id="ticketCategory" required>
+                                <option value="">Select a category</option>
+                                <option value="technical">Technical Issue</option>
+                                <option value="academic">Academic Support</option>
+                                <option value="account">Account Help</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ticketDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="ticketDescription" rows="5" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ticketPriority" class="form-label">Priority</label>
+                        <select class="form-select" id="ticketPriority">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ticketAttachments" class="form-label">Attachments</label>
+                        <input class="form-control" type="file" id="ticketAttachments" multiple>
+                        <small class="text-muted">You can attach up to 5 files (max 10MB each)</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-university">Submit Ticket</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --university-primary: #2E7D32; /* Dark green */
+        --university-secondary: #81C784; /* Light green */
+        --university-light: #E8F5E9; /* Very light green */
+    }
+    .bg-university-primary {
+        background-color: var(--university-primary) !important;
+    }
+    .bg-university-secondary {
+        background-color: var(--university-secondary) !important;
+    }
+    .bg-university-light {
+        background-color: var(--university-light) !important;
+    }
+    .btn-university {
+        background-color: var(--university-primary);
+        color: white;
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university {
+        color: var(--university-primary);
+        border-color: var(--university-primary);
+    }
+    .btn-outline-university:hover {
+        background-color: var(--university-primary);
+        color: white;
+    }
+    .border-university-primary {
+        border-color: var(--university-primary) !important;
+    }
+    .list-group-item.active {
+        background-color: var(--university-primary);
+        border-color: var(--university-primary);
+    }
+    
+    .form-switch .form-check-input:checked {
+        background-color: var(--university-primary);
+    }
+    
+    .tab-pane {
+        padding: 15px;
+    }
+    
+    .accordion-button:not(.collapsed) {
+        background-color: rgba(46, 125, 50, 0.1);
+        color: var(--university-primary);
+    }
+    
+    .accordion-button:focus {
+        border-color: var(--university-secondary);
+        box-shadow: 0 0 0 0.25rem rgba(46, 125, 50, 0.25);
+    }
+</style>
+
+<script>
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+</script>
+
+{% endblock %}

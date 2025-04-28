@@ -163,6 +163,14 @@ urlpatterns = [
     # Modal-specific endpoints
     path('employee/modal/create/', views.employee_create_modal, name='employee_create_modal'),
     path('employee/<int:pk>/modal/update/', views.employee_update_modal, name='employee_update_modal'),
+    path('lecturer_settings/', views.lecturer_settings, name='lecturer_settings'),
+    path('lecturer_support/', views.lecturer_support, name='lecturer_support'),
+
+    path('programme/<str:programme_code>/forum/', views.discussion_forum, name='discussion_forum'),
+    path('programme/<str:programme_code>/forum/new/', views.create_topic, name='create_topic'),
+    path('programme/<str:programme_code>/forum/topic/<int:topic_id>/', views.topic_detail, name='topic_detail'),
+    path('programme/<str:programme_code>/forum/topic/<int:topic_id>/<str:action>/', views.manage_topic, name='manage_topic'),
+
 
 
 ]

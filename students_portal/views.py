@@ -5996,3 +5996,184 @@ def employee_update_modal(request, pk):
     
     form = EmployeeForm(instance=employee)
     return render(request, 'employees/partials/employee_form_modal.html', {'form': form})
+
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def lecturer_settings(request):
+    user = request.user
+    
+    # Default values - in a real app these would come from database models
+    notification_preferences = {
+        'email': True,
+        'sms': False,
+        'push': True,
+    }
+    
+    privacy_settings = {
+        'profile_visibility': 'friends',
+        'search_visibility': True,
+    }
+    
+    account_types = [
+        ('student', 'Student'),
+        ('lecturer', 'Lecturer'),
+        ('admin', 'Administrator'),
+    ]
+    
+    context = {
+        'user': user,
+        'notification_preferences': notification_preferences,
+        'privacy_settings': privacy_settings,
+        'account_types': account_types,
+    }
+    
+    return render(request, 'lecturers/lecturer_settings.html', context)
+
+
+
+@login_required
+def lecturer_support(request): 
+    return render(request, 'lecturers/lecturer_support.html')
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from .models import Programme, Department, DiscussionTopic, DiscussionReply
+from .forms import DiscussionTopicForm
+
+@login_required
+def discussion_forum(request, programme_code):
+    programme = get_object_or_404(Programme, code=programme_code)
+    
+    # Check if user is staff or belongs to this programme
+    if not (request.user.is_staff or request.user.programme == programme):
+        messages.error(request, "You don't have access to this programme forum")
+        return redirect('programme_list')
+    
+    # Get all topics for this programme
+    topics = DiscussionTopic.objects.filter(programme=programme).order_by('-is_pinned', '-created_at')
+    
+    # Pagination
+    paginator = Paginator(topics, 10)  # Show 10 topics per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Forum statistics
+    total_topics = topics.count()
+    total_posts = DiscussionReply.objects.filter(topic__programme=programme).count() + total_topics
+    active_users = User.objects.filter(programme=programme).count()
+    
+    try:
+        last_post = DiscussionReply.objects.filter(topic__programme=programme).latest('created_at')
+    except DiscussionReply.DoesNotExist:
+        last_post = None
+    
+    context = {
+        'programme': programme,
+        'topics': page_obj,
+        'total_topics': total_topics,
+        'total_posts': total_posts,
+        'active_users': active_users,
+        'last_post': last_post,
+    }
+    
+    return render(request, 'lecturers/discussion_forum.html', context)
+
+@login_required
+def create_topic(request, programme_code):
+    programme = get_object_or_404(Programme, code=programme_code)
+    
+    if not request.user.is_staff and not request.user.is_lecturer:
+        messages.error(request, "Only lecturers can create discussion topics")
+        return redirect('discussion_forum', programme_code=programme.code)
+    
+    if request.method == 'POST':
+        form = DiscussionTopicForm(request.POST, request.FILES)
+        if form.is_valid():
+            topic = form.save(commit=False)
+            topic.programme = programme
+            topic.author = request.user
+            topic.save()
+            messages.success(request, "Discussion topic created successfully!")
+            return redirect('discussion_forum', programme_code=programme.code)
+    else:
+        form = DiscussionTopicForm()
+    
+    context = {
+        'programme': programme,
+        'form': form,
+    }
+    return render(request, 'lecturers/discussion_forum.html', context)
+
+@login_required
+def topic_detail(request, programme_code, topic_id):
+    programme = get_object_or_404(Programme, code=programme_code)
+    topic = get_object_or_404(DiscussionTopic, id=topic_id, programme=programme)
+    
+    # Check if user is staff or belongs to this programme
+    if not (request.user.is_staff or request.user.programme == programme):
+        messages.error(request, "You don't have access to this discussion")
+        return redirect('programme_list')
+    
+    # Increment view count
+    if request.user != topic.author:
+        topic.views += 1
+        topic.save()
+    
+    replies = DiscussionReply.objects.filter(topic=topic).order_by('created_at')
+    
+    if request.method == 'POST' and not topic.locked:
+        reply_content = request.POST.get('reply_content')
+        if reply_content:
+            DiscussionReply.objects.create(
+                topic=topic,
+                author=request.user,
+                content=reply_content
+            )
+            messages.success(request, "Your reply has been posted")
+            return redirect('topic_detail', programme_code=programme.code, topic_id=topic_id)
+    
+    context = {
+        'programme': programme,
+        'topic': topic,
+        'replies': replies,
+    }
+    return render(request, 'lecturers/discussion_topic_detail.html', context)
+
+@login_required
+def manage_topic(request, programme_code, topic_id, action):
+    programme = get_object_or_404(Programme, code=programme_code)
+    topic = get_object_or_404(DiscussionTopic, id=topic_id, programme=programme)
+    
+    # Only staff and lecturers can manage topics
+    if not (request.user.is_staff or request.user.is_lecturer):
+        messages.error(request, "You don't have permission to perform this action")
+        return redirect('topic_detail', programme_code=programme.code, topic_id=topic_id)
+    
+    if action == 'pin':
+        topic.is_pinned = not topic.is_pinned
+        topic.save()
+        status = "pinned" if topic.is_pinned else "unpinned"
+        messages.success(request, f"Topic has been {status}")
+    elif action == 'important':
+        topic.is_important = not topic.is_important
+        topic.save()
+        status = "marked as important" if topic.is_important else "unmarked as important"
+        messages.success(request, f"Topic has been {status}")
+    elif action == 'lock':
+        topic.is_locked = not topic.is_locked
+        topic.save()
+        status = "locked" if topic.is_locked else "unlocked"
+        messages.success(request, f"Topic has been {status}")
+    elif action == 'delete':
+        topic.delete()
+        messages.success(request, "Topic has been deleted")
+        return redirect('discussion_forum', programme_code=programme.code)
+    
+    return redirect('topic_detail', programme_code=programme.code, topic_id=topic_id)
