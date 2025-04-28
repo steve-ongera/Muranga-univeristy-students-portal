@@ -81,6 +81,9 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex gap-2 justify-content-center">
+                                            <a href="{% url 'lecturer_detail' lecturer.id %}" class="btn btn-sm btn-outline-university" title="view">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
                                             <a href="{% url 'lecturer_update' lecturer.pk %}" class="btn btn-sm btn-outline-university" title="Edit">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>

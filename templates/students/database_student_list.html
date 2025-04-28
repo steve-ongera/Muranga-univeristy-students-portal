@@ -71,9 +71,9 @@
                                         </a>
                                     </td>
                                     <td>
-                                        <a href="{% url 'student_detail' student.id %}" class="text-university">
+                                      
                                             {{ student.registration_number }}
-                                        </a>
+                                       
                                     </td>
                                     <td>{{ student.programme }}</td>
                                     <td>{{ student.phone_number|default:"-" }}</td>
@@ -89,6 +89,9 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex gap-2 justify-content-center">
+                                            <a href="{% url 'student_detail' student.id %}" class="btn btn-sm btn-outline-university" title="view">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
                                             <a href="{% url 'student_update' student.pk %}" class="btn btn-sm btn-outline-university" title="Edit">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>

@@ -548,6 +548,7 @@ from django.http import HttpResponseForbidden
 from django.core.exceptions import PermissionDenied
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def admin_dashboard(request):
     if not (request.user.is_superuser or request.user.is_staff):
         # Raise 403 Forbidden error
@@ -692,12 +693,14 @@ def finance_dashboard(request):
 
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def database_students_list(request):
     students = Student.objects.all()
     return render(request, 'students/database_student_list.html', {'students': students})
 
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def student_create(request):
     if request.method == 'POST':
         form = StudentForm(request.POST)
@@ -749,13 +752,14 @@ def student_create(request):
 
 
 @login_required
-
+@user_passes_test(lambda u: u.is_staff)
 def student_detail(request, pk):
     student = get_object_or_404(Student, pk=pk)
     return render(request, 'students/student_detail.html', {'student': student})
 
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def student_update(request, pk):
     student = get_object_or_404(Student, pk=pk)
     
@@ -773,7 +777,7 @@ def student_update(request, pk):
 
 
 @login_required
-
+@user_passes_test(lambda u: u.is_staff)
 def student_delete(request, pk):
     student = get_object_or_404(Student, pk=pk)
     if request.method == 'POST':
@@ -782,7 +786,8 @@ def student_delete(request, pk):
     return render(request, 'students/student_confirm_delete.html', {'student': student})
 
 
-
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def lecturer_list(request):
     """List all lecturers"""
     lecturers = Lecturer.objects.all().order_by('last_name')
@@ -792,6 +797,9 @@ def lecturer_list(request):
     }
     return render(request, 'lecturers/lecturer_list.html', context)
 
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def lecturer_detail(request, pk):
     """View details of a specific lecturer"""
     lecturer = get_object_or_404(Lecturer, pk=pk)
@@ -801,6 +809,9 @@ def lecturer_detail(request, pk):
     }
     return render(request, 'lecturers/lecturer_detail.html', context)
 
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def lecturer_create(request):
     """Create a new lecturer"""
     if request.method == 'POST':
@@ -817,6 +828,9 @@ def lecturer_create(request):
     }
     return render(request, 'lecturers/lecturer_form.html', context)
 
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def lecturer_update(request, pk):
     """Update an existing lecturer"""
     lecturer = get_object_or_404(Lecturer, pk=pk)
@@ -836,6 +850,9 @@ def lecturer_update(request, pk):
     }
     return render(request, 'lecturers/lecturer_form.html', context)
 
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def lecturer_delete(request, pk):
     """Delete a lecturer"""
     lecturer = get_object_or_404(Lecturer, pk=pk)
@@ -851,13 +868,6 @@ def lecturer_delete(request, pk):
     return render(request, 'lecturers/lecturer_confirm_delete.html', context)
 
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from .models import (
-    Student, ProgrammeUnit, StudentEnrollment, 
-    Semester, AcademicYear, UnitAllocation
-)
 
 @login_required
 def unit_enrollment(request):
@@ -933,6 +943,7 @@ def unit_enrollment(request):
 
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def drop_unit(request, enrollment_id):
     try:
         # Get student directly using the username (which is admission number)
@@ -956,17 +967,9 @@ def drop_unit(request, enrollment_id):
     return redirect('unit_enrollment')
 
 
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.utils import timezone
-from .models import StudentReporting, Semester, Student
 
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.utils import timezone
-from .models import StudentReporting, Semester, Student
+
+
 
 @login_required
 def report_for_semester(request):
@@ -1029,18 +1032,9 @@ def report_for_semester(request):
     }
     return render(request, 'students/report_for_semester.html', context)
 
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
 from django.db.models import Prefetch, Q
 
-from .models import (
-    Student, 
-    StudentEnrollment, 
-    StudentUnitGrade, 
-    AcademicYear, 
-    Semester
-)
+
 
 """
 Displays academic results for logged-in students, fetching only years since admission date.
@@ -1340,6 +1334,9 @@ from django.contrib import messages
 from .models import Student, StudentEnrollment, StudentUnitGrade, GradeSystem, AcademicYear, Semester
 import json
 
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def search_student(request):
     """Search for a student by registration number and return enrolled units with existing grades"""
     registration_number = request.GET.get('registration_number')
@@ -1384,7 +1381,8 @@ def search_student(request):
     except Student.DoesNotExist:
         return JsonResponse({'error': 'Student not found'}, status=404)
 
-
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def enter_student_grades(request):
     """Render the form for entering student grades and allow searching by student registration number"""
     
@@ -1400,6 +1398,8 @@ from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 import json
 
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 @require_POST
 def save_student_grades(request):
     try:
@@ -1477,6 +1477,7 @@ from .models import Student
 from .forms import StudentSearchForm
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def search_student_data(request):
     """View for searching students with various filter criteria"""
     form = StudentSearchForm(request.GET or None)
@@ -1531,6 +1532,9 @@ def search_student_data(request):
 from django.db.models import Avg, Sum, Count
 from collections import defaultdict
 
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def get_student_academic_progress(student):
     """
     Get complete academic progress for a student using existing models
@@ -1665,6 +1669,8 @@ def get_student_academic_progress(student):
     
     return progress_data
 
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def get_student_transcript(student):
     """
     Generate a formal transcript using existing models
@@ -1700,9 +1706,9 @@ def get_student_transcript(student):
     return transcript
 
 
-from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
 
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def student_progress_report(request, student_id):
     """View to display student progress report"""
     student = get_object_or_404(Student, pk=student_id)
@@ -1718,6 +1724,9 @@ def student_progress_report(request, student_id):
     
     return render(request, 'academics/student_progress.html', context)
 
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def student_official_transcript(request, student_id):
     """View to generate official transcript"""
     student = get_object_or_404(Student, pk=student_id)
@@ -1733,9 +1742,8 @@ def student_official_transcript(request, student_id):
     
     return render(request, 'academics/official_transcript.html', context)
 
-from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
-
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def api_student_progress(request, student_id):
     """View for student progress with academic year tabs and semester breakdown"""
     student = get_object_or_404(Student, pk=student_id)
@@ -1755,11 +1763,15 @@ def api_student_progress(request, student_id):
     })
 
 
-
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def programme_list(request):
     programmes = Programme.objects.all().select_related('department')
     return render(request, 'academics/programme_list.html', {'programmes': programmes})
 
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def programme_detail(request, programme_id):
     programme = get_object_or_404(Programme, id=programme_id)
     programme_units = ProgrammeUnit.objects.filter(programme=programme).select_related('unit')
@@ -2282,6 +2294,7 @@ from students_portal.models import UnitAllocation, StudentEnrollment, Semester
 from django.db.models import Prefetch
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def unit_students(request, unit_allocation_id=None):
     # Check if user is a lecturer
     if request.session.get('user_type') != 'lecturer':
@@ -2392,10 +2405,7 @@ def upload_lecture_notes(request, unit_allocation_id=None):
     return render(request, 'lecturer/upload_lecture_notes.html', context)
 
 
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from .models import LectureNotes
+
 
 @login_required
 def delete_lecture_note(request, note_id):
@@ -2423,9 +2433,7 @@ def delete_lecture_note(request, note_id):
     return redirect('upload_lecture_notes')
 
 
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from .models import StudentEnrollment, LectureNotes
+
 
 @login_required
 def student_view_notes(request):
@@ -3215,14 +3223,10 @@ def student_timetable(request):
     
     return render(request, 'student_timetable.html', context)
 
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.db.models import Q
-from .models import (
-    Lecturer, ProgrammeUnit, Semester, UnitAllocation,
-    AcademicYear, Department
-)
 
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def unit_allocation_view(request):
     # Get current academic year and semester
     try:
@@ -4112,7 +4116,7 @@ class UnitStudentListPDFView(View):
         return response
 
 
-
+@login_required
 def help_support(request):
     return render(request, 'help_support.html')
 
@@ -4313,9 +4317,7 @@ def send_message(request, group_id):
 
 
 
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from .models import NewsArticle
+
 
 @login_required
 def student_news(request):
@@ -4333,10 +4335,7 @@ def student_news(request):
 
 
 
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from .models import StudentClub, ClubMembership
-from .forms import *
+
 
 @login_required
 def student_clubs(request):
@@ -4371,12 +4370,8 @@ def leave_club(request, club_id):
         membership.delete()
     return redirect('student_clubs')
 
-# views.py
-from django.shortcuts import render
-from django.utils import timezone
-from .models import ClubEvent
-from students_portal.models import StudentClub
 
+@login_required
 def club_events(request, club_id=None):
     now = timezone.now()
     
@@ -4404,16 +4399,6 @@ def club_events(request, club_id=None):
 
 
 
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from students_portal.models import (
-    Student, 
-    FeesStructure, 
-    StudentFee, 
-    FeePayment,
-    AcademicYear,
-    Semester
-)
 
 @login_required
 def student_payment_history(request):
@@ -4475,15 +4460,7 @@ def student_payment_history(request):
 
 
 
-# views.py
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from students_portal.models import (
-    Student, 
-    FeesStructure, 
-    AcademicYear,
-    Semester
-)
+
 
 @login_required
 def my_programme_fees(request):
@@ -4519,17 +4496,7 @@ def my_programme_fees(request):
     return render(request, 'payment/programme_fees.html', context)
 
 
-# views.py
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.db.models import Sum
-from students_portal.models import (
-    Student, 
-    FeesStructure, 
-    StudentFee, 
-    FeePayment,
-    AcademicYear
-)
+
 
 @login_required
 def fee_statement(request):
@@ -4591,11 +4558,8 @@ def fee_statement(request):
 
 
 
-from django.shortcuts import render
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def documentation_view(request):
     # Sample documentation data
     documentation_sections = [
@@ -4636,11 +4600,9 @@ def documentation_view(request):
 
 
 
-from django.shortcuts import render
-from django.contrib import messages
-from .models import DataCategory, DataRecord
-from .forms import DataUploadForm, DataCategoryForm
 
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def data_management(request):
     # System messages are handled in the template
     
@@ -4687,10 +4649,6 @@ def data_management(request):
 
 
 
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.shortcuts import render
-from django.contrib import messages
-from .models import AdminProfile
 from django.conf import settings
 
 @login_required
@@ -4782,11 +4740,10 @@ def update_admin_security_settings(request):
     return render(request, 'admin/security_settings.html', {'form': form})
 
 
-
-from django.shortcuts import render
 from django.db.models import Count, Avg, Sum, Q, F, Case, When, FloatField
-from .models import Student, Programme, Department, StudentUnitGrade, FeesStructure, StudentFee, AcademicYear, Semester, StudentEnrollment
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser or u.is_staff)
 def institutional_dashboard(request):
     try:
         current_academic_year = AcademicYear.objects.get(is_current=True)
@@ -4898,18 +4855,16 @@ def institutional_dashboard(request):
     return render(request, 'analytics/institutional_dashboard.html', context)
 
 
-from django.shortcuts import render, get_object_or_404
+
 from django.db.models import Avg, Count, Sum, F, Q
 from django.http import JsonResponse
-from .models import (
-    Student, Programme, Unit, ProgrammeUnit, StudentEnrollment, 
-    StudentScore, StudentUnitGrade, AttendanceRecord, StudentAttendance,
-    Semester, AcademicYear, Department, Faculty
-)
+
 from datetime import datetime
 import json
 from collections import defaultdict
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser or u.is_staff)
 def performance_analysis(request):
     # Get filter parameters from request
     programme_id = request.GET.get('programme')
@@ -5191,13 +5146,9 @@ def performance_analysis(request):
     return render(request, 'performance/analysis.html', context)
 
 
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views import View
 from django.utils.decorators import method_decorator
-from .models import User, Lecturer, Student, Department, Faculty, Programme
+
 
 def is_admin(user):
     """Check if user is admin"""
@@ -5320,12 +5271,6 @@ def user_permissions_view(request):
         return redirect('user_permissions')
     
 
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.models import Permission
-from django.db.models import Q
-from .models import User
-
 def is_super_admin(user):
     """Check if user is a super admin with permission to view admin permissions"""
     return user.is_authenticated and user.user_type == 'admin' and user.is_verified and user.status == 'active'
@@ -5392,13 +5337,6 @@ def view_admin_permissions(request):
 
 
 
-from django.shortcuts import render
-from django.db.models import Avg, Count, Sum, Q
-from django.contrib.auth.decorators import login_required, user_passes_test
-from .models import (
-    AcademicYear, Semester, Programme, Unit, StudentEnrollment, 
-    StudentScore, StudentUnitGrade, Student
-)
 
 def is_academic_staff(user):
     """Check if user is academic staff with permission to view reports"""
@@ -5793,7 +5731,7 @@ def download_transcript(request, student_id, semester_id=None, academic_year_id=
 
 
 
-from django.shortcuts import render, redirect, get_object_or_404
+
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
@@ -5809,6 +5747,8 @@ from django.db.models import Q
 from .models import Employee, Department
 from .forms import EmployeeFilterForm
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser or u.is_staff)
 def employee_list(request):
     # Initialize the form with GET parameters
     filter_form = EmployeeFilterForm(request.GET or None)
@@ -5857,6 +5797,9 @@ def employee_list(request):
     }
     return render(request, 'employees/employee_list.html', context)
 
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser or u.is_staff)
 def employee_detail_json(request, pk):
     employee = get_object_or_404(Employee, pk=pk)
     
@@ -5894,6 +5837,9 @@ from django.contrib import messages
 from .models import Employee
 from .forms import EmployeeForm
 
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser or u.is_staff)
 def employee_create(request):
     if request.method == 'POST':
         form = EmployeeForm(request.POST, request.FILES)
@@ -5912,12 +5858,9 @@ def employee_create(request):
     }
     return render(request, 'employees/employee_form.html', context)
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse_lazy
-from django.contrib import messages
-from .models import Employee
-from .forms import EmployeeForm
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser or u.is_staff)
 def employee_update(request, pk):
     employee = get_object_or_404(Employee, pk=pk)
     
@@ -5940,6 +5883,9 @@ def employee_update(request, pk):
     }
     return render(request, 'employees/employee_form.html', context)
 
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser or u.is_staff)
 def employee_delete(request, pk):
     employee = get_object_or_404(Employee, pk=pk)
     
@@ -5955,6 +5901,9 @@ def employee_delete(request, pk):
     }
     return render(request, 'employees/employee_confirm_delete.html', context)
 
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser or u.is_staff)
 def employee_create_modal(request):
     if request.method == 'POST':
         form = EmployeeForm(request.POST, request.FILES)
@@ -5975,6 +5924,9 @@ def employee_create_modal(request):
     form = EmployeeForm()
     return render(request, 'employees/partials/employee_form_modal.html', {'form': form})
 
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser or u.is_staff)
 def employee_update_modal(request, pk):
     employee = get_object_or_404(Employee, pk=pk)
     
@@ -5998,9 +5950,6 @@ def employee_update_modal(request, pk):
     return render(request, 'employees/partials/employee_form_modal.html', {'form': form})
 
 
-
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
 
 @login_required
 def lecturer_settings(request):
@@ -6039,13 +5988,6 @@ def lecturer_settings(request):
 def lecturer_support(request): 
     return render(request, 'lecturers/lecturer_support.html')
 
-
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
-from .models import Programme, Department, DiscussionTopic, DiscussionReply
-from .forms import DiscussionTopicForm
 
 @login_required
 def discussion_forum(request, programme_code):
