@@ -1533,8 +1533,8 @@ from django.db.models import Avg, Sum, Count
 from collections import defaultdict
 
 
-@login_required
-@user_passes_test(lambda u: u.is_staff)
+
+
 def get_student_academic_progress(student):
     """
     Get complete academic progress for a student using existing models
@@ -1669,8 +1669,7 @@ def get_student_academic_progress(student):
     
     return progress_data
 
-@login_required
-@user_passes_test(lambda u: u.is_staff)
+
 def get_student_transcript(student):
     """
     Generate a formal transcript using existing models
@@ -1707,13 +1706,10 @@ def get_student_transcript(student):
 
 
 
-@login_required
-@user_passes_test(lambda u: u.is_staff)
 def student_progress_report(request, student_id):
     """View to display student progress report"""
     student = get_object_or_404(Student, pk=student_id)
     
-    # Check permissions here (e.g., only student or admin can view)
     
     progress_data = get_student_academic_progress(student)
     
@@ -1725,8 +1721,8 @@ def student_progress_report(request, student_id):
     return render(request, 'academics/student_progress.html', context)
 
 
+
 @login_required
-@user_passes_test(lambda u: u.is_staff)
 def student_official_transcript(request, student_id):
     """View to generate official transcript"""
     student = get_object_or_404(Student, pk=student_id)
@@ -1743,7 +1739,6 @@ def student_official_transcript(request, student_id):
     return render(request, 'academics/official_transcript.html', context)
 
 @login_required
-@user_passes_test(lambda u: u.is_staff)
 def api_student_progress(request, student_id):
     """View for student progress with academic year tabs and semester breakdown"""
     student = get_object_or_404(Student, pk=student_id)
@@ -2294,7 +2289,6 @@ from students_portal.models import UnitAllocation, StudentEnrollment, Semester
 from django.db.models import Prefetch
 
 @login_required
-@user_passes_test(lambda u: u.is_staff)
 def unit_students(request, unit_allocation_id=None):
     # Check if user is a lecturer
     if request.session.get('user_type') != 'lecturer':

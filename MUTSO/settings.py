@@ -15,7 +15,7 @@ SECRET_KEY = 'django-insecure-5yaf(dgr^9364+z89=x1(u6u(sab#p5n_dqp&mnykp67(3v7x@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True # 404 page only shows in production
 
-ALLOWED_HOSTS = ['*','https://43fd-2c0f-6300-d09-fd00-f126-c225-9052-8cce.ngrok-free.app']
+ALLOWED_HOSTS = ['*','https://0ccd-2c0f-fe38-2201-a140-8c5-5904-e2f-e8eb.ngrok-free.app']
 
 
 # Application definition
@@ -32,7 +32,7 @@ INSTALLED_APPS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://1b3d-2c0f-6300-d09-fd00-f126-c225-9052-8cce.ngrok-free.app"
+    "https://0ccd-2c0f-fe38-2201-a140-8c5-5904-e2f-e8eb.ngrok-free.app"
 ]
 
 MIDDLEWARE = [

@@ -9,7 +9,7 @@
 }
 
 body {
-  font-family: "Poppins", sans-serif; /* More modern font */
+  font-family: 'Roboto', sans-serif;
   background: #f8fafc; /* Lighter background */
   color: #1e293b; /* Darker text for better contrast */
   line-height: 1.6;
