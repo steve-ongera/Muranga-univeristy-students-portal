@@ -307,25 +307,25 @@ h6 {
 .breadcrumb {
   font-size: 14px;
   font-family: "Nunito", sans-serif;
-  color: #899bbd;
+  color: #4CAF50;
   font-weight: 600;
 }
 
 .breadcrumb a {
-  color: #899bbd;
+  color: #4CAF50;
   transition: 0.3s;
 }
 
 .breadcrumb a:hover {
-  color: #51678f;
+  color: #4CAF50;
 }
 
 .breadcrumb .breadcrumb-item::before {
-  color: #899bbd;
+  color: #4CAF50;
 }
 
 .breadcrumb .active {
-  color: #51678f;
+  color: #2E7D32;
   font-weight: 600;
 }
 
@@ -615,7 +615,7 @@ h6 {
   padding: 20px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: #A5D6A7 transparent; /* Green scrollbar */
+  scrollbar-color: #e4e4e4 transparent; /* Green scrollbar */
   box-shadow: 0px 0px 20px rgba(46, 125, 50, 0.1); /* Green tinted shadow */
   background-color: #fff;
 }

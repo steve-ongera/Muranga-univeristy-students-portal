@@ -31,7 +31,7 @@
     background: var(--white);
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    padding: 10px;
+    padding: 5px;
     text-align: center;
     height: 100%;
   }
@@ -215,11 +215,11 @@
 </style>
 
 <div class="container-main">
-  <div class="message-container">
+  <div class="message-container" id="system-messages">
     {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+    <div class="alert-message alert-{{ message.tags }}">
         {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <span class="close-message">&times;</span>
     </div>
     {% endfor %}
   </div>
@@ -237,6 +237,7 @@
           
           <h3 class="profile-name">{{ student.get_full_name|upper }}</h3>
           <p class="profile-id">{{ student.registration_number }}</p>
+          <p  class="profile-status">{{ student.status }}</p>
           <p class="badge bg-light">{{ student.programme.name }}</p>
           <p class="profile-year">Year {{ student.current_year }}, Semester {{ student.current_semester }}</p>
         </div>
@@ -365,12 +366,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Close messages
-  document.querySelectorAll('.close-message').forEach(btn => {
-    btn.addEventListener('click', function() {
-      this.parentElement.style.display = 'none';
-    });
-  });
+ 
+  
 });
 </script>
 

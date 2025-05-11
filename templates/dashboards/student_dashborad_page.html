@@ -18,14 +18,7 @@
     }
 
     /* Base Styles */
-    body {
-        font-family: 'Roboto', 'Segoe UI', sans-serif;
-        background-color: var(--bg-light);
-        color: var(--text-dark);
-        line-height: 1.6;
-        font-size: 14px; /* Smaller base font size */
-        -webkit-text-size-adjust: 100%;
-    }
+    
 
     * {
         box-sizing: border-box;
@@ -151,6 +144,7 @@
         box-shadow: var(--box-shadow);
         transition: var(--transition);
         width: 100%;
+        border-top:50px;
     }
 
     .dashboard-card:hover {
@@ -367,6 +361,7 @@
     /* Hostel Card */
     .hostel-card {
         text-align: center;
+        
     }
 
     .hostel-icon {
@@ -678,168 +673,191 @@
     </div>
     {% endfor %}
   </div>
-<div class="section dashboard">
-    <!-- Dashboard Header -->
-    <div class="dashboard-header">
-        <!-- Navigation Tabs -->
-        <div class="nav-tabs">
-            <div class="nav-tab active">
-                <i class="fas fa-home"></i> Dashboard
-            </div>
-            <div class="nav-tab">
-                <i class="fas fa-money-bill"></i> Finance
-            </div>
-            <div class="nav-tab">
-                <i class="fas fa-file-invoice"></i> Statement
-            </div>
-        </div>
+<section class="section">
+    <div class="row">
+        <div class="col-lg-12"
 
-        <!-- Welcome Card -->
-        <div class="welcome-card">
-            <div class="welcome-content">
-                <div class="welcome-text">
-                    <h2>Welcome back, {{ user.first_name }}</h2>
-                    <p>We're delighted to have you. Need help with system navigation? Use the virtual assistant in the side menu.</p>
-                </div>
-                <div class="welcome-image">
-                    <img src="{% static 'assets/img/profile.png' %}" alt="Student Profile">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Dashboard Grid -->
-    <div class="dashboard-grid">
-        <!-- Finance Card -->
-        <div class="dashboard-card finance-card">
-            <div class="finance-content">
-                <div class="finance-icon">
-                    <i class="fas fa-coins"></i>
-                </div>
-                <h3 class="card-title">Fee Balance</h3>
-                <div class="finance-amount">KSh {{ current_balance|floatformat:2 }}</div>
-                <button class="finance-btn">
-                    <i class="fas fa-credit-card"></i> Pay Now
-                </button>
-            </div>
-        </div>
-
-        <!-- Semester Card -->
-        <div class="dashboard-card semester-card">
-            <div class="semester-content">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <i class="fas fa-book-reader"></i> Academic Progress
-                    </h3>
-                </div>
-                <h4 class="semester-title">SEMESTER {{ student.current_semester }} - {{ current_semester.academic_year.name }}</h4>
-                <p class="semester-subtitle">{{ programme.name|upper }}</p>
-                
-                <div class="progress-container">
-                    <div class="progress-label">
-                        <span>Session Progress</span>
-                        <span>{{ session_progress }}%</span>
+            <div class="col-md-12 col-lg-12">
+                <!-- Dashboard Header -->
+                <div class="dashboard-header">
+                    <!-- Navigation Tabs -->
+                    <div class="nav-tabs">
+                        <div class="nav-tab active">
+                            <i class="fas fa-home"></i> Dashboard
+                        </div>
+                        <div class="nav-tab">
+                            <i class="fas fa-money-bill"></i> Finance
+                        </div>
+                        <div class="nav-tab">
+                            <i class="fas fa-file-invoice"></i> Statement
+                        </div>
                     </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: {{ session_progress }}%"></div>
+
+                    <!-- Welcome Card -->
+                    <div class="welcome-card">
+                        <div class="welcome-content">
+                            <div class="welcome-text">
+                                <h2>Welcome back, {{ user.first_name }}</h2>
+                                <p>We're delighted to have you. Need help with system navigation? Use the virtual assistant in the side menu.</p>
+                            </div>
+                            <div class="welcome-image">
+                                <img src="{% static 'assets/img/profile.png' %}" alt="Student Profile">
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </div>    
+
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Finance Card -->
+                <div class="dashboard-card finance-card">
+                    <div class="finance-content">
+                        <div class="finance-icon">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <h3 class="card-title">Fee Balance</h3>
+                        <div class="finance-amount">KSh {{ current_balance|floatformat:2 }}</div>
+                        <button class="finance-btn">
+                            <i class="fas fa-credit-card"></i> Pay Now
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Semester Card -->
+                <div class="dashboard-card semester-card">
+                    <div class="semester-content">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-book-reader"></i> Academic Progress
+                            </h3>
+                        </div>
+                        <h4 class="semester-title">SEMESTER {{ student.current_semester }} - {{ current_semester.academic_year.name }}</h4>
+                        <p class="semester-subtitle">{{ programme.name|upper }}</p>
+                        
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span>Session Progress</span>
+                                <span>{{ session_progress }}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ session_progress }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>  
+
         </div>
 
-        <!-- Units Card -->
-        <div class="dashboard-card dashboard-full-width">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fas fa-book"></i> Registered Units
-                </h3>
-                <a href="{% url 'unit_enrollment' %}" class="card-link">
-                    Manage Units <i class="fas fa-chevron-right"></i>
-                </a>
-            </div>
             
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="units-table">
-                        <thead>
-                            <tr>
-                                <th>Unit Name</th>
-                                <th>Unit Code</th>
-                                <th>Lecturer</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for enrollment in enrolled_units %}
-                            <tr>
-                                <td>{{ enrollment.programme_unit.unit.name }}</td>
-                                <td>{{ enrollment.programme_unit.unit.code }}</td>
-                                <td>
-                                    {% with allocation=enrollment.programme_unit.unit_allocations.first %}
-                                        {% if allocation %}
-                                            {{ allocation.lecturer.get_full_name }}
-                                        {% else %}
-                                            <span style="color: #F57C00;">Not Assigned</span>
-                                        {% endif %}
-                                    {% endwith %}
-                                </td>
-                                <td>
-                                    <span class="status-badge status-pending">
-                                        <i class="fas fa-circle-notch fa-spin" style="margin-right: 0.3rem;"></i>
-                                        Registered
-                                    </span>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="4">
-                                    <div class="empty-state">
-                                        <i class="fas fa-info-circle"></i>
-                                        <p>No units registered for current semester</p>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+             <br>
 
-        <!-- Hostel Card -->
-        <div class="dashboard-card dashboard-full-width hostel-card">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fas fa-building"></i> Hostel Information
-                </h3>
-            </div>
-            
-            <div class="card-body">
-                <div class="hostel-icon">
-                    <i class="fas fa-home"></i>
-                </div>
-                
-                <p class="hostel-info">
-                    You are currently assigned to: 
-                    <strong>{% if student.hostel %}{{ student.hostel.name }}{% else %}No hostel assigned{% endif %}</strong>
-                </p>
-                
-                {% if student.hostel %}
-                <div class="hostel-details">
-                    <div class="hostel-detail">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span>{{ student.hostel.location }}</span>
+                <!-- Units Card -->
+            <div class="dashboard-card dashboard-full-width">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-book"></i> Registered Units
+                        </h3>
+                        <a href="{% url 'unit_enrollment' %}" class="card-link">
+                            Manage Units <i class="fas fa-chevron-right"></i>
+                        </a>
                     </div>
-                    <div class="hostel-detail">
-                        <i class="fas fa-door-open"></i>
-                        <span>Room: {{ student.hostel_room|default:"Not assigned" }}</span>
+                    
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="units-table">
+                                <thead>
+                                    <tr>
+                                        <th>Unit Name</th>
+                                        <th>Unit Code</th>
+                                        <th>Lecturer</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for enrollment in enrolled_units %}
+                                    <tr>
+                                        <td>{{ enrollment.programme_unit.unit.name }}</td>
+                                        <td>{{ enrollment.programme_unit.unit.code }}</td>
+                                        <td>
+                                            {% with allocation=enrollment.programme_unit.unit_allocations.first %}
+                                                {% if allocation %}
+                                                    {{ allocation.lecturer.get_full_name }}
+                                                {% else %}
+                                                    <span style="color: #F57C00;">Not Assigned</span>
+                                                {% endif %}
+                                            {% endwith %}
+                                        </td>
+                                        <td>
+                                            <span class="status-badge status-pending">
+                                                <i class="fas fa-circle-notch fa-spin" style="margin-right: 0.3rem;"></i>
+                                                Registered
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4">
+                                            <div class="empty-state">
+                                                <i class="fas fa-info-circle"></i>
+                                                <p>No units registered for current semester</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+             </div>
+
+            <br>
+             <!--end of registred unit section -->
+
+                
+
+            <!-- Hostel Card -->
+             <div class="dashboard-card dashboard-full-width hostel-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-building"></i> Hostel Information
+                        </h3>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="hostel-icon">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        
+                        <p class="hostel-info">
+                            You are currently assigned to: 
+                            <strong>{% if student.hostel %}{{ student.hostel.name }}{% else %}No hostel assigned{% endif %}</strong>
+                        </p>
+                        
+                        {% if student.hostel %}
+                        <div class="hostel-details">
+                            <div class="hostel-detail">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>{{ student.hostel.location }}</span>
+                            </div>
+                            <div class="hostel-detail">
+                                <i class="fas fa-door-open"></i>
+                                <span>Room: {{ student.hostel_room|default:"Not assigned" }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
-                {% endif %}
+
+             <!--end of hostel cards -->   
             </div>
-        </div>
-    </div>
-</div>
+         </div>
+      </div>
+</section>         
+
+  
+
 
 <script>
     // Activate progress bar animation on page load
