@@ -23,10 +23,23 @@ class CustomUserAdmin(UserAdmin):
         }),
     )
 
+from django.contrib import admin
+from .models import AcademicYear, Semester
+
+class SemesterInline(admin.TabularInline):
+    model = Semester
+    extra = 0  # No empty extra forms
+    fields = ('name', 'number', 'start_date', 'end_date', 'is_current')
+    readonly_fields = ('name', 'number', 'start_date', 'end_date', 'is_current')
+    can_delete = False
+    show_change_link = True
+
 class AcademicYearAdmin(admin.ModelAdmin):
     list_display = ('name', 'start_date', 'end_date', 'is_current')
     list_filter = ('is_current',)
     search_fields = ('name',)
+    inlines = [SemesterInline]
+
 
 class FacultyAdmin(admin.ModelAdmin):
     list_display = ('name', 'code', 'description')
@@ -617,4 +630,29 @@ admin.site.register(Department, DepartmentAdmin)
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(AcademicYear, AcademicYearAdmin)
 admin.site.register(Faculty, FacultyAdmin)
+
+
+# Creating a migration file
+# Run this command: python manage.py makemigrations
+
+# Applying migrations to create the tables in your database
+# Run this command: python manage.py migrate
+
+# Admin configuration
+# Add this to your admin.py file:
+
+from django.contrib import admin
+from .models import CommonQuestion, QuickLink
+
+@admin.register(CommonQuestion)
+class CommonQuestionAdmin(admin.ModelAdmin):
+    list_display = ('question', 'order')
+    list_editable = ('order',)
+    search_fields = ('question', 'answer')
+
+@admin.register(QuickLink)
+class QuickLinkAdmin(admin.ModelAdmin):
+    list_display = ('title', 'url', 'icon', 'order')
+    list_editable = ('order',)
+    search_fields = ('title',)
 

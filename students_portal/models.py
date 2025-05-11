@@ -1270,3 +1270,30 @@ class DiscussionReply(models.Model):
     
     def __str__(self):
         return f"Reply by {self.author.username} on {self.topic.title}"
+    
+
+
+from django.db import models
+
+class CommonQuestion(models.Model):
+    question = models.CharField(max_length=255)
+    answer = models.TextField()
+    order = models.IntegerField(default=0)
+    
+    class Meta:
+        ordering = ['order', 'question']
+    
+    def __str__(self):
+        return self.question
+
+class QuickLink(models.Model):
+    title = models.CharField(max_length=100)
+    url = models.URLField()
+    icon = models.CharField(max_length=50)
+    order = models.IntegerField(default=0)
+    
+    class Meta:
+        ordering = ['order', 'title']
+    
+    def __str__(self):
+        return self.title

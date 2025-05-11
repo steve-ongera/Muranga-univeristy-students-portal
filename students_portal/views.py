@@ -4160,26 +4160,27 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 import json
 
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+import json
+from .models import CommonQuestion, QuickLink
+
 @login_required
 def virtual_assistant(request):
     # Get the current user
     user = request.user
     
+    # Fetch data from database models
+    common_questions = CommonQuestion.objects.all()
+    quick_links = QuickLink.objects.all()
+    
     # Prepare context
     context = {
         'user': user,
-        'common_questions': [
-            {'question': 'How do I check my exam results?', 'answer': 'Exam results are available on the student portal under "Academic Records".'},
-            {'question': 'Where can I find lecture notes?', 'answer': 'Lecture notes are available on the LMS or from your course lecturer.'},
-            {'question': 'How do I apply for hostel accommodation?', 'answer': 'Hostel applications are done online during the allocation period.'},
-            {'question': 'What are the library opening hours?', 'answer': 'The library is open from 8:00 AM to 9:00 PM on weekdays and 9:00 AM to 4:00 PM on weekends.'},
-        ],
-        'quick_links': [
-            {'title': 'Student Portal', 'url': '#', 'icon': 'bi-person-circle'},
-            {'title': 'Learning Management System', 'url': '#', 'icon': 'bi-book'},
-            {'title': 'Fee Payment', 'url': '#', 'icon': 'bi-credit-card'},
-            {'title': 'Academic Calendar', 'url': '#', 'icon': 'bi-calendar-event'},
-        ]
+        'common_questions': common_questions,
+        'quick_links': quick_links,
     }
     
     return render(request, 'assistant/virtual_assistant.html', context)
